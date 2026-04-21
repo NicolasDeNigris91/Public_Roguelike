@@ -6,7 +6,11 @@ Built with **Godot 4.6 + GDScript**, exports to web (WASM).
 
 ## Status
 
-Sprint 0 — initial setup, project skeleton.
+Sprint 1 — player moves on a static grid (walls block movement). Sprite placeholders rendered via `_draw()`; real tileset arrives in Sprint 3.
+
+**Done:**
+- Sprint 0 — initial setup, project skeleton
+- Sprint 1 — grid, actor base class, player input, single room render
 
 ## Development
 
