@@ -29,7 +29,7 @@ func _ready() -> void:
 	inventory_ui.closed.connect(_on_inventory_closed)
 
 	_populate_floor()
-	dungeon.update_fov(player.grid_position)
+	dungeon.update_fov(player.grid_position, player.vision_range)
 	_refresh_entity_visibility()
 	print("Roguelike booted — Sprint 4b OK | Floor %d, %d rooms" % [current_floor, dungeon.rooms.size()])
 
@@ -132,7 +132,7 @@ func _descend() -> void:
 
 	dungeon.regenerate()
 	_populate_floor()
-	dungeon.update_fov(player.grid_position)
+	dungeon.update_fov(player.grid_position, player.vision_range)
 	_refresh_entity_visibility()
 	print("Descended to Floor %d | %d rooms, %d enemies" % [
 		current_floor, dungeon.rooms.size(), turn_manager.enemies.size()
@@ -162,7 +162,7 @@ func _on_player_moved(to_pos: Vector2i) -> void:
 		_descend()
 		return
 	_try_pickup(to_pos)
-	dungeon.update_fov(to_pos)
+	dungeon.update_fov(to_pos, player.vision_range)
 	_refresh_entity_visibility()
 
 func _on_player_died() -> void:
