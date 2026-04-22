@@ -73,11 +73,21 @@ func _pick_enemy_type() -> Enemy:
 		if roll < 0.7:
 			return Skeleton.new()
 		return Archer.new()
-	if roll < 0.3:
+	if current_floor <= 8:
+		if roll < 0.2:
+			return Slime.new()
+		if roll < 0.5:
+			return Skeleton.new()
+		if roll < 0.8:
+			return Archer.new()
+		return Mage.new()
+	if roll < 0.2:
 		return Slime.new()
-	if roll < 0.6:
+	if roll < 0.4:
 		return Skeleton.new()
-	return Archer.new()
+	if roll < 0.7:
+		return Archer.new()
+	return Mage.new()
 
 func _spawn_enemy(at: Vector2i, atk_bonus: int) -> void:
 	var enemy := _pick_enemy_type()

@@ -6,7 +6,7 @@ Built with **Godot 4.6 + GDScript**, exports to web (WASM).
 
 ## Status
 
-Sprint 4 — items, inventory, equip, consumables, rings. 11 items total; 4 deferred to Sprint 5 (Hammer, Swift Boots, ID Scroll, Bomb).
+Sprint 5 — full enemy roster (Slime, Skeleton, Archer, Mage) with ranged attacks and line-of-sight.
 
 **Done:**
 - Sprint 0 — initial setup, project skeleton
@@ -18,6 +18,9 @@ Sprint 4 — items, inventory, equip, consumables, rings. 11 items total; 4 defe
 - Sprint 4a — item pickup and equip (Item/Weapon/Armor Resources, ItemEntity, Inventory)
 - Sprint 4b — consumables and inventory UI (Healing + Greater Potion, CanvasLayer overlay, keys 1-8)
 - Sprint 4c — special items (Ring of Life, Teleport Scroll, Long Sword, Plate Armor)
+- Sprint 5a — Skeleton enemy + spawn progression + Hammer weapon
+- Sprint 5b — line-of-sight + Archer (ranged kiter)
+- Sprint 5c — Mage (ranged magic, ignores DEF) + Combat.ignore_def parameter
 
 ## Development
 
