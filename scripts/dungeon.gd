@@ -26,8 +26,8 @@ func regenerate() -> void:
 	explored_tiles.clear()
 	_generate_floor()
 
-func update_fov(origin: Vector2i) -> void:
-	visible_tiles = FOV.compute(grid, origin)
+func update_fov(origin: Vector2i, radius: int = FOV.RADIUS) -> void:
+	visible_tiles = FOV.compute(grid, origin, radius)
 	for pos in visible_tiles:
 		explored_tiles[pos] = true
 	queue_redraw()
