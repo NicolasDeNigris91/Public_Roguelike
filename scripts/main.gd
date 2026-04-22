@@ -9,6 +9,7 @@ const ITEMS_PER_FLOOR_MAX: int = 3
 @onready var entity_layer: Node2D = $World/EntityLayer
 @onready var player: Player = $World/EntityLayer/Player
 @onready var turn_manager: TurnManager = $TurnManager
+@onready var inventory_ui: InventoryUI = $InventoryUI
 
 var current_floor: int = 1
 var rng := RandomNumberGenerator.new()
@@ -23,10 +24,27 @@ func _ready() -> void:
 	turn_manager.dungeon = dungeon
 	turn_manager.register_player(player)
 
+	inventory_ui.player = player
+	inventory_ui.item_used.connect(_on_inventory_item_used)
+	inventory_ui.closed.connect(_on_inventory_closed)
+
 	_populate_floor()
 	dungeon.update_fov(player.grid_position)
 	_refresh_entity_visibility()
-	print("Roguelike booted — Sprint 4a OK | Floor %d, %d rooms" % [current_floor, dungeon.rooms.size()])
+	print("Roguelike booted — Sprint 4b OK | Floor %d, %d rooms" % [current_floor, dungeon.rooms.size()])
+
+func _unhandled_input(event: InputEvent) -> void:
+	if inventory_ui.visible:
+		return
+	if not (event is InputEventKey) or not event.pressed or event.echo:
+		return
+	if event.keycode == KEY_I:
+		_open_inventory()
+		get_viewport().set_input_as_handled()
+
+func _open_inventory() -> void:
+	player.turn_active = false
+	inventory_ui.open()
 
 func _populate_floor() -> void:
 	if dungeon.rooms.size() >= 1:
@@ -119,3 +137,21 @@ func _on_player_moved(to_pos: Vector2i) -> void:
 
 func _on_player_died() -> void:
 	print("You died on Floor %d" % current_floor)
+
+func _on_inventory_closed() -> void:
+	player.turn_active = true
+
+func _on_inventory_item_used(slot_index: int) -> void:
+	if slot_index >= player.inventory.bag.size():
+		return
+	var item := player.inventory.bag[slot_index]
+	if item is Consumable:
+		var consumed: bool = item.use_on(player)
+		if consumed:
+			player.inventory.bag.remove_at(slot_index)
+			inventory_ui.close()
+			player.turn_done.emit()
+		else:
+			inventory_ui.refresh()
+	else:
+		print("%s cannot be used — equip automatic only" % item.display_name)

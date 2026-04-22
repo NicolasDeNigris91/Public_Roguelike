@@ -35,6 +35,21 @@ static func chain_mail() -> Armor:
 	a.def_bonus = 2
 	return a
 
+static func healing_potion() -> Consumable:
+	var c := Consumable.new()
+	c.display_name = "Healing Potion"
+	c.color = Color("#d64545")
+	c.effect = Consumable.Effect.HEAL_MINOR
+	c.amount = 10
+	return c
+
+static func greater_potion() -> Consumable:
+	var c := Consumable.new()
+	c.display_name = "Greater Potion"
+	c.color = Color("#e040b0")
+	c.effect = Consumable.Effect.HEAL_FULL
+	return c
+
 static func random_weapon(rng: RandomNumberGenerator) -> Weapon:
 	match rng.randi() % 3:
 		0:
@@ -49,7 +64,16 @@ static func random_armor(rng: RandomNumberGenerator) -> Armor:
 		return leather_armor()
 	return chain_mail()
 
+static func random_consumable(rng: RandomNumberGenerator) -> Consumable:
+	if rng.randf() < 0.7:
+		return healing_potion()
+	return greater_potion()
+
 static func random_item(rng: RandomNumberGenerator) -> Item:
-	if rng.randf() < 0.5:
+	var roll := rng.randf()
+	if roll < 0.4:
 		return random_weapon(rng)
-	return random_armor(rng)
+	elif roll < 0.7:
+		return random_armor(rng)
+	else:
+		return random_consumable(rng)
