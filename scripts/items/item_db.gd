@@ -3,63 +3,63 @@ class_name ItemDB
 static func short_sword() -> Weapon:
 	var w := Weapon.new()
 	w.display_name = "Short Sword"
-	w.color = Color("#c0c0c0")
+	w.texture = SpriteDB.item("short_sword")
 	w.atk_bonus = 1
 	return w
 
 static func long_sword() -> Weapon:
 	var w := Weapon.new()
 	w.display_name = "Long Sword"
-	w.color = Color("#d0d0e0")
+	w.texture = SpriteDB.item("long_sword")
 	w.atk_bonus = 2
 	return w
 
 static func axe() -> Weapon:
 	var w := Weapon.new()
 	w.display_name = "Axe"
-	w.color = Color("#b07050")
+	w.texture = SpriteDB.item("axe")
 	w.atk_bonus = 3
 	return w
 
 static func hammer() -> Weapon:
 	var w := Weapon.new()
 	w.display_name = "Hammer"
-	w.color = Color("#9a8270")
+	w.texture = SpriteDB.item("hammer")
 	w.atk_bonus = 4
 	return w
 
 static func dagger() -> Weapon:
 	var w := Weapon.new()
 	w.display_name = "Dagger"
-	w.color = Color("#8890a0")
+	w.texture = SpriteDB.item("dagger")
 	w.atk_bonus = 0
 	return w
 
 static func leather_armor() -> Armor:
 	var a := Armor.new()
 	a.display_name = "Leather Armor"
-	a.color = Color("#7a4f2a")
+	a.texture = SpriteDB.item("leather_armor")
 	a.def_bonus = 1
 	return a
 
 static func chain_mail() -> Armor:
 	var a := Armor.new()
 	a.display_name = "Chain Mail"
-	a.color = Color("#9ea0a8")
+	a.texture = SpriteDB.item("chain_mail")
 	a.def_bonus = 2
 	return a
 
 static func plate_armor() -> Armor:
 	var a := Armor.new()
 	a.display_name = "Plate Armor"
-	a.color = Color("#c8c8d4")
+	a.texture = SpriteDB.item("plate_armor")
 	a.def_bonus = 3
 	return a
 
 static func healing_potion() -> Consumable:
 	var c := Consumable.new()
 	c.display_name = "Healing Potion"
-	c.color = Color("#d64545")
+	c.texture = SpriteDB.item("healing_potion")
 	c.effect = Consumable.Effect.HEAL_MINOR
 	c.amount = 10
 	return c
@@ -67,21 +67,21 @@ static func healing_potion() -> Consumable:
 static func greater_potion() -> Consumable:
 	var c := Consumable.new()
 	c.display_name = "Greater Potion"
-	c.color = Color("#e040b0")
+	c.texture = SpriteDB.item("greater_potion")
 	c.effect = Consumable.Effect.HEAL_FULL
 	return c
 
 static func teleport_scroll() -> Consumable:
 	var c := Consumable.new()
 	c.display_name = "Teleport Scroll"
-	c.color = Color("#80e0ff")
+	c.texture = SpriteDB.item("teleport_scroll")
 	c.effect = Consumable.Effect.TELEPORT
 	return c
 
 static func ring_of_life() -> Ring:
 	var r := Ring.new()
 	r.display_name = "Ring of Life"
-	r.color = Color("#ffd700")
+	r.texture = SpriteDB.item("ring_of_life")
 	r.max_hp_bonus = 10
 	return r
 
