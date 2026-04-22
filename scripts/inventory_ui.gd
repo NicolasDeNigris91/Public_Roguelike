@@ -4,7 +4,11 @@ extends CanvasLayer
 signal item_used(slot_index: int)
 signal closed
 
-@onready var content: VBoxContainer = $Control/PanelContainer/MarginContainer/VBoxContainer
+const ICON_SIZE: int = 32
+const SECTION_HEADER_FONT_SIZE: int = 14
+
+@onready var equipped_vbox: VBoxContainer = $Control/PanelContainer/MarginContainer/VBoxContainer/EquippedPanel/EquippedVBox
+@onready var bag_vbox: VBoxContainer = $Control/PanelContainer/MarginContainer/VBoxContainer/BagPanel/BagVBox
 
 var player: Player
 
@@ -20,56 +24,66 @@ func close() -> void:
 	closed.emit()
 
 func refresh() -> void:
-	if player == null or content == null:
+	if player == null or equipped_vbox == null or bag_vbox == null:
 		return
-	for child in content.get_children():
+
+	for child in equipped_vbox.get_children():
+		child.queue_free()
+	for child in bag_vbox.get_children():
 		child.queue_free()
 
-	_add_label("INVENTORY", 18)
-	_add_label("")
-
 	var inv := player.inventory
-	var weapon_text: String
+
+	_add_section_header(equipped_vbox, "Equipped")
+
 	if inv.weapon != null:
-		weapon_text = "Weapon: %s (+%d ATK)" % [inv.weapon.display_name, inv.weapon.atk_bonus]
+		_add_item_row(equipped_vbox, inv.weapon.texture, "%s (+%d ATK)" % [inv.weapon.display_name, inv.weapon.atk_bonus])
 	else:
-		weapon_text = "Weapon: (none)"
+		_add_item_row(equipped_vbox, null, "Weapon: (none)")
 
-	var armor_text: String
 	if inv.armor != null:
-		armor_text = "Armor: %s (+%d DEF)" % [inv.armor.display_name, inv.armor.def_bonus]
+		_add_item_row(equipped_vbox, inv.armor.texture, "%s (+%d DEF)" % [inv.armor.display_name, inv.armor.def_bonus])
 	else:
-		armor_text = "Armor: (none)"
+		_add_item_row(equipped_vbox, null, "Armor: (none)")
 
-	var ring_text: String
 	if inv.ring != null:
-		ring_text = "Ring: %s (+%d max HP)" % [inv.ring.display_name, inv.ring.max_hp_bonus]
+		_add_item_row(equipped_vbox, inv.ring.texture, "%s (+%d max HP)" % [inv.ring.display_name, inv.ring.max_hp_bonus])
 	else:
-		ring_text = "Ring: (none)"
+		_add_item_row(equipped_vbox, null, "Ring: (none)")
 
-	_add_label(weapon_text)
-	_add_label(armor_text)
-	_add_label(ring_text)
-	_add_label("")
-	_add_label("Bag:")
+	_add_section_header(bag_vbox, "Bag")
 
 	for i in range(Inventory.BAG_SIZE):
-		var line: String
 		if i < inv.bag.size():
-			line = "  %d. %s" % [i + 1, inv.bag[i].display_name]
+			var item: Item = inv.bag[i]
+			_add_item_row(bag_vbox, item.texture, "%d. %s" % [i + 1, item.display_name])
 		else:
-			line = "  %d. (empty)" % (i + 1)
-		_add_label(line)
+			_add_item_row(bag_vbox, null, "%d. (empty)" % (i + 1))
 
-	_add_label("")
-	_add_label("[1-8] Use   [I/Esc] Close")
-
-func _add_label(text: String, font_size: int = 0) -> void:
+func _add_section_header(parent: VBoxContainer, text: String) -> void:
 	var label := Label.new()
 	label.text = text
-	if font_size > 0:
-		label.add_theme_font_size_override("font_size", font_size)
-	content.add_child(label)
+	label.add_theme_font_size_override("font_size", SECTION_HEADER_FONT_SIZE)
+	label.modulate = Color(0.8, 0.8, 0.9, 1.0)
+	parent.add_child(label)
+
+func _add_item_row(parent: VBoxContainer, texture: Texture2D, text: String) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+
+	var icon := TextureRect.new()
+	icon.custom_minimum_size = Vector2(ICON_SIZE, ICON_SIZE)
+	icon.expand_mode = TextureRect.EXPAND_FIT_HEIGHT_PROPORTIONAL
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture = texture
+	row.add_child(icon)
+
+	var label := Label.new()
+	label.text = text
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(label)
+
+	parent.add_child(row)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
