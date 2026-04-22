@@ -7,6 +7,9 @@ signal moved(to_pos: Vector2i)
 const MOVE_TWEEN_DURATION: float = 0.1
 const BOBBING_AMPLITUDE: float = 2.0
 const BOBBING_FREQUENCY: float = 2.0  # Hz
+const FLASH_DURATION: float = 0.04  # each leg (to and from white)
+const NUDGE_DURATION: float = 0.08  # each leg
+const NUDGE_FRACTION: float = 0.5
 
 var grid_position: Vector2i
 var hp: int = 10
@@ -52,6 +55,24 @@ func die() -> void:
 
 func take_turn() -> void:
 	pass
+
+func flash_white() -> void:
+	var tw := create_tween()
+	tw.tween_property(sprite_node, "modulate", Color(2, 2, 2), FLASH_DURATION)
+	tw.tween_property(sprite_node, "modulate", Color.WHITE, FLASH_DURATION)
+
+func nudge_toward(target_grid_pos: Vector2i) -> Signal:
+	var home := position
+	var target_world := Vector2(target_grid_pos.x, target_grid_pos.y) * Grid.TILE_SIZE
+	var offset := (target_world - home) * NUDGE_FRACTION
+	is_tweening = true
+	var tw := create_tween()
+	tw.tween_property(self, "position", home + offset, NUDGE_DURATION)
+	tw.tween_property(self, "position", home, NUDGE_DURATION)
+	tw.tween_callback(func() -> void:
+		is_tweening = false
+	)
+	return tw.finished
 
 func _tween_to(target_grid_pos: Vector2i) -> void:
 	var target_world := Vector2(target_grid_pos.x, target_grid_pos.y) * Grid.TILE_SIZE
