@@ -9,9 +9,12 @@ var hp: int = 10
 var max_hp: int = 10
 var atk: int = 3
 var def: int = 1
-var color: Color = Color.WHITE
+var sprite_node: Sprite2D
 
 func _ready() -> void:
+	sprite_node = Sprite2D.new()
+	sprite_node.centered = false
+	add_child(sprite_node)
 	_sync_position()
 
 func move_to(new_grid_pos: Vector2i) -> void:
@@ -37,10 +40,6 @@ func _sync_position() -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var margin := 4.0
-	var size := float(Grid.TILE_SIZE) - margin * 2.0
-	draw_rect(Rect2(margin, margin, size, size), color)
-
 	var font := ThemeDB.fallback_font
 	var font_size := 10
 	var text := str(hp)

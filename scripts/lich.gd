@@ -24,7 +24,6 @@ var turns_without_los: int = 0
 
 func _ready() -> void:
 	name = "Lich"
-	color = Color("#b4185a")
 	hp = 40
 	max_hp = 40
 	atk = 8
@@ -32,6 +31,7 @@ func _ready() -> void:
 	vision_range = LICH_VISION_RANGE
 	always_takes_turn = true
 	super._ready()
+	sprite_node.texture = SpriteDB.actor("lich")
 
 func take_turn() -> void:
 	if turn_manager == null or not is_instance_valid(turn_manager.player):

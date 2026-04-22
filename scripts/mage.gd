@@ -5,12 +5,12 @@ const ATTACK_RANGE: int = 3
 
 func _ready() -> void:
 	name = "Mage"
-	color = Color("#9a4fff")
 	hp = 10
 	max_hp = 10
 	atk = 6
 	def = 0
 	super._ready()
+	sprite_node.texture = SpriteDB.actor("mage")
 
 func take_turn() -> void:
 	if turn_manager == null or not is_instance_valid(turn_manager.player):

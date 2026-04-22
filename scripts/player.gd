@@ -16,12 +16,12 @@ var vision_range: int = BASE_VISION_RANGE
 var vision_debuff_turns: int = 0
 
 func _ready() -> void:
-	color = Color("#4a90e2")
 	max_hp = BASE_MAX_HP
 	hp = BASE_MAX_HP
 	inventory = Inventory.new()
 	_recalculate_stats()
 	super._ready()
+	sprite_node.texture = SpriteDB.actor("player")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not turn_active:
