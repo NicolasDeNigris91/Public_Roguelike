@@ -47,6 +47,10 @@ func _open_inventory() -> void:
 	inventory_ui.open()
 
 func _populate_floor() -> void:
+	if current_floor == 6:
+		_populate_boss_floor()
+		return
+
 	if dungeon.rooms.size() >= 1:
 		player.move_to(dungeon.room_center(0))
 
@@ -58,6 +62,18 @@ func _populate_floor() -> void:
 			_spawn_enemy(dungeon.room_center(room_index), atk_bonus)
 
 	_spawn_items()
+
+func _populate_boss_floor() -> void:
+	var spawns: Dictionary = dungeon.regenerate_as_boss_arena()
+	player.move_to(spawns["player_spawn"])
+
+	var lich := Lich.new()
+	entity_layer.add_child(lich)
+	lich.dungeon = dungeon
+	lich.turn_manager = turn_manager
+	lich.move_to(spawns["lich_spawn"])
+	turn_manager.register_enemy(lich)
+	lich.truly_died.connect(_on_lich_truly_died)
 
 func _pick_enemy_type() -> Enemy:
 	var roll := rng.randf()
@@ -130,7 +146,9 @@ func _descend() -> void:
 	for child in items_layer.get_children():
 		child.queue_free()
 
-	dungeon.regenerate()
+	if current_floor != 6:
+		dungeon.regenerate()
+	# Floor 6 regenerates inside _populate_boss_floor; skip BSP pass.
 	_populate_floor()
 	dungeon.update_fov(player.grid_position, player.vision_range)
 	_refresh_entity_visibility()
@@ -167,6 +185,16 @@ func _on_player_moved(to_pos: Vector2i) -> void:
 
 func _on_player_died() -> void:
 	print("You died on Floor %d" % current_floor)
+
+func _on_lich_truly_died(lich_pos: Vector2i) -> void:
+	dungeon.grid.set_cell(lich_pos, Grid.CellType.STAIRS)
+	dungeon.stairs_position = lich_pos
+	for enemy in turn_manager.enemies.duplicate():
+		if is_instance_valid(enemy) and enemy is Skeleton:
+			enemy.queue_free()
+	turn_manager.enemies = turn_manager.enemies.filter(func(e): return is_instance_valid(e))
+	dungeon.queue_redraw()
+	print("O Lich foi derrotado. Uma escada aparece.")
 
 func _on_inventory_closed() -> void:
 	player.turn_active = true
