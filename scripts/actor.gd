@@ -2,6 +2,7 @@ class_name Actor
 extends Node2D
 
 signal died
+signal moved(to_pos: Vector2i)
 
 var grid_position: Vector2i
 var hp: int = 10
@@ -16,6 +17,7 @@ func _ready() -> void:
 func move_to(new_grid_pos: Vector2i) -> void:
 	grid_position = new_grid_pos
 	_sync_position()
+	moved.emit(new_grid_pos)
 
 func take_damage(amount: int) -> void:
 	hp = maxi(0, hp - amount)

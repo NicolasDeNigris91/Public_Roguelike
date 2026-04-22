@@ -1,7 +1,7 @@
 class_name Grid
 extends RefCounted
 
-enum CellType { FLOOR, WALL }
+enum CellType { FLOOR, WALL, STAIRS }
 
 const TILE_SIZE: int = 32
 
@@ -31,4 +31,5 @@ func set_cell(pos: Vector2i, cell_type: int) -> void:
 		cells[pos.y][pos.x] = cell_type
 
 func is_walkable(pos: Vector2i) -> bool:
-	return get_cell(pos) == CellType.FLOOR
+	var cell := get_cell(pos)
+	return cell == CellType.FLOOR or cell == CellType.STAIRS

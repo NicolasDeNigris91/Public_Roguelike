@@ -1,30 +1,61 @@
 extends Node2D
 
+const MAX_ENEMIES_PER_FLOOR: int = 5
+
 @onready var dungeon: Dungeon = $World/Dungeon
 @onready var entity_layer: Node2D = $World/EntityLayer
 @onready var player: Player = $World/EntityLayer/Player
 @onready var turn_manager: TurnManager = $TurnManager
 
+var current_floor: int = 1
+
 func _ready() -> void:
 	player.dungeon = dungeon
 	player.turn_manager = turn_manager
 	player.died.connect(_on_player_died)
+	player.moved.connect(_on_player_moved)
 	turn_manager.register_player(player)
 
+	_populate_floor()
+	print("Roguelike booted — Sprint 3b OK | Floor %d, %d rooms" % [current_floor, dungeon.rooms.size()])
+
+func _populate_floor() -> void:
 	if dungeon.rooms.size() >= 1:
 		player.move_to(dungeon.room_center(0))
-	if dungeon.rooms.size() >= 2:
-		_spawn_slime(dungeon.room_center(1))
 
-	print("Roguelike booted — Sprint 3a OK (%d rooms)" % dungeon.rooms.size())
+	var enemy_count := mini(current_floor, MAX_ENEMIES_PER_FLOOR)
+	var atk_bonus := (current_floor - 1) / 2
+	for i in range(enemy_count):
+		var room_index := i + 1
+		if room_index < dungeon.rooms.size():
+			_spawn_slime(dungeon.room_center(room_index), atk_bonus)
 
-func _spawn_slime(at: Vector2i) -> void:
+func _spawn_slime(at: Vector2i, atk_bonus: int = 0) -> void:
 	var slime := Slime.new()
 	entity_layer.add_child(slime)
 	slime.dungeon = dungeon
 	slime.turn_manager = turn_manager
+	slime.atk += atk_bonus
 	slime.move_to(at)
 	turn_manager.register_enemy(slime)
 
+func _descend() -> void:
+	current_floor += 1
+
+	for enemy in turn_manager.enemies.duplicate():
+		if is_instance_valid(enemy):
+			enemy.queue_free()
+	turn_manager.enemies.clear()
+
+	dungeon.regenerate()
+	_populate_floor()
+	print("Descended to Floor %d | %d rooms, %d enemies" % [
+		current_floor, dungeon.rooms.size(), turn_manager.enemies.size()
+	])
+
+func _on_player_moved(to_pos: Vector2i) -> void:
+	if dungeon.grid.get_cell(to_pos) == Grid.CellType.STAIRS:
+		_descend()
+
 func _on_player_died() -> void:
-	print("You died")
+	print("You died on Floor %d" % current_floor)
