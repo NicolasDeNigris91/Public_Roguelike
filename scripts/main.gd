@@ -193,7 +193,7 @@ func _on_lich_truly_died(lich_pos: Vector2i) -> void:
 		if is_instance_valid(enemy) and enemy is Skeleton:
 			enemy.queue_free()
 	turn_manager.enemies = turn_manager.enemies.filter(func(e): return is_instance_valid(e))
-	dungeon.queue_redraw()
+	dungeon.redraw_cell(lich_pos)
 	print("O Lich foi derrotado. Uma escada aparece.")
 
 func _on_inventory_closed() -> void:
