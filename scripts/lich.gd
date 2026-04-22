@@ -19,6 +19,8 @@ var summon_cooldown: int = 0
 var breu_cooldown: int = 0
 var summoned_skeletons: Array[Skeleton] = []
 var has_revived: bool = false
+var last_seen_player: Vector2i = Vector2i(-1, -1)
+var turns_without_los: int = 0
 
 func _ready() -> void:
 	name = "Lich"
@@ -37,19 +39,30 @@ func take_turn() -> void:
 	_update_phase()
 
 	var player := turn_manager.player
+	var has_los := FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position)
+	if has_los:
+		last_seen_player = player.grid_position
+		turns_without_los = 0
+	else:
+		turns_without_los += 1
+
 	var dist := _distance_to(player.grid_position)
 
 	if dist == 1:
 		Combat.attack(self, player)
 		return
 
+	var acted: bool = false
 	match phase:
 		1:
-			_phase_1_turn(player, dist)
+			acted = _phase_1_turn(player, dist, has_los)
 		2:
-			_phase_2_turn(player, dist)
+			acted = _phase_2_turn(player, dist, has_los)
 		3:
-			_phase_3_turn(player, dist)
+			acted = _phase_3_turn(player, dist, has_los)
+
+	if not acted and turns_without_los >= 2 and last_seen_player != Vector2i(-1, -1):
+		_step_toward_last_seen()
 
 func _update_phase() -> void:
 	previous_phase = phase
@@ -64,37 +77,56 @@ func _update_phase() -> void:
 		breu_cooldown = 0
 		print("Lich enters phase %d (hp %d/%d)" % [phase, hp, max_hp])
 
-func _phase_1_turn(player: Player, dist: int) -> void:
+func _phase_1_turn(player: Player, dist: int, has_los: bool) -> bool:
 	_prune_dead_summons()
 	if summon_cooldown == 0 and summoned_skeletons.size() < SUMMON_CAP:
 		var tile := _find_summon_tile()
 		if tile != Vector2i(-1, -1):
 			_summon_skeleton(tile)
 			summon_cooldown = SUMMON_COOLDOWN_MAX
-			return
-	_cast_shadow_bolt_or_idle(player, dist)
+			return true
+	if has_los and dist <= 3:
+		Combat.attack(self, player, true)
+		if summon_cooldown > 0:
+			summon_cooldown -= 1
+		return true
 	if summon_cooldown > 0:
 		summon_cooldown -= 1
+	return false
 
-func _phase_2_turn(player: Player, dist: int) -> void:
-	if dist <= 4 and FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position):
+func _phase_2_turn(player: Player, dist: int, has_los: bool) -> bool:
+	if has_los and dist <= 4:
 		Combat.attack(self, player, true, 0.5, LIFESTEAL_CAP)
+		return true
+	return false
 
-func _phase_3_turn(player: Player, dist: int) -> void:
-	var has_los := FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position)
-	if breu_cooldown == 0 and has_los:
+func _phase_3_turn(player: Player, dist: int, has_los: bool) -> bool:
+	if has_los and breu_cooldown == 0:
 		player.apply_vision_debuff(BREU_VISION_RANGE, BREU_DURATION)
 		breu_cooldown = BREU_COOLDOWN_MAX
 		print("Lich casts Breu — player sight fades")
-		return
-	if dist <= 4 and has_los:
+		return true
+	if has_los and dist <= 4:
 		Combat.attack(self, player, true)
+		if breu_cooldown > 0:
+			breu_cooldown -= 1
+		return true
 	if breu_cooldown > 0:
 		breu_cooldown -= 1
+	return false
 
-func _cast_shadow_bolt_or_idle(player: Player, dist: int) -> void:
-	if dist <= 3 and FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position):
-		Combat.attack(self, player, true)
+func _step_toward_last_seen() -> void:
+	var next_pos := _step_toward(last_seen_player)
+	if next_pos == grid_position:
+		return
+	if not dungeon.grid.is_walkable(next_pos):
+		return
+	if turn_manager.player.grid_position == next_pos:
+		return
+	for e in turn_manager.enemies:
+		if is_instance_valid(e) and e != self and e.grid_position == next_pos:
+			return
+	move_to(next_pos)
 
 func die() -> void:
 	if not has_revived:
