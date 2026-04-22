@@ -24,7 +24,7 @@ func _ready() -> void:
 	sprite_node.texture = SpriteDB.actor("player")
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not turn_active:
+	if not turn_active or is_tweening:
 		return
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
@@ -49,9 +49,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if target_enemy != null:
 		Combat.attack(self, target_enemy)
+		await get_tree().process_frame
 		_end_turn()
 	elif dungeon and dungeon.grid.is_walkable(target_pos):
 		move_to(target_pos)
+		await get_tree().create_timer(MOVE_TWEEN_DURATION).timeout
 		_end_turn()
 
 func _end_turn() -> void:

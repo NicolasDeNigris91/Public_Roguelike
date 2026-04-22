@@ -176,7 +176,7 @@ func _summon_skeleton(at: Vector2i) -> void:
 	get_parent().add_child(skel)
 	skel.dungeon = dungeon
 	skel.turn_manager = turn_manager
-	skel.move_to(at)
+	skel.move_to(at, false)
 	turn_manager.register_enemy(skel)
 	summoned_skeletons.append(skel)
 	print("Lich summons a Skeleton at %s" % [at])

@@ -52,7 +52,7 @@ func _populate_floor() -> void:
 		return
 
 	if dungeon.rooms.size() >= 1:
-		player.move_to(dungeon.room_center(0))
+		player.move_to(dungeon.room_center(0), false)
 
 	var enemy_count := mini(current_floor, MAX_ENEMIES_PER_FLOOR)
 	var atk_bonus := (current_floor - 1) / 2
@@ -65,13 +65,13 @@ func _populate_floor() -> void:
 
 func _populate_boss_floor() -> void:
 	var spawns: Dictionary = dungeon.regenerate_as_boss_arena()
-	player.move_to(spawns["player_spawn"])
+	player.move_to(spawns["player_spawn"], false)
 
 	var lich := Lich.new()
 	entity_layer.add_child(lich)
 	lich.dungeon = dungeon
 	lich.turn_manager = turn_manager
-	lich.move_to(spawns["lich_spawn"])
+	lich.move_to(spawns["lich_spawn"], false)
 	turn_manager.register_enemy(lich)
 	lich.truly_died.connect(_on_lich_truly_died)
 
@@ -111,7 +111,7 @@ func _spawn_enemy(at: Vector2i, atk_bonus: int) -> void:
 	enemy.dungeon = dungeon
 	enemy.turn_manager = turn_manager
 	enemy.atk += atk_bonus
-	enemy.move_to(at)
+	enemy.move_to(at, false)
 	turn_manager.register_enemy(enemy)
 
 func _spawn_items() -> void:

@@ -49,6 +49,6 @@ func _teleport(target: Actor) -> bool:
 		return false
 
 	var destination: Vector2i = candidates[randi() % candidates.size()]
-	player.move_to(destination)
+	player.move_to(destination, false)
 	print("Used %s — teleported to %s" % [display_name, str(destination)])
 	return true
