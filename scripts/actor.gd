@@ -5,6 +5,8 @@ signal died
 signal moved(to_pos: Vector2i)
 
 const MOVE_TWEEN_DURATION: float = 0.1
+const BOBBING_AMPLITUDE: float = 2.0
+const BOBBING_FREQUENCY: float = 2.0  # Hz
 
 var grid_position: Vector2i
 var hp: int = 10
@@ -13,12 +15,22 @@ var atk: int = 3
 var def: int = 1
 var sprite_node: Sprite2D
 var is_tweening: bool = false
+var _bobbing_phase: float = 0.0
+var _bobbing_time: float = 0.0
 
 func _ready() -> void:
 	sprite_node = Sprite2D.new()
 	sprite_node.centered = false
 	add_child(sprite_node)
+	_bobbing_phase = randf() * TAU
 	_sync_position_instant()
+
+func _process(delta: float) -> void:
+	if is_tweening:
+		sprite_node.offset.y = lerp(sprite_node.offset.y, 0.0, 0.3)
+		return
+	_bobbing_time += delta
+	sprite_node.offset.y = sin(_bobbing_time * BOBBING_FREQUENCY * TAU + _bobbing_phase) * BOBBING_AMPLITUDE
 
 func move_to(new_grid_pos: Vector2i, animate: bool = true) -> void:
 	grid_position = new_grid_pos
