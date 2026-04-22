@@ -136,6 +136,10 @@ func die() -> void:
 		summon_cooldown = 0
 		breu_cooldown = 0
 		queue_redraw()
+		flash_white()
+		if Combat.world_node != null:
+			Shake.apply(Combat.world_node, 5.0, 0.3)
+			HitPause.freeze(get_tree(), 0.2)
 		print("Lich rises again! (hp 10/40)")
 		return
 	truly_died.emit(grid_position)

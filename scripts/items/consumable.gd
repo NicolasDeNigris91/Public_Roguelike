@@ -18,6 +18,7 @@ func _heal(target: Actor) -> bool:
 	if target.hp >= target.max_hp:
 		print("%s: already at full HP" % display_name)
 		return false
+	var before_hp: int = target.hp
 	var heal_amount: int
 	if effect == Effect.HEAL_FULL:
 		heal_amount = target.max_hp - target.hp
@@ -26,6 +27,10 @@ func _heal(target: Actor) -> bool:
 	target.hp += heal_amount
 	target.queue_redraw()
 	print("Used %s — healed %d HP (%d/%d)" % [display_name, heal_amount, target.hp, target.max_hp])
+	var delta := target.hp - before_hp
+	if delta > 0 and Combat.effects_layer != null:
+		var heal_pos: Vector2 = target.position - Vector2(0, 8)
+		DamageNumber.spawn(Combat.effects_layer, heal_pos, "+%d" % delta, Combat.DMG_COLOR_HEAL, 1.0)
 	return true
 
 func _teleport(target: Actor) -> bool:
