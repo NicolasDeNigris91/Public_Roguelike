@@ -18,6 +18,7 @@ var previous_phase: int = 1
 var summon_cooldown: int = 0
 var breu_cooldown: int = 0
 var summoned_skeletons: Array[Skeleton] = []
+var has_revived: bool = false
 
 func _ready() -> void:
 	name = "Lich"
@@ -48,7 +49,7 @@ func take_turn() -> void:
 		2:
 			_phase_2_turn(player, dist)
 		3:
-			_cast_shadow_bolt_or_idle(player, dist)
+			_phase_3_turn(player, dist)
 
 func _update_phase() -> void:
 	previous_phase = phase
@@ -79,9 +80,33 @@ func _phase_2_turn(player: Player, dist: int) -> void:
 	if dist <= 4 and FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position):
 		Combat.attack(self, player, true, 0.5, LIFESTEAL_CAP)
 
+func _phase_3_turn(player: Player, dist: int) -> void:
+	var has_los := FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position)
+	if breu_cooldown == 0 and has_los:
+		player.apply_vision_debuff(BREU_VISION_RANGE, BREU_DURATION)
+		breu_cooldown = BREU_COOLDOWN_MAX
+		print("Lich casts Breu — player sight fades")
+		return
+	if dist <= 4 and has_los:
+		Combat.attack(self, player, true)
+	if breu_cooldown > 0:
+		breu_cooldown -= 1
+
 func _cast_shadow_bolt_or_idle(player: Player, dist: int) -> void:
 	if dist <= 3 and FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position):
 		Combat.attack(self, player, true)
+
+func die() -> void:
+	if not has_revived:
+		has_revived = true
+		hp = 10
+		summon_cooldown = 0
+		breu_cooldown = 0
+		queue_redraw()
+		print("Lich rises again! (hp 10/40)")
+		return
+	truly_died.emit(grid_position)
+	super.die()
 
 func _prune_dead_summons() -> void:
 	var alive: Array[Skeleton] = []
