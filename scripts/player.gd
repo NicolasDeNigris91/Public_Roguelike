@@ -1,7 +1,11 @@
 class_name Player
 extends Actor
 
+signal turn_done
+
 var dungeon: Dungeon
+var turn_manager: TurnManager
+var turn_active: bool = true
 
 func _ready() -> void:
 	color = Color("#4a90e2")
@@ -12,6 +16,8 @@ func _ready() -> void:
 	super._ready()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not turn_active:
+		return
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
 
@@ -30,6 +36,24 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	get_viewport().set_input_as_handled()
 
-	var target := grid_position + direction
-	if dungeon and dungeon.grid.is_walkable(target):
-		move_to(target)
+	var target_pos := grid_position + direction
+	var target_enemy := _enemy_at(target_pos)
+
+	if target_enemy != null:
+		Combat.attack(self, target_enemy)
+		turn_done.emit()
+	elif dungeon and dungeon.grid.is_walkable(target_pos):
+		move_to(target_pos)
+		turn_done.emit()
+
+func _enemy_at(pos: Vector2i) -> Enemy:
+	if turn_manager == null:
+		return null
+	for e in turn_manager.enemies:
+		if is_instance_valid(e) and e.grid_position == pos:
+			return e
+	return null
+
+func die() -> void:
+	died.emit()
+	turn_active = false
