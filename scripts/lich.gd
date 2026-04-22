@@ -46,7 +46,7 @@ func take_turn() -> void:
 		1:
 			_phase_1_turn(player, dist)
 		2:
-			_cast_shadow_bolt_or_idle(player, dist)
+			_phase_2_turn(player, dist)
 		3:
 			_cast_shadow_bolt_or_idle(player, dist)
 
@@ -74,6 +74,10 @@ func _phase_1_turn(player: Player, dist: int) -> void:
 	_cast_shadow_bolt_or_idle(player, dist)
 	if summon_cooldown > 0:
 		summon_cooldown -= 1
+
+func _phase_2_turn(player: Player, dist: int) -> void:
+	if dist <= 4 and FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position):
+		Combat.attack(self, player, true, 0.5, LIFESTEAL_CAP)
 
 func _cast_shadow_bolt_or_idle(player: Player, dist: int) -> void:
 	if dist <= 3 and FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position):
