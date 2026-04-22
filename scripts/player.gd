@@ -5,6 +5,7 @@ signal turn_done
 
 const BASE_ATK: int = 5
 const BASE_DEF: int = 3
+const BASE_MAX_HP: int = 20
 
 var dungeon: Dungeon
 var turn_manager: TurnManager
@@ -13,8 +14,8 @@ var inventory: Inventory
 
 func _ready() -> void:
 	color = Color("#4a90e2")
-	hp = 20
-	max_hp = 20
+	max_hp = BASE_MAX_HP
+	hp = BASE_MAX_HP
 	inventory = Inventory.new()
 	_recalculate_stats()
 	super._ready()
@@ -63,6 +64,12 @@ func pickup(item: Item) -> void:
 			inventory.add_to_bag(old)
 		_recalculate_stats()
 		print("Picked up %s — equipped (DEF %d)" % [item.display_name, def])
+	elif item is Ring:
+		var old := inventory.equip_ring(item)
+		if old != null:
+			inventory.add_to_bag(old)
+		_recalculate_stats()
+		print("Picked up %s — equipped (max HP %d)" % [item.display_name, max_hp])
 	else:
 		if inventory.add_to_bag(item):
 			print("Picked up %s — in bag" % item.display_name)
@@ -80,6 +87,17 @@ func _recalculate_stats() -> void:
 		atk += inventory.weapon.atk_bonus
 	if inventory.armor != null:
 		def += inventory.armor.def_bonus
+
+	var new_max_hp := BASE_MAX_HP
+	if inventory.ring != null:
+		new_max_hp += inventory.ring.max_hp_bonus
+
+	var delta := new_max_hp - max_hp
+	max_hp = new_max_hp
+	if delta > 0:
+		hp += delta
+	hp = mini(hp, max_hp)
+	queue_redraw()
 
 func _enemy_at(pos: Vector2i) -> Enemy:
 	if turn_manager == null:

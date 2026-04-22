@@ -41,8 +41,15 @@ func refresh() -> void:
 	else:
 		armor_text = "Armor: (none)"
 
+	var ring_text: String
+	if inv.ring != null:
+		ring_text = "Ring: %s (+%d max HP)" % [inv.ring.display_name, inv.ring.max_hp_bonus]
+	else:
+		ring_text = "Ring: (none)"
+
 	_add_label(weapon_text)
 	_add_label(armor_text)
+	_add_label(ring_text)
 	_add_label("")
 	_add_label("Bag:")
 

@@ -7,6 +7,13 @@ static func short_sword() -> Weapon:
 	w.atk_bonus = 1
 	return w
 
+static func long_sword() -> Weapon:
+	var w := Weapon.new()
+	w.display_name = "Long Sword"
+	w.color = Color("#d0d0e0")
+	w.atk_bonus = 2
+	return w
+
 static func axe() -> Weapon:
 	var w := Weapon.new()
 	w.display_name = "Axe"
@@ -35,6 +42,13 @@ static func chain_mail() -> Armor:
 	a.def_bonus = 2
 	return a
 
+static func plate_armor() -> Armor:
+	var a := Armor.new()
+	a.display_name = "Plate Armor"
+	a.color = Color("#c8c8d4")
+	a.def_bonus = 3
+	return a
+
 static func healing_potion() -> Consumable:
 	var c := Consumable.new()
 	c.display_name = "Healing Potion"
@@ -50,30 +64,59 @@ static func greater_potion() -> Consumable:
 	c.effect = Consumable.Effect.HEAL_FULL
 	return c
 
+static func teleport_scroll() -> Consumable:
+	var c := Consumable.new()
+	c.display_name = "Teleport Scroll"
+	c.color = Color("#80e0ff")
+	c.effect = Consumable.Effect.TELEPORT
+	return c
+
+static func ring_of_life() -> Ring:
+	var r := Ring.new()
+	r.display_name = "Ring of Life"
+	r.color = Color("#ffd700")
+	r.max_hp_bonus = 10
+	return r
+
 static func random_weapon(rng: RandomNumberGenerator) -> Weapon:
-	match rng.randi() % 3:
+	match rng.randi() % 4:
 		0:
 			return short_sword()
 		1:
+			return long_sword()
+		2:
 			return axe()
 		_:
 			return dagger()
 
 static func random_armor(rng: RandomNumberGenerator) -> Armor:
-	if rng.randi() % 2 == 0:
-		return leather_armor()
-	return chain_mail()
+	match rng.randi() % 3:
+		0:
+			return leather_armor()
+		1:
+			return chain_mail()
+		_:
+			return plate_armor()
 
 static func random_consumable(rng: RandomNumberGenerator) -> Consumable:
-	if rng.randf() < 0.7:
+	var roll := rng.randf()
+	if roll < 0.5:
 		return healing_potion()
-	return greater_potion()
+	elif roll < 0.8:
+		return greater_potion()
+	else:
+		return teleport_scroll()
+
+static func random_ring(_rng: RandomNumberGenerator) -> Ring:
+	return ring_of_life()
 
 static func random_item(rng: RandomNumberGenerator) -> Item:
 	var roll := rng.randf()
-	if roll < 0.4:
+	if roll < 0.35:
 		return random_weapon(rng)
-	elif roll < 0.7:
+	elif roll < 0.60:
 		return random_armor(rng)
-	else:
+	elif roll < 0.85:
 		return random_consumable(rng)
+	else:
+		return random_ring(rng)
