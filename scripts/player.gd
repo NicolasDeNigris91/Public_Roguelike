@@ -6,11 +6,14 @@ signal turn_done
 const BASE_ATK: int = 5
 const BASE_DEF: int = 3
 const BASE_MAX_HP: int = 20
+const BASE_VISION_RANGE: int = 8
 
 var dungeon: Dungeon
 var turn_manager: TurnManager
 var turn_active: bool = true
 var inventory: Inventory
+var vision_range: int = BASE_VISION_RANGE
+var vision_debuff_turns: int = 0
 
 func _ready() -> void:
 	color = Color("#4a90e2")
@@ -46,10 +49,27 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if target_enemy != null:
 		Combat.attack(self, target_enemy)
-		turn_done.emit()
+		_end_turn()
 	elif dungeon and dungeon.grid.is_walkable(target_pos):
 		move_to(target_pos)
-		turn_done.emit()
+		_end_turn()
+
+func _end_turn() -> void:
+	if vision_debuff_turns > 0:
+		vision_debuff_turns -= 1
+		if vision_debuff_turns == 0:
+			vision_range = BASE_VISION_RANGE
+			if dungeon != null:
+				dungeon.update_fov(grid_position, vision_range)
+			print("Player vision restored")
+	turn_done.emit()
+
+func apply_vision_debuff(new_range: int, turns: int) -> void:
+	vision_range = new_range
+	vision_debuff_turns = turns
+	if dungeon != null:
+		dungeon.update_fov(grid_position, vision_range)
+	print("Player vision reduced to %d for %d turns" % [new_range, turns])
 
 func pickup(item: Item) -> void:
 	if item is Weapon:
