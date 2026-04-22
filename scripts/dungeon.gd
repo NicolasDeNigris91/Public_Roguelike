@@ -1,24 +1,29 @@
 class_name Dungeon
 extends Node2D
 
+const WIDTH: int = 30
+const HEIGHT: int = 20
+
 const FLOOR_COLOR := Color("#3a2c24")
 const WALL_COLOR := Color("#6e625a")
 const GRID_LINE_COLOR := Color(0, 0, 0, 0.2)
 
 var grid: Grid
+var rooms: Array[Rect2i] = []
+var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
-	grid = Grid.new(20, 15)
-	_carve_room(Rect2i(1, 1, grid.width - 2, grid.height - 2))
+	rng.randomize()
+	grid = Grid.new(WIDTH, HEIGHT)
+	rooms = DungeonGenerator.generate(grid, rng)
 	queue_redraw()
 
 func grid_to_world(pos: Vector2i) -> Vector2:
 	return Vector2(pos.x, pos.y) * Grid.TILE_SIZE
 
-func _carve_room(rect: Rect2i) -> void:
-	for y in range(rect.position.y, rect.position.y + rect.size.y):
-		for x in range(rect.position.x, rect.position.x + rect.size.x):
-			grid.set_cell(Vector2i(x, y), Grid.CellType.FLOOR)
+func room_center(index: int) -> Vector2i:
+	var r := rooms[index]
+	return Vector2i(r.position.x + r.size.x / 2, r.position.y + r.size.y / 2)
 
 func _draw() -> void:
 	var tile := float(Grid.TILE_SIZE)

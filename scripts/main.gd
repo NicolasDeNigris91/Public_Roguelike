@@ -8,13 +8,15 @@ extends Node2D
 func _ready() -> void:
 	player.dungeon = dungeon
 	player.turn_manager = turn_manager
-	player.move_to(Vector2i(10, 7))
 	player.died.connect(_on_player_died)
 	turn_manager.register_player(player)
 
-	_spawn_slime(Vector2i(14, 7))
+	if dungeon.rooms.size() >= 1:
+		player.move_to(dungeon.room_center(0))
+	if dungeon.rooms.size() >= 2:
+		_spawn_slime(dungeon.room_center(1))
 
-	print("Roguelike booted — Sprint 2 OK")
+	print("Roguelike booted — Sprint 3a OK (%d rooms)" % dungeon.rooms.size())
 
 func _spawn_slime(at: Vector2i) -> void:
 	var slime := Slime.new()
