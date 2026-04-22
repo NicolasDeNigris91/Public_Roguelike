@@ -3,6 +3,7 @@ extends Node
 
 signal turn_changed(is_player_turn: bool)
 
+var dungeon: Dungeon
 var player: Player
 var enemies: Array[Enemy] = []
 var is_player_turn: bool = true
@@ -21,8 +22,11 @@ func _on_player_turn_done() -> void:
 	turn_changed.emit(false)
 
 	for enemy in enemies.duplicate():
-		if is_instance_valid(enemy):
-			enemy.take_turn()
+		if not is_instance_valid(enemy):
+			continue
+		if dungeon != null and not dungeon.is_tile_visible(enemy.grid_position):
+			continue
+		enemy.take_turn()
 
 	is_player_turn = true
 	if is_instance_valid(player):

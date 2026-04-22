@@ -8,10 +8,13 @@ const FLOOR_COLOR := Color("#3a2c24")
 const WALL_COLOR := Color("#6e625a")
 const STAIRS_COLOR := Color("#d4af37")
 const GRID_LINE_COLOR := Color(0, 0, 0, 0.2)
+const MEMORY_DIM: float = 0.35
 
 var grid: Grid
 var rooms: Array[Rect2i] = []
 var stairs_position: Vector2i = Vector2i(-1, -1)
+var visible_tiles: Dictionary = {}
+var explored_tiles: Dictionary = {}
 var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
@@ -19,7 +22,18 @@ func _ready() -> void:
 	_generate_floor()
 
 func regenerate() -> void:
+	visible_tiles.clear()
+	explored_tiles.clear()
 	_generate_floor()
+
+func update_fov(origin: Vector2i) -> void:
+	visible_tiles = FOV.compute(grid, origin)
+	for pos in visible_tiles:
+		explored_tiles[pos] = true
+	queue_redraw()
+
+func is_tile_visible(pos: Vector2i) -> bool:
+	return visible_tiles.has(pos)
 
 func room_center(index: int) -> Vector2i:
 	var r := rooms[index]
@@ -43,6 +57,9 @@ func _draw() -> void:
 	for y in range(grid.height):
 		for x in range(grid.width):
 			var pos := Vector2i(x, y)
+			if not explored_tiles.has(pos):
+				continue
+
 			var cell := grid.get_cell(pos)
 			var fill: Color
 			match cell:
@@ -52,6 +69,12 @@ func _draw() -> void:
 					fill = STAIRS_COLOR
 				_:
 					fill = WALL_COLOR
+
+			var is_seen := visible_tiles.has(pos)
+			if not is_seen:
+				fill = fill.lerp(Color.BLACK, 1.0 - MEMORY_DIM)
+
 			var rect := Rect2(x * tile, y * tile, tile, tile)
 			draw_rect(rect, fill)
-			draw_rect(rect, GRID_LINE_COLOR, false, 1.0)
+			if is_seen:
+				draw_rect(rect, GRID_LINE_COLOR, false, 1.0)

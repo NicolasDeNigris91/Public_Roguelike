@@ -14,10 +14,13 @@ func _ready() -> void:
 	player.turn_manager = turn_manager
 	player.died.connect(_on_player_died)
 	player.moved.connect(_on_player_moved)
+	turn_manager.dungeon = dungeon
 	turn_manager.register_player(player)
 
 	_populate_floor()
-	print("Roguelike booted — Sprint 3b OK | Floor %d, %d rooms" % [current_floor, dungeon.rooms.size()])
+	dungeon.update_fov(player.grid_position)
+	_refresh_enemy_visibility()
+	print("Roguelike booted — Sprint 3c OK | Floor %d, %d rooms" % [current_floor, dungeon.rooms.size()])
 
 func _populate_floor() -> void:
 	if dungeon.rooms.size() >= 1:
@@ -49,13 +52,23 @@ func _descend() -> void:
 
 	dungeon.regenerate()
 	_populate_floor()
+	dungeon.update_fov(player.grid_position)
+	_refresh_enemy_visibility()
 	print("Descended to Floor %d | %d rooms, %d enemies" % [
 		current_floor, dungeon.rooms.size(), turn_manager.enemies.size()
 	])
 
+func _refresh_enemy_visibility() -> void:
+	for enemy in turn_manager.enemies:
+		if is_instance_valid(enemy):
+			enemy.visible = dungeon.is_tile_visible(enemy.grid_position)
+
 func _on_player_moved(to_pos: Vector2i) -> void:
 	if dungeon.grid.get_cell(to_pos) == Grid.CellType.STAIRS:
 		_descend()
+		return
+	dungeon.update_fov(to_pos)
+	_refresh_enemy_visibility()
 
 func _on_player_died() -> void:
 	print("You died on Floor %d" % current_floor)
