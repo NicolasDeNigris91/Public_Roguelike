@@ -52,7 +52,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_end_turn()
 	elif dungeon and dungeon.grid.is_walkable(target_pos):
 		move_to(target_pos)
-		await get_tree().create_timer(MOVE_TWEEN_DURATION).timeout
+		await moved
 		_end_turn()
 
 func _end_turn() -> void:

@@ -15,7 +15,7 @@ const SHAKE_HIT_NORMAL := Vector2(3.0, 0.1)
 const SHAKE_HIT_CRIT := Vector2(6.0, 0.2)
 const SHAKE_DEATH := Vector2(10.0, 0.4)
 
-static var effects_layer: Node = null
+static var effects_layer: Node2D = null
 static var world_node: Node2D = null
 
 static func calculate_damage(attacker: Actor, target: Actor, ignore_def: bool = false) -> Dictionary:
@@ -56,7 +56,7 @@ static func attack(
 		_spawn_damage_number(attacker, healed, false, true)
 
 	if target is Player:
-		_apply_shake(is_crit)
+		_apply_shake(target, is_crit)
 
 	var suffix: String = " (ignores DEF)" if ignore_def else ""
 	if healed > 0:
@@ -110,8 +110,10 @@ static func _spawn_damage_number(target: Actor, amount: int, is_crit: bool, is_h
 	var world_pos: Vector2 = target.position - Vector2(0, 8)
 	DamageNumber.spawn(effects_layer, world_pos, text, color, scale)
 
-static func _apply_shake(is_crit: bool) -> void:
-	if world_node == null:
+static func _apply_shake(target: Actor, is_crit: bool) -> void:
+	# Skip when the target died on this hit — Player.die fires its own bigger
+	# death shake stinger, and we don't want the smaller hit shake to kill its tween.
+	if world_node == null or target.hp <= 0:
 		return
 	var shake: Vector2 = SHAKE_HIT_CRIT if is_crit else SHAKE_HIT_NORMAL
 	Shake.apply(world_node, shake.x, shake.y)
