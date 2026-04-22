@@ -21,6 +21,13 @@ static func axe() -> Weapon:
 	w.atk_bonus = 3
 	return w
 
+static func hammer() -> Weapon:
+	var w := Weapon.new()
+	w.display_name = "Hammer"
+	w.color = Color("#9a8270")
+	w.atk_bonus = 4
+	return w
+
 static func dagger() -> Weapon:
 	var w := Weapon.new()
 	w.display_name = "Dagger"
@@ -79,13 +86,15 @@ static func ring_of_life() -> Ring:
 	return r
 
 static func random_weapon(rng: RandomNumberGenerator) -> Weapon:
-	match rng.randi() % 4:
+	match rng.randi() % 5:
 		0:
 			return short_sword()
 		1:
 			return long_sword()
 		2:
 			return axe()
+		3:
+			return hammer()
 		_:
 			return dagger()
 

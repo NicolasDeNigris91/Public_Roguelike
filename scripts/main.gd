@@ -55,9 +55,30 @@ func _populate_floor() -> void:
 	for i in range(enemy_count):
 		var room_index := i + 1
 		if room_index < dungeon.rooms.size():
-			_spawn_slime(dungeon.room_center(room_index), atk_bonus)
+			_spawn_enemy(dungeon.room_center(room_index), atk_bonus)
 
 	_spawn_items()
+
+func _pick_enemy_type() -> Enemy:
+	var roll := rng.randf()
+	if current_floor <= 2:
+		return Slime.new()
+	if current_floor <= 4:
+		if roll < 0.5:
+			return Skeleton.new()
+		return Slime.new()
+	if roll < 0.3:
+		return Slime.new()
+	return Skeleton.new()
+
+func _spawn_enemy(at: Vector2i, atk_bonus: int) -> void:
+	var enemy := _pick_enemy_type()
+	entity_layer.add_child(enemy)
+	enemy.dungeon = dungeon
+	enemy.turn_manager = turn_manager
+	enemy.atk += atk_bonus
+	enemy.move_to(at)
+	turn_manager.register_enemy(enemy)
 
 func _spawn_items() -> void:
 	var item_count := rng.randi_range(ITEMS_PER_FLOOR_MIN, ITEMS_PER_FLOOR_MAX)
@@ -79,15 +100,6 @@ func _spawn_items() -> void:
 		items_layer.add_child(entity)
 		entity.grid_position = pos
 		spawned += 1
-
-func _spawn_slime(at: Vector2i, atk_bonus: int = 0) -> void:
-	var slime := Slime.new()
-	entity_layer.add_child(slime)
-	slime.dungeon = dungeon
-	slime.turn_manager = turn_manager
-	slime.atk += atk_bonus
-	slime.move_to(at)
-	turn_manager.register_enemy(slime)
 
 func _descend() -> void:
 	current_floor += 1
