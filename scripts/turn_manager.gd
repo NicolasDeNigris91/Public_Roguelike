@@ -24,7 +24,7 @@ func _on_player_turn_done() -> void:
 	for enemy in enemies.duplicate():
 		if not is_instance_valid(enemy):
 			continue
-		if dungeon != null and not dungeon.is_tile_visible(enemy.grid_position):
+		if dungeon != null and not enemy.always_takes_turn and not dungeon.is_tile_visible(enemy.grid_position):
 			continue
 		enemy.take_turn()
 

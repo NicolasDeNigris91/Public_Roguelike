@@ -6,6 +6,7 @@ const DEFAULT_VISION_RANGE: int = 8
 var dungeon: Dungeon
 var turn_manager: TurnManager
 var vision_range: int = DEFAULT_VISION_RANGE
+var always_takes_turn: bool = false
 
 func take_turn() -> void:
 	if turn_manager == null or not is_instance_valid(turn_manager.player):

@@ -30,6 +30,7 @@ func _ready() -> void:
 	atk = 8
 	def = 0
 	vision_range = LICH_VISION_RANGE
+	always_takes_turn = true
 	super._ready()
 
 func take_turn() -> void:
