@@ -26,6 +26,16 @@ func regenerate() -> void:
 	explored_tiles.clear()
 	_generate_floor()
 
+func regenerate_as_boss_arena() -> Dictionary:
+	visible_tiles.clear()
+	explored_tiles.clear()
+	grid = Grid.new(WIDTH, HEIGHT)
+	rooms.clear()
+	stairs_position = Vector2i(-1, -1)
+	var spawns: Dictionary = BossArenaGenerator.generate(grid)
+	queue_redraw()
+	return spawns
+
 func update_fov(origin: Vector2i, radius: int = FOV.RADIUS) -> void:
 	visible_tiles = FOV.compute(grid, origin, radius)
 	for pos in visible_tiles:
