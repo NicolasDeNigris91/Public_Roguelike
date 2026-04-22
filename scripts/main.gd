@@ -10,6 +10,7 @@ const ITEMS_PER_FLOOR_MAX: int = 3
 @onready var player: Player = $World/EntityLayer/Player
 @onready var turn_manager: TurnManager = $TurnManager
 @onready var inventory_ui: InventoryUI = $InventoryUI
+@onready var effects_layer: Node2D = $World/EffectsLayer
 
 var current_floor: int = 1
 var rng := RandomNumberGenerator.new()
@@ -23,6 +24,11 @@ func _ready() -> void:
 	player.moved.connect(_on_player_moved)
 	turn_manager.dungeon = dungeon
 	turn_manager.register_player(player)
+
+	# Combat needs references to the effects layer (for damage numbers) and the World
+	# node (for screen shake). These are static fields populated once at startup.
+	Combat.effects_layer = effects_layer
+	Combat.world_node = $World
 
 	inventory_ui.player = player
 	inventory_ui.item_used.connect(_on_inventory_item_used)
