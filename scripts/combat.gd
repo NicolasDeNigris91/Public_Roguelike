@@ -51,7 +51,7 @@ static func attack(
 
 	target.take_damage(dmg)
 
-	var healed := _apply_lifesteal(attacker, target, dmg, lifesteal_ratio, lifesteal_cap)
+	var healed := _apply_lifesteal(attacker, dmg, lifesteal_ratio, lifesteal_cap)
 	if healed > 0:
 		_spawn_damage_number(attacker, healed, false, true)
 
@@ -78,7 +78,7 @@ static func _is_adjacent(a: Actor, b: Actor) -> bool:
 	var dy: int = absi(a.grid_position.y - b.grid_position.y)
 	return (dx + dy) == 1
 
-static func _apply_lifesteal(attacker: Actor, target: Actor, dmg: int, ratio: float, cap: int) -> int:
+static func _apply_lifesteal(attacker: Actor, dmg: int, ratio: float, cap: int) -> int:
 	if ratio <= 0.0 or attacker.hp <= 0:
 		return 0
 	var effective_cap: int = cap if cap >= 0 else attacker.max_hp
