@@ -9,9 +9,10 @@ static func apply(target: Node2D, intensity: float, duration: float) -> void:
 	var original_pos: Vector2 = target.get_meta("shake_origin", target.position)
 	target.set_meta("shake_origin", original_pos)
 
-	var previous_tween: Tween = target.get_meta("shake_tween", null)
-	if previous_tween != null and previous_tween.is_valid():
-		previous_tween.kill()
+	if target.has_meta("shake_tween"):
+		var previous_tween: Tween = target.get_meta("shake_tween")
+		if previous_tween != null and previous_tween.is_valid():
+			previous_tween.kill()
 
 	var tw := target.create_tween()
 	tw.set_ease(Tween.EASE_OUT)
