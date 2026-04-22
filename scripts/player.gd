@@ -48,8 +48,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	var target_enemy := _enemy_at(target_pos)
 
 	if target_enemy != null:
-		Combat.attack(self, target_enemy)
-		await get_tree().process_frame
+		await Combat.attack(self, target_enemy)
 		_end_turn()
 	elif dungeon and dungeon.grid.is_walkable(target_pos):
 		move_to(target_pos)
@@ -99,6 +98,9 @@ func pickup(item: Item) -> void:
 			print("Bag full, could not pick up %s" % item.display_name)
 
 func die() -> void:
+	if Combat.world_node != null:
+		Shake.apply(Combat.world_node, Combat.SHAKE_DEATH.x, Combat.SHAKE_DEATH.y)
+		HitPause.freeze(get_tree(), 0.1)
 	died.emit()
 	turn_active = false
 
