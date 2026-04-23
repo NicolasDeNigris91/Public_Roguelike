@@ -37,12 +37,18 @@ var _bag_slots: Array = []
 @onready var bag_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/BagContainer
 @onready var tooltip_control: Control = $TooltipControl
 @onready var tooltip_label: Label = $TooltipControl/TooltipPanel/TooltipLabel
+@onready var _mute_indicator: Label = $PanelContainer/MarginContainer/HBoxContainer/MuteIndicator
 
 func _ready() -> void:
 	layer = 5
 	_build_status()
 	_build_equipped()
 	_build_bag()
+	AudioManager.mute_changed.connect(_on_mute_changed)
+	_on_mute_changed(AudioManager.is_muted())
+
+func _on_mute_changed(muted: bool) -> void:
+	_mute_indicator.text = "✕" if muted else "♪"
 
 func _build_status() -> void:
 	var vbox := VBoxContainer.new()
