@@ -5,12 +5,15 @@ signal turn_done
 signal item_dropped(item: Item, pos: Vector2i)
 signal faith_changed(faith: int, max_faith: int)
 
-enum PickupResult {
-	EQUIPPED,               # slot was empty, item equipped directly
-	EQUIPPED_AND_BAGGED_OLD,# new item stronger, old one moved to bag
-	BAGGED,                 # item placed in bag (weaker or consumable or ring-slot-busy)
-	REJECTED_BAG_FULL,      # no room; caller should leave item on floor
-}
+func _play_sfx(sfx: String) -> void:
+	var am := Engine.get_singleton("AudioManager")
+	if am != null:
+		am.play_sfx(sfx)
+
+func _stop_music(fade: float) -> void:
+	var am := Engine.get_singleton("AudioManager")
+	if am != null:
+		am.stop_music(fade)
 
 const BASE_ATK: int = 5
 const BASE_DEF: int = 3
@@ -73,7 +76,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		await Combat.attack(self, target_enemy)
 		_end_turn()
 	elif dungeon and dungeon.grid.is_walkable(target_pos):
-		AudioManager.play_sfx("step")
+		_play_sfx("step")
 		move_to(target_pos)
 		await moved
 		_end_turn()
@@ -131,7 +134,7 @@ func apply_vision_debuff(new_range: int, turns: int) -> void:
 	print("Player vision reduced to %d for %d turns" % [new_range, turns])
 
 func pickup(item: Item) -> void:
-	AudioManager.play_sfx("pickup")
+	_play_sfx("pickup")
 	if item is Weapon:
 		var old := inventory.equip_weapon(item)
 		if old != null:
@@ -158,62 +161,12 @@ func pickup(item: Item) -> void:
 			print("Bag full, could not pick up %s" % item.display_name)
 	_notify_hotbar()
 
-func pickup_item(item: Item) -> PickupResult:
-	if item is Weapon:
-		return _pickup_weapon(item as Weapon)
-	if item is Armor:
-		return _pickup_armor(item as Armor)
-	if item is Ring:
-		return _pickup_ring(item as Ring)
-	# Consumable or other
-	if inventory.add_to_bag(item):
-		return PickupResult.BAGGED
-	return PickupResult.REJECTED_BAG_FULL
-
-func _pickup_weapon(new_weapon: Weapon) -> PickupResult:
-	var equipped: Weapon = inventory.weapon
-	if equipped == null:
-		inventory.weapon = new_weapon
-		return PickupResult.EQUIPPED
-	if new_weapon.atk_bonus > equipped.atk_bonus:
-		if inventory.bag.size() >= Inventory.BAG_SIZE:
-			# Dropping equipped would lose the stronger choice. Keep current, reject.
-			return PickupResult.REJECTED_BAG_FULL
-		inventory.bag.append(equipped)
-		inventory.weapon = new_weapon
-		return PickupResult.EQUIPPED_AND_BAGGED_OLD
-	# Equal or weaker: try to bag the ground item
-	if inventory.add_to_bag(new_weapon):
-		return PickupResult.BAGGED
-	return PickupResult.REJECTED_BAG_FULL
-
-func _pickup_armor(new_armor: Armor) -> PickupResult:
-	var equipped: Armor = inventory.armor
-	if equipped == null:
-		inventory.armor = new_armor
-		return PickupResult.EQUIPPED
-	if new_armor.def_bonus > equipped.def_bonus:
-		if inventory.bag.size() >= Inventory.BAG_SIZE:
-			return PickupResult.REJECTED_BAG_FULL
-		inventory.bag.append(equipped)
-		inventory.armor = new_armor
-		return PickupResult.EQUIPPED_AND_BAGGED_OLD
-	if inventory.add_to_bag(new_armor):
-		return PickupResult.BAGGED
-	return PickupResult.REJECTED_BAG_FULL
-
-func _pickup_ring(new_ring: Ring) -> PickupResult:
-	if inventory.ring == null:
-		inventory.ring = new_ring
-		return PickupResult.EQUIPPED
-	# Rings have varied effects — no scalar tier to compare. Always bag.
-	if inventory.add_to_bag(new_ring):
-		return PickupResult.BAGGED
-	return PickupResult.REJECTED_BAG_FULL
+func pickup_item(item: Item) -> Inventory.PickupResult:
+	return inventory.try_pickup(item)
 
 func die() -> void:
-	AudioManager.play_sfx("player_die")
-	AudioManager.stop_music(0.5)
+	_play_sfx("player_die")
+	_stop_music(0.5)
 	if Combat.world_node != null:
 		Shake.apply(Combat.world_node, Combat.SHAKE_DEATH.x, Combat.SHAKE_DEATH.y)
 		HitPause.freeze(get_tree(), 0.1)
