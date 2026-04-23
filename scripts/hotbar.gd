@@ -44,6 +44,7 @@ var _armor_slot: Dictionary
 var _ring_slot: Dictionary
 var _bag_slots: Array = []
 
+@onready var portrait_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/PortraitContainer
 @onready var status_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/StatusContainer
 @onready var abilities_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/AbilitiesContainer
 @onready var equipped_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/EquippedContainer
@@ -54,6 +55,7 @@ var _bag_slots: Array = []
 
 func _ready() -> void:
 	layer = 5
+	_build_portrait()
 	_build_status()
 	_build_abilities()
 	_build_equipped()
@@ -64,6 +66,35 @@ func _ready() -> void:
 
 func _on_mute_changed(muted: bool) -> void:
 	_mute_indicator.text = "✕" if muted else "♪"
+
+func _build_portrait() -> void:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(56, 56)
+	var stylebox := StyleBoxFlat.new()
+	stylebox.bg_color = SLOT_BG_FILLED
+	stylebox.border_width_left = 1
+	stylebox.border_width_top = 1
+	stylebox.border_width_right = 1
+	stylebox.border_width_bottom = 1
+	stylebox.border_color = SLOT_BORDER
+	stylebox.corner_radius_top_left = 3
+	stylebox.corner_radius_top_right = 3
+	stylebox.corner_radius_bottom_right = 3
+	stylebox.corner_radius_bottom_left = 3
+	stylebox.content_margin_left = 4
+	stylebox.content_margin_top = 4
+	stylebox.content_margin_right = 4
+	stylebox.content_margin_bottom = 4
+	panel.add_theme_stylebox_override("panel", stylebox)
+
+	var icon := TextureRect.new()
+	icon.texture = preload("res://assets/sprites/ui/player_portrait.png")
+	icon.custom_minimum_size = Vector2(48, 48)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	panel.add_child(icon)
+
+	portrait_container.add_child(panel)
 
 func _build_status() -> void:
 	var vbox := VBoxContainer.new()

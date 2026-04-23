@@ -56,10 +56,17 @@ theme_override_constants/margin_bottom = 8
 layout_mode = 2
 theme_override_constants/separation = 16
 
+[node name="PortraitContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+
 [node name="StatusContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
+
+[node name="AbilitiesContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
 
 [node name="EquippedContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
