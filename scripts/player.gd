@@ -4,6 +4,7 @@ extends Actor
 signal turn_done
 signal item_dropped(item: Item, pos: Vector2i)
 signal faith_changed(faith: int, max_faith: int)
+signal stat_increased(stat: StringName, delta: int)
 
 func _play_sfx(sfx: String) -> void:
 	var am := Engine.get_singleton("AudioManager")
@@ -26,6 +27,9 @@ const SMITE_DAMAGE_BONUS: int = 3
 var dungeon: Dungeon
 var turn_manager: TurnManager
 var hotbar: CanvasLayer = null
+var bonus_atk: int = 0
+var bonus_def: int = 0
+var bonus_max_hp: int = 0
 var turn_active: bool = true
 var inventory: Inventory
 var vision_range: int = BASE_VISION_RANGE
@@ -163,14 +167,14 @@ func die() -> void:
 	_notify_hotbar()
 
 func _recalculate_stats() -> void:
-	atk = BASE_ATK
-	def = BASE_DEF
+	atk = BASE_ATK + bonus_atk
+	def = BASE_DEF + bonus_def
 	if inventory.weapon != null:
 		atk += inventory.weapon.atk_bonus
 	if inventory.armor != null:
 		def += inventory.armor.def_bonus
 
-	var new_max_hp := BASE_MAX_HP
+	var new_max_hp := BASE_MAX_HP + bonus_max_hp
 	if inventory.ring != null:
 		new_max_hp += inventory.ring.max_hp_bonus
 
@@ -211,10 +215,13 @@ func restore_state(data: Dictionary) -> void:
 		if item != null:
 			inventory.bag.append(item)
 
-	atk = BASE_ATK
+	bonus_atk = data.get("bonus_atk", 0)
+	bonus_def = data.get("bonus_def", 0)
+	bonus_max_hp = data.get("bonus_max_hp", 0)
+	atk = BASE_ATK + bonus_atk
 	if inventory.weapon != null:
 		atk += inventory.weapon.atk_bonus
-	def = BASE_DEF
+	def = BASE_DEF + bonus_def
 	if inventory.armor != null:
 		def += inventory.armor.def_bonus
 
