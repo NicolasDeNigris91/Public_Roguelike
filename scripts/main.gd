@@ -38,6 +38,10 @@ func _ready() -> void:
 	_populate_floor()
 	dungeon.update_fov(player.grid_position, player.vision_range)
 	_refresh_entity_visibility()
+	if current_floor == 6:
+		AudioManager.play_music("boss", 1.0)
+	else:
+		AudioManager.play_music("explore", 1.0)
 	print("Roguelike booted — Sprint 4b OK | Floor %d, %d rooms" % [current_floor, dungeon.rooms.size()])
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -86,6 +90,7 @@ func _populate_boss_floor() -> void:
 	lich.move_to(spawns["lich_spawn"], false)
 	turn_manager.register_enemy(lich)
 	lich.truly_died.connect(_on_lich_truly_died)
+	AudioManager.play_music("boss", 1.5)
 
 func _pick_enemy_type() -> Enemy:
 	var roll := rng.randf()
@@ -148,6 +153,7 @@ func _spawn_items() -> void:
 		spawned += 1
 
 func _descend() -> void:
+	var was_boss_floor: bool = current_floor == 6
 	current_floor += 1
 
 	for enemy in turn_manager.enemies.duplicate():
@@ -164,6 +170,10 @@ func _descend() -> void:
 	_populate_floor()
 	dungeon.update_fov(player.grid_position, player.vision_range)
 	_refresh_entity_visibility()
+
+	if was_boss_floor:
+		AudioManager.play_music("explore", 1.5)
+
 	print("Descended to Floor %d | %d rooms, %d enemies" % [
 		current_floor, dungeon.rooms.size(), turn_manager.enemies.size()
 	])
