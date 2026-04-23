@@ -1,5 +1,8 @@
 class_name Inventory
 extends RefCounted
+# Holds equipped gear + bag, and owns the pickup routing policy:
+# stronger weapons/armor auto-equip (old goes to bag), weaker go to bag,
+# rings never auto-swap, all else falls back to add_to_bag.
 
 const BAG_SIZE: int = 8
 
