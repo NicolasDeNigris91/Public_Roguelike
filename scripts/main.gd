@@ -223,7 +223,7 @@ func _on_player_item_dropped(item: Item, pos: Vector2i) -> void:
 
 func _on_player_died() -> void:
 	print("You died on Floor %d" % current_floor)
-	game_over_screen.visible = true
+	game_over_screen.show_result()
 
 func _on_lich_truly_died(lich_pos: Vector2i) -> void:
 	RunStats.record_lich_defeated()

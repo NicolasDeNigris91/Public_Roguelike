@@ -5,6 +5,35 @@
 [ext_resource type="Script" uid="uid://pa6rccoh5xmg" path="res://scripts/player.gd" id="3_player"]
 [ext_resource type="Script" uid="uid://bvtyj5ciytli4" path="res://scripts/turn_manager.gd" id="4_tm"]
 [ext_resource type="PackedScene" path="res://scenes/hotbar.tscn" id="6_hotbar"]
+[ext_resource type="Script" path="res://scripts/game_over_screen.gd" id="7_gos"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gos_panel"]
+bg_color = Color(0.06, 0.06, 0.08, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.45, 0.5, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gos_stats"]
+bg_color = Color(0.10, 0.10, 0.13, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.35, 0.4, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
 
 [node name="Main" type="Node2D" unique_id=1505645219]
 script = ExtResource("1_main")
@@ -30,6 +59,7 @@ script = ExtResource("3_player")
 [node name="GameOverScreen" type="CanvasLayer" parent="."]
 layer = 20
 visible = false
+script = ExtResource("7_gos")
 
 [node name="Control" type="Control" parent="GameOverScreen"]
 layout_mode = 3
@@ -43,34 +73,61 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0, 0, 0, 0.75)
+color = Color(0, 0, 0, 0.8)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GameOverScreen/Control"]
+[node name="PanelContainer" type="PanelContainer" parent="GameOverScreen/Control"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -250.0
-offset_top = -70.0
-offset_right = 250.0
-offset_bottom = 70.0
+offset_left = -280.0
+offset_top = -240.0
+offset_right = 280.0
+offset_bottom = 240.0
 grow_horizontal = 2
 grow_vertical = 2
-alignment = 1
-theme_override_constants/separation = 16
+theme_override_styles/panel = SubResource("StyleBoxFlat_gos_panel")
 
-[node name="DeathLabel" type="Label" parent="GameOverScreen/Control/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="GameOverScreen/Control/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GameOverScreen/Control/PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="GameOverScreen/Control/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 48
+theme_override_font_sizes/font_size = 44
 text = "VOCÊ MORREU"
 horizontal_alignment = 1
 
-[node name="HintLabel" type="Label" parent="GameOverScreen/Control/VBoxContainer"]
+[node name="SubtitleLabel" type="Label" parent="GameOverScreen/Control/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.85, 1)
 theme_override_font_sizes/font_size = 16
+text = "A dungeon venceu desta vez."
+horizontal_alignment = 1
+
+[node name="StatsPanel" type="PanelContainer" parent="GameOverScreen/Control/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_gos_stats")
+
+[node name="StatsVBox" type="VBoxContainer" parent="GameOverScreen/Control/PanelContainer/MarginContainer/VBoxContainer/StatsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HintLabel" type="Label" parent="GameOverScreen/Control/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
+theme_override_font_sizes/font_size = 18
 text = "Pressione R para tentar novamente"
 horizontal_alignment = 1
 
