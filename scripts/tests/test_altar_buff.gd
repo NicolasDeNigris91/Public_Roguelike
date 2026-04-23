@@ -7,6 +7,9 @@ func _init() -> void:
 	_test_armor_yields_def_plus_two()
 	_test_ring_yields_max_hp_plus_four()
 	_test_consumable_is_not_applicable()
+	_test_weapon_secondary_is_hp()
+	_test_armor_secondary_is_hp()
+	_test_ring_has_no_secondary()
 	print("PASS test_altar_buff")
 	quit()
 
@@ -62,3 +65,19 @@ func _test_consumable_is_not_applicable() -> void:
 	# non-Weapon/Armor/Ring items would take).
 	var result := AltarBuff.compute(_plain_item())
 	assert(result["applicable"] == false, "plain Item should not be sacrificable")
+
+func _test_weapon_secondary_is_hp() -> void:
+	var result := AltarBuff.compute(_weapon())
+	var secondary: Dictionary = result.get("secondary", {})
+	assert(secondary.get(AltarBuff.STAT_MAX_HP, 0) == 1, "weapon should grant +1 HP secondary")
+	assert(not secondary.has(AltarBuff.STAT_DEF), "weapon should not grant DEF secondary")
+
+func _test_armor_secondary_is_hp() -> void:
+	var result := AltarBuff.compute(_armor())
+	var secondary: Dictionary = result.get("secondary", {})
+	assert(secondary.get(AltarBuff.STAT_MAX_HP, 0) == 1, "armor should grant +1 HP secondary")
+
+func _test_ring_has_no_secondary() -> void:
+	var result := AltarBuff.compute(_ring())
+	var secondary: Dictionary = result.get("secondary", {})
+	assert(secondary.is_empty(), "ring should have no secondary bonuses (primary is already HP)")

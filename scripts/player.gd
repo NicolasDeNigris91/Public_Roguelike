@@ -179,29 +179,50 @@ func apply_altar_buff(item: Item) -> bool:
 	var buff := AltarBuff.compute(item)
 	if not buff["applicable"]:
 		return false
-	var stat: StringName = buff["stat"]
-	var raw_delta: int = buff["delta"]
+	var primary_stat: StringName = buff["stat"]
+	var primary_delta: int = buff["delta"]
+	var primary_applied := _apply_altar_delta(primary_stat, primary_delta)
+	# Secondary bonuses (e.g. weapon -> +1 HP as well) go through the same
+	# per-act cap but do NOT flash the hotbar; only the primary stat gets the
+	# gold-pulse feedback so the player reads the sacrifice at a glance.
+	var secondary: Dictionary = buff.get("secondary", {})
+	var any_secondary_applied := false
+	for stat: StringName in secondary.keys():
+		if _apply_altar_delta(stat, int(secondary[stat])) > 0:
+			any_secondary_applied = true
+	if primary_applied > 0:
+		stat_increased.emit(primary_stat, primary_applied)
+	elif any_secondary_applied:
+		# Primary was capped but some secondary still landed — no primary
+		# flash. Nothing else to do: the secondaries mutated stats silently.
+		pass
+	else:
+		# Nothing landed: the dark god takes the offering but grants nothing
+		# because every relevant stat is capped for this act.
+		print("Altar accepts the offering, but the darkness is sated for this act.")
+	# Return true so the caller consumes the item + altar visuals regardless.
+	return true
+
+# Applies a single stat delta respecting the per-act cap. Returns how much
+# actually landed (0 if the cap was already reached).
+func _apply_altar_delta(stat: StringName, raw_delta: int) -> int:
+	if raw_delta <= 0:
+		return 0
 	var cap: int = int(ActConfig.ALTAR_CAP_PER_ACT.get(stat, 0))
 	var current_gain: int = int(altar_gains_this_act.get(stat, 0))
-	# Clamp so a partial sacrifice near the cap only grants the remainder.
-	var effective_delta: int = maxi(0, mini(raw_delta, cap - current_gain))
-	if effective_delta > 0:
-		altar_gains_this_act[stat] = current_gain + effective_delta
-		match stat:
-			AltarBuff.STAT_ATK:
-				bonus_atk += effective_delta
-			AltarBuff.STAT_DEF:
-				bonus_def += effective_delta
-			AltarBuff.STAT_MAX_HP:
-				bonus_max_hp += effective_delta
-		_recalculate_stats()
-		stat_increased.emit(stat, effective_delta)
-	else:
-		# Cap already reached this act. The item + altar still go (the dark
-		# god takes the offering) but Benedict's power does not rise.
-		print("Altar accepts the offering, but the darkness is sated for this act.")
-	# Return true so the caller consumes the item + altar visuals.
-	return true
+	var effective: int = maxi(0, mini(raw_delta, cap - current_gain))
+	if effective <= 0:
+		return 0
+	altar_gains_this_act[stat] = current_gain + effective
+	match stat:
+		AltarBuff.STAT_ATK:
+			bonus_atk += effective
+		AltarBuff.STAT_DEF:
+			bonus_def += effective
+		AltarBuff.STAT_MAX_HP:
+			bonus_max_hp += effective
+	_recalculate_stats()
+	return effective
 
 func reset_altar_cap() -> void:
 	altar_gains_this_act = {&"atk": 0, &"def": 0, &"max_hp": 0}
