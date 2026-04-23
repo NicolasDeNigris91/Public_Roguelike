@@ -31,6 +31,7 @@ var _sfx_players: Array[AudioStreamPlayer] = []
 var _sfx_next_idx: int = 0
 var _music_player: AudioStreamPlayer
 var _current_music_key: String = ""
+var _music_tween: Tween = null
 
 func _enter_tree() -> void:
 	_ensure_buses()
@@ -81,35 +82,41 @@ func play_music(key: String, fade_duration: float = 1.5) -> void:
 		(new_stream as AudioStreamOggVorbis).loop = true
 
 	_current_music_key = key
+	_kill_music_tween()
 
 	if _music_player.playing:
-		var fade_out := create_tween()
+		_music_tween = create_tween()
 		var half: float = fade_duration / 2.0
-		fade_out.tween_property(_music_player, "volume_db", -80.0, half)
-		fade_out.tween_callback(func() -> void:
+		_music_tween.tween_property(_music_player, "volume_db", -80.0, half)
+		_music_tween.tween_callback(func() -> void:
 			_music_player.stream = new_stream
 			_music_player.volume_db = -80.0
 			_music_player.play()
-			var fade_in := create_tween()
-			fade_in.tween_property(_music_player, "volume_db", 0.0, half)
 		)
+		_music_tween.tween_property(_music_player, "volume_db", 0.0, half)
 	else:
 		_music_player.stream = new_stream
 		_music_player.volume_db = -80.0
 		_music_player.play()
-		var fade_in := create_tween()
-		fade_in.tween_property(_music_player, "volume_db", 0.0, fade_duration)
+		_music_tween = create_tween()
+		_music_tween.tween_property(_music_player, "volume_db", 0.0, fade_duration)
 
 func stop_music(fade_duration: float = 0.5) -> void:
+	_kill_music_tween()
 	if not _music_player.playing:
 		_current_music_key = ""
 		return
-	var fade := create_tween()
-	fade.tween_property(_music_player, "volume_db", -80.0, fade_duration)
-	fade.tween_callback(func() -> void:
+	_music_tween = create_tween()
+	_music_tween.tween_property(_music_player, "volume_db", -80.0, fade_duration)
+	_music_tween.tween_callback(func() -> void:
 		_music_player.stop()
 		_current_music_key = ""
 	)
+
+func _kill_music_tween() -> void:
+	if _music_tween != null and _music_tween.is_valid():
+		_music_tween.kill()
+	_music_tween = null
 
 func set_bus_volume_db(bus_name: String, db: float) -> void:
 	var idx: int = AudioServer.get_bus_index(bus_name)

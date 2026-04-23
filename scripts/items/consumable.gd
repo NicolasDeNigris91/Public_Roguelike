@@ -15,10 +15,10 @@ func use_on(target: Actor) -> bool:
 	return false
 
 func _heal(target: Actor) -> bool:
-	AudioManager.play_sfx("use_potion")
 	if target.hp >= target.max_hp:
 		print("%s: already at full HP" % display_name)
 		return false
+	AudioManager.play_sfx("use_potion")
 	var before_hp: int = target.hp
 	var heal_amount: int
 	if effect == Effect.HEAL_FULL:
@@ -35,7 +35,6 @@ func _heal(target: Actor) -> bool:
 	return true
 
 func _teleport(target: Actor) -> bool:
-	AudioManager.play_sfx("use_scroll")
 	if not (target is Player):
 		return false
 	var player := target as Player
@@ -55,6 +54,7 @@ func _teleport(target: Actor) -> bool:
 	if candidates.is_empty():
 		return false
 
+	AudioManager.play_sfx("use_scroll")
 	var destination: Vector2i = candidates[randi() % candidates.size()]
 	player.move_to(destination, false)
 	print("Used %s — teleported to %s" % [display_name, str(destination)])
