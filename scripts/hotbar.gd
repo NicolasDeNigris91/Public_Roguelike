@@ -102,6 +102,12 @@ func _build_status() -> void:
 	vbox.add_theme_constant_override("separation", 4)
 	status_container.add_child(vbox)
 
+	var name_label := Label.new()
+	name_label.text = "Benedict Rosarius"
+	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.55, 1))
+	vbox.add_child(name_label)
+
 	var hp_row := HBoxContainer.new()
 	hp_row.add_theme_constant_override("separation", 8)
 	vbox.add_child(hp_row)
@@ -294,7 +300,7 @@ func _refresh_abilities() -> void:
 	panel.add_theme_stylebox_override("panel", stylebox)
 
 func _on_portrait_hover() -> void:
-	_show_tooltip("Paladino\nClasse de combate corpo-a-corpo com Holy Smite (Q) e fé renovável ao matar inimigos.")
+	_show_tooltip("Benedict Rosarius, Paladino\nClasse de combate corpo-a-corpo com Holy Smite (Q) e fé renovável ao matar inimigos.")
 
 func _on_hp_hover() -> void:
 	if player == null:
