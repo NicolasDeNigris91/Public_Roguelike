@@ -12,6 +12,7 @@ const ITEMS_PER_FLOOR_MAX: int = 3
 @onready var hotbar: CanvasLayer = $Hotbar
 @onready var effects_layer: Node2D = $World/EffectsLayer
 @onready var game_over_screen: CanvasLayer = $GameOverScreen
+@onready var pause_menu: CanvasLayer = $PauseMenu
 
 var current_floor: int = 1
 var rng := RandomNumberGenerator.new()
@@ -59,6 +60,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.keycode == KEY_R:
 			get_tree().reload_current_scene()
 			get_viewport().set_input_as_handled()
+		return
+	if event.keycode == KEY_ESCAPE:
+		if pause_menu.visible:
+			pause_menu.close()
+		else:
+			pause_menu.open()
+		get_viewport().set_input_as_handled()
+		return
+	if pause_menu.visible:
 		return
 	if not player.turn_active:
 		return

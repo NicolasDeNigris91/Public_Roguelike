@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://bvtyj5ciytli4" path="res://scripts/turn_manager.gd" id="4_tm"]
 [ext_resource type="PackedScene" path="res://scenes/hotbar.tscn" id="6_hotbar"]
 [ext_resource type="Script" path="res://scripts/game_over_screen.gd" id="7_gos"]
+[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="8_pm"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gos_panel"]
 bg_color = Color(0.06, 0.06, 0.08, 0.98)
@@ -132,3 +133,5 @@ text = "Pressione R para tentar novamente"
 horizontal_alignment = 1
 
 [node name="Hotbar" parent="." instance=ExtResource("6_hotbar")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("8_pm")]
