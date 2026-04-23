@@ -4,8 +4,6 @@ extends CanvasLayer
 
 signal consumable_used(slot_idx: int)
 
-const MAX_FLOOR: int = 6
-
 const HP_BAR_SIZE := Vector2(120, 16)
 
 const HP_COLOR_LOW := Color(0.85, 0.15, 0.15, 1)
