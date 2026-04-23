@@ -202,7 +202,6 @@ func _descend() -> void:
 	var was_boss_floor: bool = current_floor == 6
 	current_floor += 1
 	RunStats.record_floor(current_floor)
-	SaveManager.save(current_floor, player, altars_layer.get_children())
 
 	for enemy in turn_manager.enemies.duplicate():
 		if is_instance_valid(enemy):
@@ -221,6 +220,13 @@ func _descend() -> void:
 	_populate_floor()
 	dungeon.update_fov(player.grid_position, player.vision_range)
 	_refresh_entity_visibility()
+
+	# Save AFTER the new floor is populated so the serialized altar state
+	# matches the floor the player is actually on. Saving before _populate_floor
+	# would persist the previous floor's altars with the new floor number,
+	# which on reload would place altars at coordinates that may be walls
+	# on the regenerated dungeon.
+	SaveManager.save(current_floor, player, altars_layer.get_children())
 
 	if was_boss_floor:
 		AudioManager.play_music("explore", 1.5)
@@ -275,8 +281,12 @@ func _spawn_altar() -> void:
 
 func _restore_altars_from_data(data: Array) -> void:
 	for entry in data:
+		var pos := Vector2i(int(entry.get("x", 0)), int(entry.get("y", 0)))
+		if not dungeon.grid.in_bounds(pos) or not dungeon.grid.is_walkable(pos):
+			push_warning("Skipping restored altar at invalid pos %s" % pos)
+			continue
 		var altar := AltarScene.instantiate() as Altar
-		altar.grid_position = Vector2i(int(entry.get("x", 0)), int(entry.get("y", 0)))
+		altar.grid_position = pos
 		altar.consumed = bool(entry.get("consumed", false))
 		altars_layer.add_child(altar)
 
