@@ -46,10 +46,26 @@ static func attack(
 	if _is_adjacent(attacker, target):
 		await attacker.nudge_toward(target.grid_position)
 
+	# SFX: hit sound (melee or ranged) + crit overlay
+	if _is_adjacent(attacker, target):
+		AudioManager.play_sfx("melee_hit")
+	else:
+		AudioManager.play_sfx("ranged_hit")
+	if is_crit:
+		AudioManager.play_sfx("crit")
+
 	target.flash_white()
 	_spawn_damage_number(target, dmg, is_crit, false)
 
 	target.take_damage(dmg)
+
+	# SFX: target-specific post-hit sounds
+	if target.hp <= 0:
+		if not (target is Player):
+			AudioManager.play_sfx("enemy_die")
+		# Player death SFX is handled by Player.die() in Task 3.
+	elif target is Player:
+		AudioManager.play_sfx("player_hurt")
 
 	var healed := _apply_lifesteal(attacker, dmg, lifesteal_ratio, lifesteal_cap)
 	if healed > 0:
