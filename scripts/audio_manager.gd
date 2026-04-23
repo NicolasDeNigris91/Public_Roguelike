@@ -108,14 +108,16 @@ func play_music(key: String, fade_duration: float = 1.5) -> void:
 
 func stop_music(fade_duration: float = 0.5) -> void:
 	_kill_music_tween()
+	# Clear the key immediately (not in the callback) so a play_music() call
+	# during the fade-out — e.g. scene reload after player death — isn't
+	# falsely treated as a no-op by the "already playing this key" guard.
+	_current_music_key = ""
 	if not _music_player.playing:
-		_current_music_key = ""
 		return
 	_music_tween = create_tween()
 	_music_tween.tween_property(_music_player, "volume_db", -80.0, fade_duration)
 	_music_tween.tween_callback(func() -> void:
 		_music_player.stop()
-		_current_music_key = ""
 	)
 
 func _kill_music_tween() -> void:
