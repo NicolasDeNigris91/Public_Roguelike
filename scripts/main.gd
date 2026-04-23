@@ -52,7 +52,6 @@ func _ready() -> void:
 	Combat.world_node = $World
 
 	hotbar.player = player
-	hotbar.current_floor = current_floor
 	hotbar.consumable_used.connect(_on_hotbar_consumable_used)
 	player.hotbar = hotbar
 	player.stat_increased.connect(hotbar.on_stat_increased)
@@ -232,7 +231,6 @@ func _descend() -> void:
 	if was_boss_floor:
 		AudioManager.play_music("explore", 1.5)
 
-	hotbar.current_floor = current_floor
 	hotbar.refresh()
 	print("Descended to Floor %d | %d rooms, %d enemies" % [
 		current_floor, dungeon.rooms.size(), turn_manager.enemies.size()

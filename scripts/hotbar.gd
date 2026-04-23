@@ -27,14 +27,12 @@ const ABILITY_DISABLED_MODULATE := Color(0.4, 0.4, 0.4, 0.55)
 const HOLY_SMITE_ICON: Texture2D = preload("res://assets/sprites/abilities/holy_smite.png")
 
 var player: Player
-var current_floor: int = 1
 
 var _sacrifice_mode: bool = false
 var _sacrifice_prompt: Label
 
 var _hp_bar: ProgressBar
 var _hp_label: Label
-var _floor_label: Label
 var _atk_label: Label
 var _def_label: Label
 
@@ -127,19 +125,6 @@ func _build_status() -> void:
 	_hp_label.mouse_exited.connect(_hide_tooltip)
 	hp_row.add_child(_hp_label)
 
-	var info_row := HBoxContainer.new()
-	info_row.add_theme_constant_override("separation", 12)
-	vbox.add_child(info_row)
-
-	_floor_label = Label.new()
-	_floor_label.text = "Andar 1/%d" % MAX_FLOOR
-	_floor_label.add_theme_font_size_override("font_size", 14)
-	_floor_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
-	_floor_label.mouse_filter = Control.MOUSE_FILTER_STOP
-	_floor_label.mouse_entered.connect(_on_floor_hover)
-	_floor_label.mouse_exited.connect(_hide_tooltip)
-	info_row.add_child(_floor_label)
-
 	var stats_row := HBoxContainer.new()
 	stats_row.add_theme_constant_override("separation", 10)
 	vbox.add_child(stats_row)
@@ -168,7 +153,6 @@ func _refresh_status() -> void:
 	_hp_bar.max_value = player.max_hp
 	_hp_bar.value = player.hp
 	_hp_label.text = "%d/%d" % [player.hp, player.max_hp]
-	_floor_label.text = "Andar %d/%d" % [current_floor, MAX_FLOOR]
 
 	# HP color: red→yellow→green via two-stage lerp
 	var ratio: float = 0.0
@@ -317,9 +301,6 @@ func _on_hp_hover() -> void:
 		_show_tooltip("Vida")
 		return
 	_show_tooltip("Vida: %d / %d\nMate inimigos ou use poções para recuperar." % [player.hp, player.max_hp])
-
-func _on_floor_hover() -> void:
-	_show_tooltip("Andar atual %d de %d\nDesça pelas escadas para progredir. O Lich espera no último." % [current_floor, MAX_FLOOR])
 
 func _on_atk_hover() -> void:
 	if player == null:
