@@ -13,7 +13,7 @@ script = ExtResource("1_main")
 script = ExtResource("4_tm")
 
 [node name="World" type="Node2D" parent="." unique_id=652567308]
-position = Vector2(160, 40)
+position = Vector2(160, 4)
 
 [node name="Dungeon" type="Node2D" parent="World" unique_id=1613314449]
 script = ExtResource("2_dungeon")
