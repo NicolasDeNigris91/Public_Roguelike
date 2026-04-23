@@ -17,6 +17,7 @@ const ITEMS_PER_FLOOR_MAX: int = 3
 @onready var pause_menu: CanvasLayer = $PauseMenu
 
 var current_floor: int = 1
+var _altar_under_player: Altar = null
 var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
@@ -60,6 +61,7 @@ func _ready() -> void:
 	else:
 		AudioManager.play_music("explore", 1.0)
 	hotbar.refresh()
+	hotbar.set_sacrifice_mode(false)
 	print("Roguelike booted — Sprint 4b OK | Floor %d, %d rooms" % [current_floor, dungeon.rooms.size()])
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -91,7 +93,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.keycode >= KEY_1 and event.keycode <= KEY_8:
 		var slot: int = event.keycode - KEY_1
-		hotbar.use_consumable_slot(slot)
+		if _altar_under_player != null and _altar_under_player.is_active():
+			_try_sacrifice(slot)
+		else:
+			hotbar.use_consumable_slot(slot)
 		get_viewport().set_input_as_handled()
 
 func _populate_floor() -> void:
@@ -270,6 +275,8 @@ func _try_pickup(pos: Vector2i) -> void:
 		entity.queue_free()
 
 func _on_player_moved(to_pos: Vector2i) -> void:
+	_altar_under_player = _altar_at(to_pos)
+	hotbar.set_sacrifice_mode(_altar_under_player != null and _altar_under_player.is_active())
 	if dungeon.grid.get_cell(to_pos) == Grid.CellType.STAIRS:
 		AudioManager.play_sfx("descend")
 		_descend()
@@ -301,6 +308,27 @@ func _on_lich_truly_died(lich_pos: Vector2i) -> void:
 	turn_manager.enemies = turn_manager.enemies.filter(func(e): return is_instance_valid(e))
 	dungeon.redraw_cell(lich_pos)
 	print("O Lich foi derrotado. Uma escada aparece.")
+
+func _try_sacrifice(slot: int) -> void:
+	if _altar_under_player == null or not _altar_under_player.is_active():
+		return
+	if slot < 0 or slot >= player.inventory.bag.size():
+		hotbar.flash_slot_invalid(slot)
+		return
+	var item: Item = player.inventory.bag[slot]
+	if item is Consumable:
+		hotbar.flash_slot_invalid(slot)
+		return
+	var applied: bool = player.apply_altar_buff(item)
+	if not applied:
+		hotbar.flash_slot_invalid(slot)
+		return
+	player.inventory.bag.remove_at(slot)
+	_altar_under_player.consume()
+	AudioManager.play_sfx("sacrifice")
+	hotbar.set_sacrifice_mode(false)
+	hotbar.refresh()
+	player.turn_done.emit()
 
 func _on_hotbar_consumable_used(slot_idx: int) -> void:
 	if slot_idx >= player.inventory.bag.size():

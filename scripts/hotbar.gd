@@ -20,20 +20,27 @@ const SLOT_BG_FILLED := Color(0.14, 0.14, 0.17, 0.95)
 const SLOT_BG_EMPTY := Color(0.10, 0.10, 0.12, 0.95)
 const SLOT_BORDER := Color(0.4, 0.4, 0.45, 1)
 
+const FAITH_COLOR := Color(1.0, 0.85, 0.35, 1)
+const PIP_EMPTY := Color(0.25, 0.25, 0.28, 1)
+const PIP_SIZE := Vector2(6, 6)
+const ABILITY_DISABLED_MODULATE := Color(0.4, 0.4, 0.4, 0.55)
+const HOLY_SMITE_ICON: Texture2D = preload("res://assets/sprites/abilities/holy_smite.png")
+
 var player: Player
 var current_floor: int = 1
 
 var _hp_bar: ProgressBar
 var _hp_label: Label
 var _floor_label: Label
-var _faith_label: Label
 
+var _smite_slot: Dictionary
 var _weapon_slot: Dictionary
 var _armor_slot: Dictionary
 var _ring_slot: Dictionary
 var _bag_slots: Array = []
 
 @onready var status_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/StatusContainer
+@onready var abilities_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/AbilitiesContainer
 @onready var equipped_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/EquippedContainer
 @onready var bag_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/BagContainer
 @onready var tooltip_control: Control = $TooltipControl
@@ -43,6 +50,7 @@ var _bag_slots: Array = []
 func _ready() -> void:
 	layer = 5
 	_build_status()
+	_build_abilities()
 	_build_equipped()
 	_build_bag()
 	AudioManager.mute_changed.connect(_on_mute_changed)
@@ -83,12 +91,6 @@ func _build_status() -> void:
 	_floor_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
 	info_row.add_child(_floor_label)
 
-	_faith_label = Label.new()
-	_faith_label.text = "Fé 0/3"
-	_faith_label.add_theme_font_size_override("font_size", 14)
-	_faith_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35, 1))  # gold
-	info_row.add_child(_faith_label)
-
 func _refresh_status() -> void:
 	if player == null:
 		return
@@ -96,7 +98,6 @@ func _refresh_status() -> void:
 	_hp_bar.value = player.hp
 	_hp_label.text = "%d/%d" % [player.hp, player.max_hp]
 	_floor_label.text = "Andar %d/%d" % [current_floor, MAX_FLOOR]
-	_faith_label.text = "Fé %d/%d" % [player.faith, Player.MAX_FAITH]
 
 	# HP color: red→yellow→green via two-stage lerp
 	var ratio: float = 0.0
@@ -115,6 +116,117 @@ func _refresh_status() -> void:
 	fill_style.corner_radius_bottom_right = 2
 	fill_style.corner_radius_bottom_left = 2
 	_hp_bar.add_theme_stylebox_override("fill", fill_style)
+
+func _build_abilities() -> void:
+	_smite_slot = _build_ability_slot(HOLY_SMITE_ICON, "Q")
+
+func _build_ability_slot(icon_tex: Texture2D, hotkey: String) -> Dictionary:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = EQUIPPED_SLOT_SIZE
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 4)
+	margin.add_theme_constant_override("margin_top", 4)
+	margin.add_theme_constant_override("margin_right", 4)
+	margin.add_theme_constant_override("margin_bottom", 4)
+	panel.add_child(margin)
+
+	var stack := Control.new()
+	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stack.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	margin.add_child(stack)
+
+	var key_label := Label.new()
+	key_label.text = hotkey
+	key_label.add_theme_font_size_override("font_size", 10)
+	key_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
+	key_label.position = Vector2(0, 0)
+	stack.add_child(key_label)
+
+	var icon := TextureRect.new()
+	icon.texture = icon_tex
+	icon.expand_mode = TextureRect.EXPAND_FIT_HEIGHT_PROPORTIONAL
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.anchor_left = 0.5
+	icon.anchor_top = 0.0
+	icon.anchor_right = 0.5
+	icon.anchor_bottom = 0.0
+	icon.offset_left = -16.0
+	icon.offset_top = 2.0
+	icon.offset_right = 16.0
+	icon.offset_bottom = 34.0
+	stack.add_child(icon)
+
+	var pips_row := HBoxContainer.new()
+	pips_row.add_theme_constant_override("separation", 3)
+	pips_row.anchor_left = 0.5
+	pips_row.anchor_top = 1.0
+	pips_row.anchor_right = 0.5
+	pips_row.anchor_bottom = 1.0
+	pips_row.offset_left = -12.0
+	pips_row.offset_top = -8.0
+	pips_row.offset_right = 12.0
+	pips_row.offset_bottom = 0.0
+	stack.add_child(pips_row)
+
+	var pips: Array = []
+	for i in range(Player.MAX_FAITH):
+		var pip := ColorRect.new()
+		pip.custom_minimum_size = PIP_SIZE
+		pip.color = PIP_EMPTY
+		pips_row.add_child(pip)
+		pips.append(pip)
+
+	abilities_container.add_child(panel)
+
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	var slot_data := {"panel": panel, "icon": icon, "pips": pips, "key_label": key_label}
+	panel.mouse_entered.connect(_on_smite_hover)
+	panel.mouse_exited.connect(_hide_tooltip)
+	return slot_data
+
+func _refresh_abilities() -> void:
+	if player == null:
+		return
+	var panel: PanelContainer = _smite_slot["panel"]
+	var icon: TextureRect = _smite_slot["icon"]
+	var pips: Array = _smite_slot["pips"]
+
+	var available: bool = player.faith > 0
+
+	icon.modulate = Color.WHITE if available else ABILITY_DISABLED_MODULATE
+
+	for i in range(pips.size()):
+		var pip: ColorRect = pips[i]
+		pip.color = FAITH_COLOR if i < player.faith else PIP_EMPTY
+
+	var stylebox := StyleBoxFlat.new()
+	stylebox.border_width_left = 1
+	stylebox.border_width_top = 1
+	stylebox.border_width_right = 1
+	stylebox.border_width_bottom = 1
+	stylebox.border_color = FAITH_COLOR if available else SLOT_BORDER
+	stylebox.corner_radius_top_left = 3
+	stylebox.corner_radius_top_right = 3
+	stylebox.corner_radius_bottom_right = 3
+	stylebox.corner_radius_bottom_left = 3
+	stylebox.content_margin_left = 4
+	stylebox.content_margin_top = 4
+	stylebox.content_margin_right = 4
+	stylebox.content_margin_bottom = 4
+	stylebox.bg_color = SLOT_BG_FILLED if available else SLOT_BG_EMPTY
+	panel.add_theme_stylebox_override("panel", stylebox)
+
+func _on_smite_hover() -> void:
+	if player == null:
+		_show_tooltip("Holy Smite (Q)")
+		return
+	var body: String
+	if player.faith > 0:
+		body = "Atira na última direção andada (%d casas). Custa 1 fé." % Player.SMITE_RANGE
+	else:
+		body = "Sem fé. Mate inimigos para recarregar (máx %d)." % Player.MAX_FAITH
+	_show_tooltip("Holy Smite (Q)\n%s" % body)
 
 func _build_equipped_slot() -> Dictionary:
 	var panel := PanelContainer.new()
@@ -283,6 +395,7 @@ func _refresh_bag() -> void:
 
 func refresh() -> void:
 	_refresh_status()
+	_refresh_abilities()
 	_refresh_equipped()
 	_refresh_bag()
 
@@ -355,6 +468,14 @@ func _reposition_tooltip() -> void:
 func _process(_delta: float) -> void:
 	if tooltip_control.visible:
 		_reposition_tooltip()
+
+# Stub — implemented in Task 9
+func set_sacrifice_mode(_enabled: bool) -> void:
+	pass
+
+# Stub — implemented in Task 9
+func flash_slot_invalid(_slot: int) -> void:
+	pass
 
 func use_consumable_slot(idx: int) -> void:
 	if player == null:
