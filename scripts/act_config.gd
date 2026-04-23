@@ -11,6 +11,16 @@ const BOSS_FLOORS: Array[int] = [6, 18]
 const BIOME_BASTION: StringName = &"bastion"
 const BIOME_CATACOMBS: StringName = &"catacombs"
 
+# Per-act soft cap on altar stat gains. Once the player hits these totals
+# within a single act, further sacrifices still consume the item and the
+# altar, but grant 0 stat. Resets when crossing into the next act.
+# Keys match AltarBuff.STAT_* constants.
+const ALTAR_CAP_PER_ACT := {
+	&"atk": 4,
+	&"def": 4,
+	&"max_hp": 8,
+}
+
 static func is_boss_floor(floor: int) -> bool:
 	return floor in BOSS_FLOORS
 
@@ -35,3 +45,15 @@ static func biome_for_floor(floor: int) -> StringName:
 # Today that's the end of Act 2 (18). When Acts 3-5 ship, this becomes floor 48.
 static func is_final_boss_floor(floor: int) -> bool:
 	return floor == MAX_FLOOR and is_boss_floor(floor)
+
+# Returns the act number (1-5) that contains this floor.
+static func act_for_floor(floor: int) -> int:
+	if floor <= 6:
+		return 1
+	if floor <= 18:
+		return 2
+	if floor <= 30:
+		return 3
+	if floor <= 42:
+		return 4
+	return 5

@@ -30,6 +30,15 @@ var hotbar: CanvasLayer = null
 var bonus_atk: int = 0
 var bonus_def: int = 0
 var bonus_max_hp: int = 0
+# Per-act running totals of altar-granted stats. Reset by main.gd.reset_altar_cap
+# when the player descends into a new act (ActConfig.act_for_floor changes).
+# Sacrifices that would push gain past the per-act cap still consume the item
+# and altar but grant 0 stat.
+var altar_gains_this_act: Dictionary = {
+	&"atk": 0,
+	&"def": 0,
+	&"max_hp": 0,
+}
 var turn_active: bool = true
 var inventory: Inventory
 var vision_range: int = BASE_VISION_RANGE
@@ -171,17 +180,31 @@ func apply_altar_buff(item: Item) -> bool:
 	if not buff["applicable"]:
 		return false
 	var stat: StringName = buff["stat"]
-	var delta: int = buff["delta"]
-	match stat:
-		AltarBuff.STAT_ATK:
-			bonus_atk += delta
-		AltarBuff.STAT_DEF:
-			bonus_def += delta
-		AltarBuff.STAT_MAX_HP:
-			bonus_max_hp += delta
-	_recalculate_stats()
-	stat_increased.emit(stat, delta)
+	var raw_delta: int = buff["delta"]
+	var cap: int = int(ActConfig.ALTAR_CAP_PER_ACT.get(stat, 0))
+	var current_gain: int = int(altar_gains_this_act.get(stat, 0))
+	# Clamp so a partial sacrifice near the cap only grants the remainder.
+	var effective_delta: int = maxi(0, mini(raw_delta, cap - current_gain))
+	if effective_delta > 0:
+		altar_gains_this_act[stat] = current_gain + effective_delta
+		match stat:
+			AltarBuff.STAT_ATK:
+				bonus_atk += effective_delta
+			AltarBuff.STAT_DEF:
+				bonus_def += effective_delta
+			AltarBuff.STAT_MAX_HP:
+				bonus_max_hp += effective_delta
+		_recalculate_stats()
+		stat_increased.emit(stat, effective_delta)
+	else:
+		# Cap already reached this act. The item + altar still go (the dark
+		# god takes the offering) but Benedict's power does not rise.
+		print("Altar accepts the offering, but the darkness is sated for this act.")
+	# Return true so the caller consumes the item + altar visuals.
 	return true
+
+func reset_altar_cap() -> void:
+	altar_gains_this_act = {&"atk": 0, &"def": 0, &"max_hp": 0}
 
 func _recalculate_stats() -> void:
 	atk = BASE_ATK + bonus_atk
@@ -235,6 +258,12 @@ func restore_state(data: Dictionary) -> void:
 	bonus_atk = data.get("bonus_atk", 0)
 	bonus_def = data.get("bonus_def", 0)
 	bonus_max_hp = data.get("bonus_max_hp", 0)
+	var saved_gains: Dictionary = data.get("altar_gains_this_act", {})
+	altar_gains_this_act = {
+		&"atk": int(saved_gains.get("atk", 0)),
+		&"def": int(saved_gains.get("def", 0)),
+		&"max_hp": int(saved_gains.get("max_hp", 0)),
+	}
 	atk = BASE_ATK + bonus_atk
 	if inventory.weapon != null:
 		atk += inventory.weapon.atk_bonus

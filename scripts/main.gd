@@ -217,8 +217,17 @@ func _spawn_items() -> void:
 
 func _descend() -> void:
 	var was_boss_floor: bool = ActConfig.is_boss_floor(current_floor)
+	var prev_act: int = ActConfig.act_for_floor(current_floor)
 	current_floor += 1
 	RunStats.record_floor(current_floor)
+
+	# Crossing into a new act resets the altar stat cap, giving the player
+	# a fresh +4/+4/+8 budget per act so altar engagement stays rewarding
+	# without inflating stats into the oblivion tier.
+	var new_act: int = ActConfig.act_for_floor(current_floor)
+	if new_act != prev_act:
+		player.reset_altar_cap()
+		print("Entered Act %d — altar cap reset." % new_act)
 
 	for enemy in turn_manager.enemies.duplicate():
 		if is_instance_valid(enemy):

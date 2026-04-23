@@ -94,8 +94,17 @@ func _serialize_player(player: Player) -> Dictionary:
 		"bonus_atk": player.bonus_atk,
 		"bonus_def": player.bonus_def,
 		"bonus_max_hp": player.bonus_max_hp,
+		"altar_gains_this_act": _serialize_altar_gains(player.altar_gains_this_act),
 		"equipped": equipped,
 		"bag": bag,
+	}
+
+# JSON objects use strings for keys, so convert StringName keys to String.
+func _serialize_altar_gains(gains: Dictionary) -> Dictionary:
+	return {
+		"atk": int(gains.get(&"atk", 0)),
+		"def": int(gains.get(&"def", 0)),
+		"max_hp": int(gains.get(&"max_hp", 0)),
 	}
 
 func _id_or_null(item: Item) -> Variant:
