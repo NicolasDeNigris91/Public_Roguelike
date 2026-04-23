@@ -18,6 +18,7 @@ const ITEMS_PER_FLOOR_MAX: int = 3
 
 var current_floor: int = 1
 var _altar_under_player: Altar = null
+var _altar_sacrifice_made_this_visit: bool = false
 var _restore_altars: Array = []
 var rng := RandomNumberGenerator.new()
 
@@ -299,8 +300,16 @@ func _try_pickup(pos: Vector2i) -> void:
 		entity.queue_free()
 
 func _on_player_moved(to_pos: Vector2i) -> void:
-	_altar_under_player = _altar_at(to_pos)
-	hotbar.set_sacrifice_mode(_altar_under_player != null and _altar_under_player.is_active())
+	var new_altar := _altar_at(to_pos)
+	# Leaving an altar consumes it, but only if we actually sacrificed at
+	# least once during this visit. Walking across an altar without using
+	# it leaves it active for future visits.
+	if _altar_under_player != null and _altar_under_player != new_altar:
+		if _altar_sacrifice_made_this_visit and _altar_under_player.is_active():
+			_altar_under_player.consume()
+		_altar_sacrifice_made_this_visit = false
+	_altar_under_player = new_altar
+	hotbar.set_sacrifice_mode(new_altar != null and new_altar.is_active())
 	if dungeon.grid.get_cell(to_pos) == Grid.CellType.STAIRS:
 		AudioManager.play_sfx("descend")
 		_descend()
@@ -348,9 +357,11 @@ func _try_sacrifice(slot: int) -> void:
 		hotbar.flash_slot_invalid(slot)
 		return
 	player.inventory.bag.remove_at(slot)
-	_altar_under_player.consume()
+	_altar_sacrifice_made_this_visit = true
+	# Altar stays active while the player is standing on it — multiple
+	# sacrifices per visit are allowed. It only consumes when the player
+	# leaves the tile (see _on_player_moved). Sacrifice mode stays on.
 	AudioManager.play_sfx("sacrifice")
-	hotbar.set_sacrifice_mode(false)
 	hotbar.refresh()
 	player.turn_done.emit()
 
