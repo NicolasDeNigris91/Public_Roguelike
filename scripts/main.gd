@@ -138,13 +138,15 @@ func _populate_boss_floor() -> void:
 	boss.turn_manager = turn_manager
 	boss.move_to(spawns["lich_spawn"], false)  # key reused for any boss spawn
 	turn_manager.register_enemy(boss)
-	# Lich, DeathKnight, and Abomination all emit truly_died(Vector2i).
+	# All act bosses emit truly_died(Vector2i) when their final death lands.
 	if boss is Lich:
 		(boss as Lich).truly_died.connect(_on_boss_truly_died)
 	elif boss is DeathKnight:
 		(boss as DeathKnight).truly_died.connect(_on_boss_truly_died)
 	elif boss is Abomination:
 		(boss as Abomination).truly_died.connect(_on_boss_truly_died)
+	elif boss is FireGiant:
+		(boss as FireGiant).truly_died.connect(_on_boss_truly_died)
 	AudioManager.play_music("boss", 1.5)
 
 func _pick_enemy_type() -> Enemy:
@@ -203,14 +205,40 @@ func _pick_enemy_type() -> Enemy:
 		if roll < 0.85:
 			return Necrophage.new()
 		return Mage.new()
-	# Late Act 3 (26-29)
-	if roll < 0.3:
-		return RottingHulk.new()
-	if roll < 0.6:
+	if current_floor <= 29:
+		# Late Act 3 (26-29)
+		if roll < 0.3:
+			return RottingHulk.new()
+		if roll < 0.6:
+			return FlayedGhost.new()
+		if roll < 0.85:
+			return Mage.new()
+		return Wraith.new()
+	# Act 4 — Burning Halls (31-41, boss on 42)
+	if current_floor <= 33:
+		# Early Act 4: introduce Imp + first demons. Rotting Hulk carryover.
+		if roll < 0.4:
+			return Imp.new()
+		if roll < 0.7:
+			return RottingHulk.new()
 		return FlayedGhost.new()
+	if current_floor <= 37:
+		# Mid Act 4: add Hell Hound as pack melee.
+		if roll < 0.3:
+			return Imp.new()
+		if roll < 0.6:
+			return HellHound.new()
+		if roll < 0.85:
+			return RottingHulk.new()
+		return Salamander.new()
+	# Late Act 4 (38-41)
+	if roll < 0.3:
+		return HellHound.new()
+	if roll < 0.6:
+		return Salamander.new()
 	if roll < 0.85:
-		return Mage.new()
-	return Wraith.new()
+		return Imp.new()
+	return RottingHulk.new()
 
 func _spawn_enemy(at: Vector2i, atk_bonus: int) -> void:
 	var enemy := _pick_enemy_type()

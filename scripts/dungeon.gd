@@ -27,6 +27,7 @@ var memory_layer: TileMapLayer
 var _bastion_tileset: TileSet
 var _catacombs_tileset: TileSet
 var _blood_sanctum_tileset: TileSet
+var _burning_halls_tileset: TileSet
 
 func _ready() -> void:
 	rng.randomize()
@@ -36,6 +37,7 @@ func _ready() -> void:
 	# Duplicate (deep) so editing the clone does not mutate the loaded resource.
 	_catacombs_tileset = _build_biome_tileset("floor_catacombs", "wall_catacombs")
 	_blood_sanctum_tileset = _build_biome_tileset("floor_blood_sanctum", "wall_blood_sanctum")
+	_burning_halls_tileset = _build_biome_tileset("floor_burning_halls", "wall_burning_halls")
 
 	memory_layer = TileMapLayer.new()
 	memory_layer.tile_set = _bastion_tileset
@@ -56,6 +58,8 @@ func set_biome(biome: StringName) -> void:
 			target = _catacombs_tileset
 		ActConfig.BIOME_BLOOD_SANCTUM:
 			target = _blood_sanctum_tileset
+		ActConfig.BIOME_BURNING_HALLS:
+			target = _burning_halls_tileset
 	visible_layer.tile_set = target
 	memory_layer.tile_set = target
 

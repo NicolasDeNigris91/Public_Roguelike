@@ -13,6 +13,10 @@ const _ACTORS := {
 	"flayed_ghost": preload("res://assets/sprites/actors/flayed_ghost.png"),
 	"rotting_hulk": preload("res://assets/sprites/actors/rotting_hulk.png"),
 	"abomination":  preload("res://assets/sprites/actors/abomination.png"),
+	"imp":          preload("res://assets/sprites/actors/imp.png"),
+	"hell_hound":   preload("res://assets/sprites/actors/hell_hound.png"),
+	"salamander":   preload("res://assets/sprites/actors/salamander.png"),
+	"fire_giant":   preload("res://assets/sprites/actors/fire_giant.png"),
 }
 
 const _ITEMS := {
@@ -66,6 +70,8 @@ const _TILES := {
 	"wall_catacombs":       preload("res://assets/tiles/wall_catacombs.png"),
 	"floor_blood_sanctum":  preload("res://assets/tiles/floor_blood_sanctum.png"),
 	"wall_blood_sanctum":   preload("res://assets/tiles/wall_blood_sanctum.png"),
+	"floor_burning_halls":  preload("res://assets/tiles/floor_burning_halls.png"),
+	"wall_burning_halls":   preload("res://assets/tiles/wall_burning_halls.png"),
 	"stairs_down":      preload("res://assets/tiles/stairs_down.png"),
 	"floor_n":          preload("res://assets/tiles/floor_borders/floor_n.png"),
 	"floor_s":          preload("res://assets/tiles/floor_borders/floor_s.png"),
