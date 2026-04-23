@@ -51,6 +51,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		await Combat.attack(self, target_enemy)
 		_end_turn()
 	elif dungeon and dungeon.grid.is_walkable(target_pos):
+		AudioManager.play_sfx("step")
 		move_to(target_pos)
 		await moved
 		_end_turn()
@@ -73,6 +74,7 @@ func apply_vision_debuff(new_range: int, turns: int) -> void:
 	print("Player vision reduced to %d for %d turns" % [new_range, turns])
 
 func pickup(item: Item) -> void:
+	AudioManager.play_sfx("pickup")
 	if item is Weapon:
 		var old := inventory.equip_weapon(item)
 		if old != null:
@@ -98,6 +100,8 @@ func pickup(item: Item) -> void:
 			print("Bag full, could not pick up %s" % item.display_name)
 
 func die() -> void:
+	AudioManager.play_sfx("player_die")
+	AudioManager.stop_music(0.5)
 	if Combat.world_node != null:
 		Shake.apply(Combat.world_node, Combat.SHAKE_DEATH.x, Combat.SHAKE_DEATH.y)
 		HitPause.freeze(get_tree(), 0.1)

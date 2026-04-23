@@ -15,6 +15,7 @@ func use_on(target: Actor) -> bool:
 	return false
 
 func _heal(target: Actor) -> bool:
+	AudioManager.play_sfx("use_potion")
 	if target.hp >= target.max_hp:
 		print("%s: already at full HP" % display_name)
 		return false
@@ -34,6 +35,7 @@ func _heal(target: Actor) -> bool:
 	return true
 
 func _teleport(target: Actor) -> bool:
+	AudioManager.play_sfx("use_scroll")
 	if not (target is Player):
 		return false
 	var player := target as Player
