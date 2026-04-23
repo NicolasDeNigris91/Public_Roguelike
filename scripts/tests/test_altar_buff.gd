@@ -3,9 +3,9 @@
 extends SceneTree
 
 func _init() -> void:
-	_test_weapon_yields_atk_plus_one()
-	_test_armor_yields_def_plus_one()
-	_test_ring_yields_max_hp_plus_two()
+	_test_weapon_yields_atk_plus_two()
+	_test_armor_yields_def_plus_two()
+	_test_ring_yields_max_hp_plus_four()
 	_test_consumable_is_not_applicable()
 	print("PASS test_altar_buff")
 	quit()
@@ -37,23 +37,23 @@ func _plain_item() -> Item:
 	i.display_name = "plain"
 	return i
 
-func _test_weapon_yields_atk_plus_one() -> void:
+func _test_weapon_yields_atk_plus_two() -> void:
 	var result := AltarBuff.compute(_weapon())
 	assert(result["applicable"] == true, "weapon should be sacrificable")
 	assert(result["stat"] == AltarBuff.STAT_ATK, "expected atk, got %s" % result["stat"])
-	assert(result["delta"] == 1, "expected delta 1, got %s" % result["delta"])
+	assert(result["delta"] == 2, "expected delta 2, got %s" % result["delta"])
 
-func _test_armor_yields_def_plus_one() -> void:
+func _test_armor_yields_def_plus_two() -> void:
 	var result := AltarBuff.compute(_armor())
 	assert(result["applicable"] == true)
 	assert(result["stat"] == AltarBuff.STAT_DEF)
-	assert(result["delta"] == 1)
+	assert(result["delta"] == 2)
 
-func _test_ring_yields_max_hp_plus_two() -> void:
+func _test_ring_yields_max_hp_plus_four() -> void:
 	var result := AltarBuff.compute(_ring())
 	assert(result["applicable"] == true)
 	assert(result["stat"] == AltarBuff.STAT_MAX_HP)
-	assert(result["delta"] == 2)
+	assert(result["delta"] == 4)
 
 func _test_consumable_is_not_applicable() -> void:
 	# Note: we don't construct Consumable because consumable.gd may transitively

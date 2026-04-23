@@ -11,9 +11,9 @@ const STAT_MAX_HP: StringName = &"max_hp"
 #   {applicable: false}                                — item cannot be sacrificed
 static func compute(item: Item) -> Dictionary:
 	if item is Weapon:
-		return {"applicable": true, "stat": STAT_ATK, "delta": 1}
+		return {"applicable": true, "stat": STAT_ATK, "delta": 2}
 	if item is Armor:
-		return {"applicable": true, "stat": STAT_DEF, "delta": 1}
+		return {"applicable": true, "stat": STAT_DEF, "delta": 2}
 	if item is Ring:
-		return {"applicable": true, "stat": STAT_MAX_HP, "delta": 2}
+		return {"applicable": true, "stat": STAT_MAX_HP, "delta": 4}
 	return {"applicable": false}

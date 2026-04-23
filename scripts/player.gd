@@ -16,9 +16,9 @@ func _stop_music(fade: float) -> void:
 	if am != null:
 		am.stop_music(fade)
 
-const BASE_ATK: int = 5
+const BASE_ATK: int = 6
 const BASE_DEF: int = 3
-const BASE_MAX_HP: int = 20
+const BASE_MAX_HP: int = 25
 const BASE_VISION_RANGE: int = 8
 const MAX_FAITH: int = 3
 const SMITE_RANGE: int = 5
