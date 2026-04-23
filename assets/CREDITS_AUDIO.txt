@@ -1,0 +1,27 @@
+Audio Credits
+=============
+
+Sound Effects (SFX) — Kenney Audio Packs (CC0, no attribution required)
+-----------------------------------------------------------------------
+All 16 SFX under assets/audio/sfx/ sourced from:
+- Kenney "RPG Audio"        https://kenney.nl/assets/rpg-audio
+- Kenney "Impact Sounds"    https://kenney.nl/assets/impact-sounds
+- Kenney "Interface Sounds" https://kenney.nl/assets/interface-sounds
+- Kenney "Sci-Fi Sounds"    https://kenney.nl/assets/sci-fi-sounds
+
+License: CC0 1.0 Universal (public domain). Attribution optional.
+
+
+Music — Eric Matyas / soundimage.org (CC-BY, attribution REQUIRED)
+------------------------------------------------------------------
+- assets/audio/music/explore.ogg  — "Secret Tunnels (Looping)"
+- assets/audio/music/boss.ogg     — "Ancient Troops Amassing"
+
+Composed by Eric Matyas.
+License: Creative Commons Attribution 4.0 International (CC-BY 4.0).
+Website: https://soundimage.org/
+
+Required attribution (must appear in-game Credits screen and/or README):
+
+    Music by Eric Matyas
+    https://soundimage.org/
