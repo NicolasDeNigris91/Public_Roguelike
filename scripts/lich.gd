@@ -103,6 +103,7 @@ func _phase_2_turn(player: Player, dist: int, has_los: bool) -> bool:
 
 func _phase_3_turn(player: Player, dist: int, has_los: bool) -> bool:
 	if has_los and breu_cooldown == 0:
+		AudioManager.play_sfx("breu_cast")
 		player.apply_vision_debuff(BREU_VISION_RANGE, BREU_DURATION)
 		breu_cooldown = BREU_COOLDOWN_MAX
 		print("Lich casts Breu — player sight fades")
@@ -137,6 +138,7 @@ func die() -> void:
 		breu_cooldown = 0
 		queue_redraw()
 		flash_white()
+		AudioManager.play_sfx("lich_revive")
 		if Combat.world_node != null:
 			Shake.apply(Combat.world_node, 5.0, 0.3)
 			HitPause.freeze(get_tree(), 0.2)
@@ -176,6 +178,7 @@ func _is_valid_summon_tile(pos: Vector2i) -> bool:
 	return true
 
 func _summon_skeleton(at: Vector2i) -> void:
+	AudioManager.play_sfx("summon")
 	var skel := Skeleton.new()
 	get_parent().add_child(skel)
 	skel.dungeon = dungeon

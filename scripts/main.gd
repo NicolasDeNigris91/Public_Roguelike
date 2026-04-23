@@ -189,6 +189,7 @@ func _try_pickup(pos: Vector2i) -> void:
 
 func _on_player_moved(to_pos: Vector2i) -> void:
 	if dungeon.grid.get_cell(to_pos) == Grid.CellType.STAIRS:
+		AudioManager.play_sfx("descend")
 		_descend()
 		return
 	_try_pickup(to_pos)

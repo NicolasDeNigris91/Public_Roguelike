@@ -16,10 +16,12 @@ func _ready() -> void:
 	visible = false
 
 func open() -> void:
+	AudioManager.play_sfx("ui_open")
 	visible = true
 	refresh()
 
 func close() -> void:
+	AudioManager.play_sfx("ui_close")
 	visible = false
 	closed.emit()
 
