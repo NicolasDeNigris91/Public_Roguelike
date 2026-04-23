@@ -60,6 +60,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.keycode == KEY_R:
 			get_tree().reload_current_scene()
 			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_ESCAPE:
+			AudioManager.stop_music(0.3)
+			get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+			get_viewport().set_input_as_handled()
 		return
 	if event.keycode == KEY_ESCAPE:
 		if pause_menu.visible:
