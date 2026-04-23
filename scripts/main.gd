@@ -18,6 +18,7 @@ const ITEMS_PER_FLOOR_MAX: int = 3
 
 var current_floor: int = 1
 var _altar_under_player: Altar = null
+var _restore_altars: Array = []
 var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
@@ -34,6 +35,7 @@ func _ready() -> void:
 		current_floor = save_state.get("floor", 1)
 		RunStats.from_dict(save_state.get("run_stats", {}))
 		player.restore_state(save_state.get("player", {}))
+		_restore_altars = save_state.get("altars", [])
 
 	player.dungeon = dungeon
 	player.turn_manager = turn_manager
@@ -116,7 +118,11 @@ func _populate_floor() -> void:
 			_spawn_enemy(dungeon.room_center(room_index), atk_bonus)
 
 	_spawn_items()
-	_spawn_altar()
+	if _restore_altars.is_empty():
+		_spawn_altar()
+	else:
+		_restore_altars_from_data(_restore_altars)
+		_restore_altars = []  # consume once, subsequent floors spawn fresh
 
 func _populate_boss_floor() -> void:
 	var spawns: Dictionary = dungeon.regenerate_as_boss_arena()
@@ -196,7 +202,7 @@ func _descend() -> void:
 	var was_boss_floor: bool = current_floor == 6
 	current_floor += 1
 	RunStats.record_floor(current_floor)
-	SaveManager.save(current_floor, player)
+	SaveManager.save(current_floor, player, altars_layer.get_children())
 
 	for enemy in turn_manager.enemies.duplicate():
 		if is_instance_valid(enemy):
@@ -266,6 +272,13 @@ func _spawn_altar() -> void:
 		altars_layer.add_child(altar)
 		return
 	push_warning("Could not place altar on floor %d after 30 attempts" % current_floor)
+
+func _restore_altars_from_data(data: Array) -> void:
+	for entry in data:
+		var altar := AltarScene.instantiate() as Altar
+		altar.grid_position = Vector2i(int(entry.get("x", 0)), int(entry.get("y", 0)))
+		altar.consumed = bool(entry.get("consumed", false))
+		altars_layer.add_child(altar)
 
 func _try_pickup(pos: Vector2i) -> void:
 	var entity := _item_at(pos)
