@@ -10,9 +10,9 @@ config_version=5
 
 [application]
 
-config/name="Roguelike"
+config/name="Cripta do Lich"
 config/description="Turn-based grid roguelike — portfolio piece."
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
