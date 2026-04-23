@@ -147,6 +147,8 @@ func _populate_boss_floor() -> void:
 		(boss as Abomination).truly_died.connect(_on_boss_truly_died)
 	elif boss is FireGiant:
 		(boss as FireGiant).truly_died.connect(_on_boss_truly_died)
+	elif boss is DemonLord:
+		(boss as DemonLord).truly_died.connect(_on_boss_truly_died)
 	AudioManager.play_music("boss", 1.5)
 
 func _pick_enemy_type() -> Enemy:
@@ -231,14 +233,31 @@ func _pick_enemy_type() -> Enemy:
 		if roll < 0.85:
 			return RottingHulk.new()
 		return Salamander.new()
-	# Late Act 4 (38-41)
-	if roll < 0.3:
-		return HellHound.new()
-	if roll < 0.6:
+	if current_floor <= 41:
+		# Late Act 4 (38-41)
+		if roll < 0.3:
+			return HellHound.new()
+		if roll < 0.6:
+			return Salamander.new()
+		if roll < 0.85:
+			return Imp.new()
+		return RottingHulk.new()
+	# Act 5 — Infernal Throne (43-47, Demon Lord on 48)
+	if current_floor <= 45:
+		# Early Act 5: Hellwing intro, heavier demons start showing.
+		if roll < 0.4:
+			return Hellwing.new()
+		if roll < 0.7:
+			return HellHound.new()
 		return Salamander.new()
+	# Late Act 5 (46-47) — Executioner elites anchor the line before the Demon Lord.
+	if roll < 0.35:
+		return Executioner.new()
+	if roll < 0.65:
+		return Hellwing.new()
 	if roll < 0.85:
-		return Imp.new()
-	return RottingHulk.new()
+		return Salamander.new()
+	return HellHound.new()
 
 func _spawn_enemy(at: Vector2i, atk_bonus: int) -> void:
 	var enemy := _pick_enemy_type()

@@ -28,6 +28,7 @@ var _bastion_tileset: TileSet
 var _catacombs_tileset: TileSet
 var _blood_sanctum_tileset: TileSet
 var _burning_halls_tileset: TileSet
+var _infernal_throne_tileset: TileSet
 
 func _ready() -> void:
 	rng.randomize()
@@ -38,6 +39,7 @@ func _ready() -> void:
 	_catacombs_tileset = _build_biome_tileset("floor_catacombs", "wall_catacombs")
 	_blood_sanctum_tileset = _build_biome_tileset("floor_blood_sanctum", "wall_blood_sanctum")
 	_burning_halls_tileset = _build_biome_tileset("floor_burning_halls", "wall_burning_halls")
+	_infernal_throne_tileset = _build_biome_tileset("floor_infernal_throne", "wall_infernal_throne")
 
 	memory_layer = TileMapLayer.new()
 	memory_layer.tile_set = _bastion_tileset
@@ -60,6 +62,8 @@ func set_biome(biome: StringName) -> void:
 			target = _blood_sanctum_tileset
 		ActConfig.BIOME_BURNING_HALLS:
 			target = _burning_halls_tileset
+		ActConfig.BIOME_INFERNAL_THRONE:
+			target = _infernal_throne_tileset
 	visible_layer.tile_set = target
 	memory_layer.tile_set = target
 
