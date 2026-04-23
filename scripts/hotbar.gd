@@ -13,6 +13,8 @@ const HP_COLOR_MID := Color(0.85, 0.75, 0.15, 1)
 const HP_COLOR_HIGH := Color(0.20, 0.75, 0.25, 1)
 
 const EQUIPPED_SLOT_SIZE := Vector2(48, 64)
+const BAG_SLOT_SIZE := Vector2(44, 58)
+const BAG_SLOT_COUNT: int = 8
 const SLOT_ICON_SIZE: int = 32
 const SLOT_BG_FILLED := Color(0.14, 0.14, 0.17, 0.95)
 const SLOT_BG_EMPTY := Color(0.10, 0.10, 0.12, 0.95)
@@ -28,6 +30,7 @@ var _floor_label: Label
 var _weapon_slot: Dictionary
 var _armor_slot: Dictionary
 var _ring_slot: Dictionary
+var _bag_slots: Array = []
 
 @onready var status_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/StatusContainer
 @onready var equipped_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/EquippedContainer
@@ -37,6 +40,7 @@ func _ready() -> void:
 	layer = 5
 	_build_status()
 	_build_equipped()
+	_build_bag()
 
 func _build_status() -> void:
 	var vbox := VBoxContainer.new()
@@ -171,10 +175,84 @@ func _set_equipped_slot(slot: Dictionary, item: Item, stat_name: String) -> void
 
 	panel.add_theme_stylebox_override("panel", stylebox)
 
+func _build_bag() -> void:
+	for i in range(BAG_SLOT_COUNT):
+		var panel := PanelContainer.new()
+		panel.custom_minimum_size = BAG_SLOT_SIZE
+
+		var margin := MarginContainer.new()
+		margin.add_theme_constant_override("margin_left", 4)
+		margin.add_theme_constant_override("margin_top", 4)
+		margin.add_theme_constant_override("margin_right", 4)
+		margin.add_theme_constant_override("margin_bottom", 4)
+		panel.add_child(margin)
+
+		var stack := Control.new()
+		stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		stack.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		margin.add_child(stack)
+
+		var number_label := Label.new()
+		number_label.text = str(i + 1)
+		number_label.add_theme_font_size_override("font_size", 10)
+		number_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
+		number_label.position = Vector2(0, 0)
+		stack.add_child(number_label)
+
+		var icon := TextureRect.new()
+		icon.custom_minimum_size = Vector2(SLOT_ICON_SIZE, SLOT_ICON_SIZE)
+		icon.expand_mode = TextureRect.EXPAND_FIT_HEIGHT_PROPORTIONAL
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.anchor_left = 0.5
+		icon.anchor_top = 0.5
+		icon.anchor_right = 0.5
+		icon.anchor_bottom = 0.5
+		icon.offset_left = -16.0
+		icon.offset_top = -16.0
+		icon.offset_right = 16.0
+		icon.offset_bottom = 16.0
+		stack.add_child(icon)
+
+		bag_container.add_child(panel)
+
+		_bag_slots.append({"panel": panel, "icon": icon, "number_label": number_label})
+
+func _refresh_bag() -> void:
+	if player == null:
+		return
+	var bag := player.inventory.bag
+
+	for i in range(BAG_SLOT_COUNT):
+		var slot: Dictionary = _bag_slots[i]
+		var panel: PanelContainer = slot["panel"]
+		var icon: TextureRect = slot["icon"]
+
+		var stylebox := StyleBoxFlat.new()
+		stylebox.border_width_left = 1
+		stylebox.border_width_top = 1
+		stylebox.border_width_right = 1
+		stylebox.border_width_bottom = 1
+		stylebox.border_color = SLOT_BORDER
+		stylebox.corner_radius_top_left = 3
+		stylebox.corner_radius_top_right = 3
+		stylebox.corner_radius_bottom_right = 3
+		stylebox.corner_radius_bottom_left = 3
+
+		if i < bag.size():
+			var item: Item = bag[i]
+			stylebox.bg_color = SLOT_BG_FILLED
+			icon.visible = true
+			icon.texture = item.texture
+		else:
+			stylebox.bg_color = SLOT_BG_EMPTY
+			icon.visible = false
+
+		panel.add_theme_stylebox_override("panel", stylebox)
+
 func refresh() -> void:
 	_refresh_status()
 	_refresh_equipped()
-	# _refresh_bag added in Task 5.
+	_refresh_bag()
 
 func use_consumable_slot(idx: int) -> void:
 	if player == null:
