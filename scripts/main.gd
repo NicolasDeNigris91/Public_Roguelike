@@ -52,6 +52,7 @@ func _ready() -> void:
 	hotbar.current_floor = current_floor
 	hotbar.consumable_used.connect(_on_hotbar_consumable_used)
 	player.hotbar = hotbar
+	player.stat_increased.connect(hotbar.on_stat_increased)
 
 	_populate_floor()
 	dungeon.update_fov(player.grid_position, player.vision_range)

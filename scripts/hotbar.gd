@@ -35,6 +35,8 @@ var _sacrifice_prompt: Label
 var _hp_bar: ProgressBar
 var _hp_label: Label
 var _floor_label: Label
+var _atk_label: Label
+var _def_label: Label
 
 var _smite_slot: Dictionary
 var _weapon_slot: Dictionary
@@ -95,6 +97,22 @@ func _build_status() -> void:
 	_floor_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
 	info_row.add_child(_floor_label)
 
+	var stats_row := HBoxContainer.new()
+	stats_row.add_theme_constant_override("separation", 10)
+	vbox.add_child(stats_row)
+
+	_atk_label = Label.new()
+	_atk_label.text = "⚔ 0"
+	_atk_label.add_theme_font_size_override("font_size", 14)
+	_atk_label.add_theme_color_override("font_color", Color(0.95, 0.6, 0.35, 1))
+	stats_row.add_child(_atk_label)
+
+	_def_label = Label.new()
+	_def_label.text = "🛡 0"
+	_def_label.add_theme_font_size_override("font_size", 14)
+	_def_label.add_theme_color_override("font_color", Color(0.4, 0.75, 0.95, 1))
+	stats_row.add_child(_def_label)
+
 func _refresh_status() -> void:
 	if player == null:
 		return
@@ -120,6 +138,27 @@ func _refresh_status() -> void:
 	fill_style.corner_radius_bottom_right = 2
 	fill_style.corner_radius_bottom_left = 2
 	_hp_bar.add_theme_stylebox_override("fill", fill_style)
+
+	_atk_label.text = "⚔ %d" % player.atk
+	_def_label.text = "🛡 %d" % player.def
+
+func on_stat_increased(stat: StringName, _delta: int) -> void:
+	var target: Label = null
+	match stat:
+		&"atk":
+			target = _atk_label
+		&"def":
+			target = _def_label
+		&"max_hp":
+			target = _hp_label
+	if target == null:
+		return
+	target.pivot_offset = target.size / 2.0
+	var tween := create_tween()
+	tween.tween_property(target, "scale", Vector2(1.3, 1.3), 0.15)
+	tween.parallel().tween_property(target, "modulate", Color(1.3, 1.1, 0.4, 1), 0.15)
+	tween.tween_property(target, "scale", Vector2.ONE, 0.25)
+	tween.parallel().tween_property(target, "modulate", Color.WHITE, 0.25)
 
 func _build_abilities() -> void:
 	_smite_slot = _build_ability_slot(HOLY_SMITE_ICON, "Q")
