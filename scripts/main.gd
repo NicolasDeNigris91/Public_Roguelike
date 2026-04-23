@@ -18,6 +18,7 @@ var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
 	rng.randomize()
+	RunStats.reset()
 
 	player.dungeon = dungeon
 	player.turn_manager = turn_manager
@@ -159,6 +160,7 @@ func _spawn_items() -> void:
 func _descend() -> void:
 	var was_boss_floor: bool = current_floor == 6
 	current_floor += 1
+	RunStats.record_floor(current_floor)
 
 	for enemy in turn_manager.enemies.duplicate():
 		if is_instance_valid(enemy):
@@ -224,6 +226,7 @@ func _on_player_died() -> void:
 	game_over_screen.visible = true
 
 func _on_lich_truly_died(lich_pos: Vector2i) -> void:
+	RunStats.record_lich_defeated()
 	dungeon.grid.set_cell(lich_pos, Grid.CellType.STAIRS)
 	dungeon.stairs_position = lich_pos
 	for enemy in turn_manager.enemies.duplicate():

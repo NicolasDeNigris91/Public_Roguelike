@@ -59,10 +59,14 @@ static func attack(
 
 	target.take_damage(dmg)
 
+	if attacker is Player:
+		RunStats.record_damage_dealt(dmg)
+
 	# SFX: target-specific post-hit sounds
 	if target.hp <= 0:
 		if not (target is Player):
 			AudioManager.play_sfx("enemy_die")
+			RunStats.record_kill()
 			if attacker is Player:
 				(attacker as Player).gain_faith()
 		# Player death SFX is handled by Player.die() in Task 3.
@@ -99,8 +103,10 @@ static func smite(attacker: Player, target: Enemy) -> void:
 		var world_pos: Vector2 = target.position - Vector2(0, 8)
 		DamageNumber.spawn(effects_layer, world_pos, "%d!" % dmg, DMG_COLOR_CRIT, 1.2)
 	target.take_damage(dmg)
+	RunStats.record_damage_dealt(dmg)
 	if target.hp <= 0:
 		AudioManager.play_sfx("enemy_die")
+		RunStats.record_kill()
 		attacker.gain_faith()
 	print("%s smites %s for %d (target HP: %d/%d)" % [
 		attacker.name, target.name, dmg, target.hp, target.max_hp

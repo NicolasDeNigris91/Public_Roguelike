@@ -87,6 +87,7 @@ func gain_faith() -> void:
 	if faith >= MAX_FAITH:
 		return
 	faith += 1
+	RunStats.record_faith_gained()
 	faith_changed.emit(faith, MAX_FAITH)
 	_notify_hotbar()
 
@@ -105,6 +106,7 @@ func _find_smite_target(direction: Vector2i) -> Enemy:
 	return null
 
 func _end_turn() -> void:
+	RunStats.record_turn()
 	if vision_debuff_turns > 0:
 		vision_debuff_turns -= 1
 		if vision_debuff_turns == 0:
@@ -127,6 +129,7 @@ func pickup(item: Item) -> void:
 		var old := inventory.equip_weapon(item)
 		if old != null:
 			item_dropped.emit(old, grid_position)
+		RunStats.record_weapon_equipped(item as Weapon)
 		_recalculate_stats()
 		print("Picked up %s — equipped (ATK %d)" % [item.display_name, atk])
 	elif item is Armor:
@@ -179,6 +182,8 @@ func _recalculate_stats() -> void:
 	_notify_hotbar()
 
 func take_damage(amount: int) -> void:
+	var effective: int = mini(amount, hp)
+	RunStats.record_damage_taken(effective)
 	hp = maxi(0, hp - amount)
 	queue_redraw()
 	_notify_hotbar()
