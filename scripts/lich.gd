@@ -30,6 +30,7 @@ func _ready() -> void:
 	def = 0
 	vision_range = LICH_VISION_RANGE
 	always_takes_turn = true
+	ranged_projectile_texture = SpriteDB.effect("necro_bolt")
 	super._ready()
 	sprite_node.texture = SpriteDB.actor("lich")
 
@@ -104,6 +105,9 @@ func _phase_2_turn(player: Player, dist: int, has_los: bool) -> bool:
 func _phase_3_turn(player: Player, dist: int, has_los: bool) -> bool:
 	if has_los and breu_cooldown == 0:
 		AudioManager.play_sfx("breu_cast")
+		if Combat.effects_layer != null:
+			var player_world := player.position + Vector2(Grid.TILE_SIZE, Grid.TILE_SIZE) * 0.5
+			Projectile.spawn_burst(Combat.effects_layer, player_world, SpriteDB.effect("gloom"), 0.6)
 		player.apply_vision_debuff(BREU_VISION_RANGE, BREU_DURATION)
 		breu_cooldown = BREU_COOLDOWN_MAX
 		print("Lich casts Breu — player sight fades")
@@ -179,6 +183,9 @@ func _is_valid_summon_tile(pos: Vector2i) -> bool:
 
 func _summon_skeleton(at: Vector2i) -> void:
 	AudioManager.play_sfx("summon")
+	if Combat.effects_layer != null:
+		var world_pos := Vector2(at.x, at.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE, Grid.TILE_SIZE) * 0.5
+		Projectile.spawn_burst(Combat.effects_layer, world_pos, SpriteDB.effect("necro_bolt"), 0.35)
 	var skel := Skeleton.new()
 	get_parent().add_child(skel)
 	skel.dungeon = dungeon

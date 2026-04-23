@@ -24,6 +24,35 @@ const _ITEMS := {
 	"ring_of_life":    preload("res://assets/sprites/items/ring_of_life.png"),
 }
 
+const _EFFECTS := {
+	"magic_bolt":     preload("res://assets/sprites/effects/magic_bolt.png"),
+	"searing_burst":  preload("res://assets/sprites/effects/searing_burst.png"),
+	"necro_bolt":     preload("res://assets/sprites/effects/necro_bolt.png"),
+	"gloom":          preload("res://assets/sprites/effects/gloom.png"),
+}
+
+const _ARROW_FRAMES: Array = [
+	preload("res://assets/sprites/effects/arrow/arrow_0.png"),
+	preload("res://assets/sprites/effects/arrow/arrow_1.png"),
+	preload("res://assets/sprites/effects/arrow/arrow_2.png"),
+	preload("res://assets/sprites/effects/arrow/arrow_3.png"),
+	preload("res://assets/sprites/effects/arrow/arrow_4.png"),
+	preload("res://assets/sprites/effects/arrow/arrow_5.png"),
+	preload("res://assets/sprites/effects/arrow/arrow_6.png"),
+	preload("res://assets/sprites/effects/arrow/arrow_7.png"),
+]
+
+const _CRYSTAL_SPEAR_FRAMES: Array = [
+	preload("res://assets/sprites/effects/crystal_spear/crystal_spear_0.png"),
+	preload("res://assets/sprites/effects/crystal_spear/crystal_spear_1.png"),
+	preload("res://assets/sprites/effects/crystal_spear/crystal_spear_2.png"),
+	preload("res://assets/sprites/effects/crystal_spear/crystal_spear_3.png"),
+	preload("res://assets/sprites/effects/crystal_spear/crystal_spear_4.png"),
+	preload("res://assets/sprites/effects/crystal_spear/crystal_spear_5.png"),
+	preload("res://assets/sprites/effects/crystal_spear/crystal_spear_6.png"),
+	preload("res://assets/sprites/effects/crystal_spear/crystal_spear_7.png"),
+]
+
 const _TILES := {
 	"floor":       preload("res://assets/tiles/floor.png"),
 	"wall":        preload("res://assets/tiles/wall.png"),
@@ -46,3 +75,12 @@ static func item(key: String) -> Texture2D:
 
 static func tile(key: String) -> Texture2D:
 	return _TILES[key]
+
+static func effect(key: String) -> Texture2D:
+	return _EFFECTS[key]
+
+static func arrow_frames() -> Array:
+	return _ARROW_FRAMES
+
+static func crystal_spear_frames() -> Array:
+	return _CRYSTAL_SPEAR_FRAMES

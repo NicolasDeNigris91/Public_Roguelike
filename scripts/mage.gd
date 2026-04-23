@@ -9,6 +9,7 @@ func _ready() -> void:
 	max_hp = 10
 	atk = 6
 	def = 0
+	ranged_projectile_texture = SpriteDB.effect("magic_bolt")
 	super._ready()
 	sprite_node.texture = SpriteDB.actor("mage")
 

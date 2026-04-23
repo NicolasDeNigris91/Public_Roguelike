@@ -9,6 +9,7 @@ func _ready() -> void:
 	max_hp = 6
 	atk = 5
 	def = 0
+	ranged_projectile_frames = SpriteDB.arrow_frames()
 	super._ready()
 	sprite_node.texture = SpriteDB.actor("archer")
 

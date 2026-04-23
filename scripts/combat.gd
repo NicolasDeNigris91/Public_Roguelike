@@ -45,6 +45,8 @@ static func attack(
 
 	if _is_adjacent(attacker, target):
 		await attacker.nudge_toward(target.grid_position)
+	else:
+		await _await_ranged_vfx(attacker, target)
 
 	# SFX: hit sound (melee or ranged) + crit overlay
 	if _is_adjacent(attacker, target):
@@ -97,11 +99,16 @@ static func attack(
 
 static func smite(attacker: Player, target: Enemy) -> void:
 	var dmg: int = attacker.atk + Player.SMITE_DAMAGE_BONUS
-	target.flash_white()
 	AudioManager.play_sfx("smite")
 	if effects_layer != null:
-		var world_pos: Vector2 = target.position - Vector2(0, 8)
-		DamageNumber.spawn(effects_layer, world_pos, "%d!" % dmg, DMG_COLOR_CRIT, 1.2)
+		var from := _tile_center(attacker.position)
+		var to := _tile_center(target.position)
+		await Projectile.spawn_directional(effects_layer, from, to, SpriteDB.crystal_spear_frames())
+		Projectile.spawn_burst(effects_layer, to, SpriteDB.effect("searing_burst"), 0.25)
+	target.flash_white()
+	if effects_layer != null:
+		var dmg_pos: Vector2 = target.position - Vector2(0, 8)
+		DamageNumber.spawn(effects_layer, dmg_pos, "%d!" % dmg, DMG_COLOR_CRIT, 1.2)
 	target.take_damage(dmg)
 	RunStats.record_damage_dealt(dmg)
 	if target.hp <= 0:
@@ -112,6 +119,19 @@ static func smite(attacker: Player, target: Enemy) -> void:
 		attacker.name, target.name, dmg, target.hp, target.max_hp
 	])
 	HitPause.freeze(attacker.get_tree(), HIT_PAUSE_CRIT)
+
+static func _await_ranged_vfx(attacker: Actor, target: Actor) -> void:
+	if effects_layer == null:
+		return
+	var from := _tile_center(attacker.position)
+	var to := _tile_center(target.position)
+	if attacker.ranged_projectile_frames.size() >= 8:
+		await Projectile.spawn_directional(effects_layer, from, to, attacker.ranged_projectile_frames)
+	elif attacker.ranged_projectile_texture != null:
+		await Projectile.spawn(effects_layer, from, to, attacker.ranged_projectile_texture)
+
+static func _tile_center(world_pos: Vector2) -> Vector2:
+	return world_pos + Vector2(Grid.TILE_SIZE, Grid.TILE_SIZE) * 0.5
 
 static func _is_adjacent(a: Actor, b: Actor) -> bool:
 	var dx: int = absi(a.grid_position.x - b.grid_position.x)
