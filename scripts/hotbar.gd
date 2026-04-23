@@ -35,6 +35,8 @@ var _bag_slots: Array = []
 @onready var status_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/StatusContainer
 @onready var equipped_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/EquippedContainer
 @onready var bag_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/BagContainer
+@onready var tooltip_control: Control = $TooltipControl
+@onready var tooltip_label: Label = $TooltipControl/TooltipPanel/TooltipLabel
 
 func _ready() -> void:
 	layer = 5
@@ -121,12 +123,19 @@ func _build_equipped_slot() -> Dictionary:
 
 	equipped_container.add_child(panel)
 
-	return {"panel": panel, "icon": icon, "label": label}
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	var slot_data := {"panel": panel, "icon": icon, "label": label, "kind": ""}
+	panel.mouse_entered.connect(_on_equipped_hover.bind(slot_data))
+	panel.mouse_exited.connect(_hide_tooltip)
+	return slot_data
 
 func _build_equipped() -> void:
 	_weapon_slot = _build_equipped_slot()
+	_weapon_slot["kind"] = "weapon"
 	_armor_slot = _build_equipped_slot()
+	_armor_slot["kind"] = "armor"
 	_ring_slot = _build_equipped_slot()
+	_ring_slot["kind"] = "ring"
 
 func _refresh_equipped() -> void:
 	if player == null:
@@ -215,7 +224,12 @@ func _build_bag() -> void:
 
 		bag_container.add_child(panel)
 
-		_bag_slots.append({"panel": panel, "icon": icon, "number_label": number_label})
+		var slot_data := {"panel": panel, "icon": icon, "number_label": number_label, "index": i}
+		panel.mouse_filter = Control.MOUSE_FILTER_STOP
+		panel.mouse_entered.connect(_on_bag_hover.bind(slot_data))
+		panel.mouse_exited.connect(_hide_tooltip)
+
+		_bag_slots.append(slot_data)
 
 func _refresh_bag() -> void:
 	if player == null:
@@ -253,6 +267,76 @@ func refresh() -> void:
 	_refresh_status()
 	_refresh_equipped()
 	_refresh_bag()
+
+func _on_equipped_hover(slot_data: Dictionary) -> void:
+	if player == null:
+		return
+	var kind: String = slot_data["kind"]
+	var inv := player.inventory
+	var item: Item = null
+	var stat_text: String = ""
+	match kind:
+		"weapon":
+			item = inv.weapon
+			if item != null:
+				stat_text = "+%d ATK" % (item as Weapon).atk_bonus
+		"armor":
+			item = inv.armor
+			if item != null:
+				stat_text = "+%d DEF" % (item as Armor).def_bonus
+		"ring":
+			item = inv.ring
+			if item != null:
+				stat_text = "+%d max HP" % (item as Ring).max_hp_bonus
+	if item == null:
+		_show_tooltip("Vazio")
+	else:
+		_show_tooltip("%s\n%s" % [item.display_name, stat_text])
+
+func _on_bag_hover(slot_data: Dictionary) -> void:
+	if player == null:
+		return
+	var idx: int = slot_data["index"]
+	var bag := player.inventory.bag
+	if idx >= bag.size():
+		_show_tooltip("Vazio")
+		return
+	var item: Item = bag[idx]
+	var detail: String = ""
+	if item is Consumable:
+		detail = item.description
+	elif item is Weapon:
+		detail = "+%d ATK" % (item as Weapon).atk_bonus
+	elif item is Armor:
+		detail = "+%d DEF" % (item as Armor).def_bonus
+	elif item is Ring:
+		detail = "+%d max HP" % (item as Ring).max_hp_bonus
+	if detail != "":
+		_show_tooltip("%s\n%s" % [item.display_name, detail])
+	else:
+		_show_tooltip(item.display_name)
+
+func _show_tooltip(text: String) -> void:
+	tooltip_label.text = text
+	tooltip_control.visible = true
+	_reposition_tooltip()
+
+func _hide_tooltip() -> void:
+	tooltip_control.visible = false
+
+func _reposition_tooltip() -> void:
+	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
+	var mouse_pos: Vector2 = get_viewport().get_mouse_position()
+	var panel := tooltip_control.get_child(0) as PanelContainer
+	var panel_size: Vector2 = panel.get_combined_minimum_size()
+	var target: Vector2 = mouse_pos - Vector2(panel_size.x / 2.0, panel_size.y + 10)
+	target.x = clampf(target.x, 4.0, viewport_size.x - panel_size.x - 4.0)
+	target.y = clampf(target.y, 4.0, viewport_size.y - panel_size.y - 4.0)
+	panel.position = target
+
+func _process(_delta: float) -> void:
+	if tooltip_control.visible:
+		_reposition_tooltip()
 
 func use_consumable_slot(idx: int) -> void:
 	if player == null:

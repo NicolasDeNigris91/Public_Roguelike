@@ -59,6 +59,7 @@ static func plate_armor() -> Armor:
 static func healing_potion() -> Consumable:
 	var c := Consumable.new()
 	c.display_name = "Healing Potion"
+	c.description = "Cura 10 HP"
 	c.texture = SpriteDB.item("healing_potion")
 	c.effect = Consumable.Effect.HEAL_MINOR
 	c.amount = 10
@@ -67,6 +68,7 @@ static func healing_potion() -> Consumable:
 static func greater_potion() -> Consumable:
 	var c := Consumable.new()
 	c.display_name = "Greater Potion"
+	c.description = "Cura totalmente"
 	c.texture = SpriteDB.item("greater_potion")
 	c.effect = Consumable.Effect.HEAL_FULL
 	return c
@@ -74,6 +76,7 @@ static func greater_potion() -> Consumable:
 static func teleport_scroll() -> Consumable:
 	var c := Consumable.new()
 	c.display_name = "Teleport Scroll"
+	c.description = "Teleporta para tile aleatório"
 	c.texture = SpriteDB.item("teleport_scroll")
 	c.effect = Consumable.Effect.TELEPORT
 	return c
