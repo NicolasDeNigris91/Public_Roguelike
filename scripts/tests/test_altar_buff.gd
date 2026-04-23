@@ -7,7 +7,6 @@ func _init() -> void:
 	_test_armor_yields_def_plus_one()
 	_test_ring_yields_max_hp_plus_two()
 	_test_consumable_is_not_applicable()
-	_test_plain_item_is_not_applicable()
 	print("PASS test_altar_buff")
 	quit()
 
@@ -59,10 +58,7 @@ func _test_ring_yields_max_hp_plus_two() -> void:
 func _test_consumable_is_not_applicable() -> void:
 	# Note: we don't construct Consumable because consumable.gd may transitively
 	# reference autoloads that blow up headless. A plain Item is sufficient to test
-	# the "not applicable" branch (the same branch consumables take).
+	# the "not applicable" branch (the same branch that Consumable and other
+	# non-Weapon/Armor/Ring items would take).
 	var result := AltarBuff.compute(_plain_item())
 	assert(result["applicable"] == false, "plain Item should not be sacrificable")
-
-func _test_plain_item_is_not_applicable() -> void:
-	var result := AltarBuff.compute(_plain_item())
-	assert(result["applicable"] == false)
