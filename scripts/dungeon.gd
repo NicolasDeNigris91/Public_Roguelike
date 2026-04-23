@@ -24,21 +24,41 @@ var rng := RandomNumberGenerator.new()
 var visible_layer: TileMapLayer
 var memory_layer: TileMapLayer
 
+var _bastion_tileset: TileSet
+var _catacombs_tileset: TileSet
+
 func _ready() -> void:
 	rng.randomize()
 
-	var tileset: TileSet = load(TILESET_PATH)
+	_bastion_tileset = load(TILESET_PATH)
+	# Catacombs biome reuses the same sources but swaps the floor + wall textures.
+	# Duplicate (deep) so editing the clone does not mutate the loaded resource.
+	_catacombs_tileset = _bastion_tileset.duplicate(true)
+	var catacomb_floor := _catacombs_tileset.get_source(SOURCE_FLOOR) as TileSetAtlasSource
+	if catacomb_floor != null:
+		catacomb_floor.texture = SpriteDB.tile("floor_catacombs")
+	var catacomb_wall := _catacombs_tileset.get_source(SOURCE_WALL) as TileSetAtlasSource
+	if catacomb_wall != null:
+		catacomb_wall.texture = SpriteDB.tile("wall_catacombs")
 
 	memory_layer = TileMapLayer.new()
-	memory_layer.tile_set = tileset
+	memory_layer.tile_set = _bastion_tileset
 	memory_layer.self_modulate = Color(MEMORY_DIM, MEMORY_DIM, MEMORY_DIM, 1.0)
 	add_child(memory_layer)
 
 	visible_layer = TileMapLayer.new()
-	visible_layer.tile_set = tileset
+	visible_layer.tile_set = _bastion_tileset
 	add_child(visible_layer)
 
 	_generate_floor()
+
+# Called by main.gd whenever current_floor changes. Picks the biome's tileset.
+func set_biome(biome: StringName) -> void:
+	var target: TileSet = _bastion_tileset
+	if biome == ActConfig.BIOME_CATACOMBS:
+		target = _catacombs_tileset
+	visible_layer.tile_set = target
+	memory_layer.tile_set = target
 
 func regenerate() -> void:
 	visible_tiles.clear()

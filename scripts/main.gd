@@ -56,10 +56,11 @@ func _ready() -> void:
 	player.hotbar = hotbar
 	player.stat_increased.connect(hotbar.on_stat_increased)
 
+	dungeon.set_biome(ActConfig.biome_for_floor(current_floor))
 	_populate_floor()
 	dungeon.update_fov(player.grid_position, player.vision_range)
 	_refresh_entity_visibility()
-	if current_floor == 6:
+	if ActConfig.is_boss_floor(current_floor):
 		AudioManager.play_music("boss", 1.0)
 	else:
 		AudioManager.play_music("explore", 1.0)
@@ -103,7 +104,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _populate_floor() -> void:
-	if current_floor == 6:
+	if ActConfig.is_boss_floor(current_floor):
 		_populate_boss_floor()
 		return
 
@@ -128,17 +129,25 @@ func _populate_boss_floor() -> void:
 	var spawns: Dictionary = dungeon.regenerate_as_boss_arena()
 	player.move_to(spawns["player_spawn"], false)
 
-	var lich := Lich.new()
-	entity_layer.add_child(lich)
-	lich.dungeon = dungeon
-	lich.turn_manager = turn_manager
-	lich.move_to(spawns["lich_spawn"], false)
-	turn_manager.register_enemy(lich)
-	lich.truly_died.connect(_on_lich_truly_died)
+	var boss: Enemy = ActConfig.spawn_boss(current_floor)
+	if boss == null:
+		push_warning("No boss configured for floor %d" % current_floor)
+		return
+	entity_layer.add_child(boss)
+	boss.dungeon = dungeon
+	boss.turn_manager = turn_manager
+	boss.move_to(spawns["lich_spawn"], false)  # key reused for any boss spawn
+	turn_manager.register_enemy(boss)
+	# Both Lich and DeathKnight emit truly_died(Vector2i) when their true death lands.
+	if boss is Lich:
+		(boss as Lich).truly_died.connect(_on_boss_truly_died)
+	elif boss is DeathKnight:
+		(boss as DeathKnight).truly_died.connect(_on_boss_truly_died)
 	AudioManager.play_music("boss", 1.5)
 
 func _pick_enemy_type() -> Enemy:
 	var roll := rng.randf()
+	# Act 1 — Bastion
 	if current_floor <= 2:
 		return Slime.new()
 	if current_floor <= 4:
@@ -151,21 +160,29 @@ func _pick_enemy_type() -> Enemy:
 		if roll < 0.7:
 			return Skeleton.new()
 		return Archer.new()
-	if current_floor <= 8:
-		if roll < 0.2:
-			return Slime.new()
-		if roll < 0.5:
+	# Act 2 — Catacombs (floors 7-17, boss on 18)
+	if current_floor <= 9:
+		if roll < 0.3:
 			return Skeleton.new()
-		if roll < 0.8:
+		if roll < 0.7:
 			return Archer.new()
+		return Wraith.new()
+	if current_floor <= 13:
+		if roll < 0.2:
+			return Skeleton.new()
+		if roll < 0.5:
+			return Wraith.new()
+		if roll < 0.8:
+			return Necrophage.new()
 		return Mage.new()
-	if roll < 0.2:
-		return Slime.new()
-	if roll < 0.4:
-		return Skeleton.new()
-	if roll < 0.7:
-		return Archer.new()
-	return Mage.new()
+	# Late Act 2 (14-17)
+	if roll < 0.3:
+		return Wraith.new()
+	if roll < 0.6:
+		return Necrophage.new()
+	if roll < 0.85:
+		return Mage.new()
+	return Archer.new()
 
 func _spawn_enemy(at: Vector2i, atk_bonus: int) -> void:
 	var enemy := _pick_enemy_type()
@@ -199,7 +216,7 @@ func _spawn_items() -> void:
 		spawned += 1
 
 func _descend() -> void:
-	var was_boss_floor: bool = current_floor == 6
+	var was_boss_floor: bool = ActConfig.is_boss_floor(current_floor)
 	current_floor += 1
 	RunStats.record_floor(current_floor)
 
@@ -214,9 +231,10 @@ func _descend() -> void:
 	for child in altars_layer.get_children():
 		child.queue_free()
 
-	if current_floor != 6:
+	dungeon.set_biome(ActConfig.biome_for_floor(current_floor))
+	if not ActConfig.is_boss_floor(current_floor):
 		dungeon.regenerate()
-	# Floor 6 regenerates inside _populate_boss_floor; skip BSP pass.
+	# Boss floors regenerate inside _populate_boss_floor; skip BSP pass.
 	_populate_floor()
 	dungeon.update_fov(player.grid_position, player.vision_range)
 	_refresh_entity_visibility()
@@ -328,17 +346,25 @@ func _on_player_died() -> void:
 	print("You died on Floor %d" % current_floor)
 	game_over_screen.show_result()
 
-func _on_lich_truly_died(lich_pos: Vector2i) -> void:
-	RunStats.record_lich_defeated()
-	SaveManager.clear()
-	dungeon.grid.set_cell(lich_pos, Grid.CellType.STAIRS)
-	dungeon.stairs_position = lich_pos
+func _on_boss_truly_died(pos: Vector2i) -> void:
+	# Act 1 milestone: Lich defeated. Still used as a stats flag.
+	if current_floor == 6:
+		RunStats.record_lich_defeated()
+	# The final boss of the game (currently floor 18, future floor 48) clears
+	# the save so the next run starts fresh. Mid-game bosses keep the save so
+	# the player can quit-continue on the post-boss floor.
+	if ActConfig.is_final_boss_floor(current_floor):
+		SaveManager.clear()
+	# Spawn stairs where the boss died so the player can descend to the next act.
+	dungeon.grid.set_cell(pos, Grid.CellType.STAIRS)
+	dungeon.stairs_position = pos
+	# Clean up boss-summoned minions (both Lich and Death Knight summon Skeletons).
 	for enemy in turn_manager.enemies.duplicate():
 		if is_instance_valid(enemy) and enemy is Skeleton:
 			enemy.queue_free()
 	turn_manager.enemies = turn_manager.enemies.filter(func(e): return is_instance_valid(e))
-	dungeon.redraw_cell(lich_pos)
-	print("O Lich foi derrotado. Uma escada aparece.")
+	dungeon.redraw_cell(pos)
+	print("Boss derrotado no andar %d. Uma escada aparece." % current_floor)
 
 func _try_sacrifice(slot: int) -> void:
 	if _altar_under_player == null or not _altar_under_player.is_active():

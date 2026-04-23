@@ -1,12 +1,15 @@
 class_name SpriteDB
 
 const _ACTORS := {
-	"player":   preload("res://assets/sprites/actors/player.png"),
-	"slime":    preload("res://assets/sprites/actors/slime.png"),
-	"skeleton": preload("res://assets/sprites/actors/skeleton.png"),
-	"archer":   preload("res://assets/sprites/actors/archer.png"),
-	"mage":     preload("res://assets/sprites/actors/mage.png"),
-	"lich":     preload("res://assets/sprites/actors/lich.png"),
+	"player":       preload("res://assets/sprites/actors/player.png"),
+	"slime":        preload("res://assets/sprites/actors/slime.png"),
+	"skeleton":     preload("res://assets/sprites/actors/skeleton.png"),
+	"archer":       preload("res://assets/sprites/actors/archer.png"),
+	"mage":         preload("res://assets/sprites/actors/mage.png"),
+	"lich":         preload("res://assets/sprites/actors/lich.png"),
+	"wraith":       preload("res://assets/sprites/actors/wraith.png"),
+	"necrophage":   preload("res://assets/sprites/actors/necrophage.png"),
+	"death_knight": preload("res://assets/sprites/actors/death_knight.png"),
 }
 
 const _ITEMS := {
@@ -54,17 +57,19 @@ const _CRYSTAL_SPEAR_FRAMES: Array = [
 ]
 
 const _TILES := {
-	"floor":       preload("res://assets/tiles/floor.png"),
-	"wall":        preload("res://assets/tiles/wall.png"),
-	"stairs_down": preload("res://assets/tiles/stairs_down.png"),
-	"floor_n":     preload("res://assets/tiles/floor_borders/floor_n.png"),
-	"floor_s":     preload("res://assets/tiles/floor_borders/floor_s.png"),
-	"floor_e":     preload("res://assets/tiles/floor_borders/floor_e.png"),
-	"floor_w":     preload("res://assets/tiles/floor_borders/floor_w.png"),
-	"floor_ne":    preload("res://assets/tiles/floor_borders/floor_ne.png"),
-	"floor_nw":    preload("res://assets/tiles/floor_borders/floor_nw.png"),
-	"floor_se":    preload("res://assets/tiles/floor_borders/floor_se.png"),
-	"floor_sw":    preload("res://assets/tiles/floor_borders/floor_sw.png"),
+	"floor":            preload("res://assets/tiles/floor.png"),
+	"wall":             preload("res://assets/tiles/wall.png"),
+	"floor_catacombs":  preload("res://assets/tiles/floor_catacombs.png"),
+	"wall_catacombs":   preload("res://assets/tiles/wall_catacombs.png"),
+	"stairs_down":      preload("res://assets/tiles/stairs_down.png"),
+	"floor_n":          preload("res://assets/tiles/floor_borders/floor_n.png"),
+	"floor_s":          preload("res://assets/tiles/floor_borders/floor_s.png"),
+	"floor_e":          preload("res://assets/tiles/floor_borders/floor_e.png"),
+	"floor_w":          preload("res://assets/tiles/floor_borders/floor_w.png"),
+	"floor_ne":         preload("res://assets/tiles/floor_borders/floor_ne.png"),
+	"floor_nw":         preload("res://assets/tiles/floor_borders/floor_nw.png"),
+	"floor_se":         preload("res://assets/tiles/floor_borders/floor_se.png"),
+	"floor_sw":         preload("res://assets/tiles/floor_borders/floor_sw.png"),
 }
 
 static func actor(key: String) -> Texture2D:
