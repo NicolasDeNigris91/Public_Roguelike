@@ -1,5 +1,7 @@
-class_name AudioManager
 extends Node
+# NOTE: intentionally no `class_name AudioManager` — it collides with the
+# autoload singleton of the same name (project.godot). Autoload is accessed
+# globally as `AudioManager`; no class_name registration needed.
 
 const _SFX_POOL_SIZE: int = 8
 
