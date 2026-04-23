@@ -9,7 +9,7 @@ const ITEMS_PER_FLOOR_MAX: int = 3
 @onready var entity_layer: Node2D = $World/EntityLayer
 @onready var player: Player = $World/EntityLayer/Player
 @onready var turn_manager: TurnManager = $TurnManager
-@onready var inventory_ui: InventoryUI = $InventoryUI
+@onready var hotbar: CanvasLayer = $Hotbar
 @onready var effects_layer: Node2D = $World/EffectsLayer
 @onready var game_over_screen: CanvasLayer = $GameOverScreen
 
@@ -31,9 +31,10 @@ func _ready() -> void:
 	Combat.effects_layer = effects_layer
 	Combat.world_node = $World
 
-	inventory_ui.player = player
-	inventory_ui.item_used.connect(_on_inventory_item_used)
-	inventory_ui.closed.connect(_on_inventory_closed)
+	hotbar.player = player
+	hotbar.current_floor = current_floor
+	hotbar.consumable_used.connect(_on_hotbar_consumable_used)
+	player.hotbar = hotbar
 
 	_populate_floor()
 	dungeon.update_fov(player.grid_position, player.vision_range)
@@ -42,6 +43,7 @@ func _ready() -> void:
 		AudioManager.play_music("boss", 1.0)
 	else:
 		AudioManager.play_music("explore", 1.0)
+	hotbar.refresh()
 	print("Roguelike booted — Sprint 4b OK | Floor %d, %d rooms" % [current_floor, dungeon.rooms.size()])
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -52,15 +54,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_tree().reload_current_scene()
 			get_viewport().set_input_as_handled()
 		return
-	if inventory_ui.visible:
+	if not player.turn_active:
 		return
-	if event.keycode == KEY_I:
-		_open_inventory()
+	if event.keycode >= KEY_1 and event.keycode <= KEY_8:
+		var slot: int = event.keycode - KEY_1
+		hotbar.use_consumable_slot(slot)
 		get_viewport().set_input_as_handled()
-
-func _open_inventory() -> void:
-	player.turn_active = false
-	inventory_ui.open()
 
 func _populate_floor() -> void:
 	if current_floor == 6:
@@ -174,6 +173,8 @@ func _descend() -> void:
 	if was_boss_floor:
 		AudioManager.play_music("explore", 1.5)
 
+	hotbar.current_floor = current_floor
+	hotbar.refresh()
 	print("Descended to Floor %d | %d rooms, %d enemies" % [
 		current_floor, dungeon.rooms.size(), turn_manager.enemies.size()
 	])
@@ -220,20 +221,14 @@ func _on_lich_truly_died(lich_pos: Vector2i) -> void:
 	dungeon.redraw_cell(lich_pos)
 	print("O Lich foi derrotado. Uma escada aparece.")
 
-func _on_inventory_closed() -> void:
-	player.turn_active = true
-
-func _on_inventory_item_used(slot_index: int) -> void:
-	if slot_index >= player.inventory.bag.size():
+func _on_hotbar_consumable_used(slot_idx: int) -> void:
+	if slot_idx >= player.inventory.bag.size():
 		return
-	var item := player.inventory.bag[slot_index]
-	if item is Consumable:
-		var consumed: bool = item.use_on(player)
-		if consumed:
-			player.inventory.bag.remove_at(slot_index)
-			inventory_ui.close()
-			player.turn_done.emit()
-		else:
-			inventory_ui.refresh()
-	else:
-		print("%s cannot be used — equip automatic only" % item.display_name)
+	var item: Item = player.inventory.bag[slot_idx]
+	if not (item is Consumable):
+		return
+	var consumed: bool = item.use_on(player)
+	if consumed:
+		player.inventory.bag.remove_at(slot_idx)
+		hotbar.refresh()
+		player.turn_done.emit()

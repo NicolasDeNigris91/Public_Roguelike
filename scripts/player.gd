@@ -10,6 +10,7 @@ const BASE_VISION_RANGE: int = 8
 
 var dungeon: Dungeon
 var turn_manager: TurnManager
+var hotbar: CanvasLayer = null
 var turn_active: bool = true
 var inventory: Inventory
 var vision_range: int = BASE_VISION_RANGE
@@ -98,6 +99,7 @@ func pickup(item: Item) -> void:
 			print("Picked up %s — in bag" % item.display_name)
 		else:
 			print("Bag full, could not pick up %s" % item.display_name)
+	_notify_hotbar()
 
 func die() -> void:
 	AudioManager.play_sfx("player_die")
@@ -107,6 +109,7 @@ func die() -> void:
 		HitPause.freeze(get_tree(), 0.1)
 	died.emit()
 	turn_active = false
+	_notify_hotbar()
 
 func _recalculate_stats() -> void:
 	atk = BASE_ATK
@@ -126,6 +129,18 @@ func _recalculate_stats() -> void:
 		hp += delta
 	hp = mini(hp, max_hp)
 	queue_redraw()
+	_notify_hotbar()
+
+func take_damage(amount: int) -> void:
+	hp = maxi(0, hp - amount)
+	queue_redraw()
+	_notify_hotbar()
+	if hp <= 0:
+		die()
+
+func _notify_hotbar() -> void:
+	if hotbar != null:
+		hotbar.refresh()
 
 func _enemy_at(pos: Vector2i) -> Enemy:
 	if turn_manager == null:
