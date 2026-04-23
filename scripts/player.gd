@@ -133,33 +133,21 @@ func apply_vision_debuff(new_range: int, turns: int) -> void:
 		dungeon.update_fov(grid_position, vision_range)
 	print("Player vision reduced to %d for %d turns" % [new_range, turns])
 
-func pickup(item: Item) -> void:
+func pickup(item: Item) -> bool:
 	_play_sfx("pickup")
-	if item is Weapon:
-		var old := inventory.equip_weapon(item)
-		if old != null:
-			item_dropped.emit(old, grid_position)
-		RunStats.record_weapon_equipped(item as Weapon)
-		_recalculate_stats()
-		print("Picked up %s — equipped (ATK %d)" % [item.display_name, atk])
-	elif item is Armor:
-		var old := inventory.equip_armor(item)
-		if old != null:
-			item_dropped.emit(old, grid_position)
-		_recalculate_stats()
-		print("Picked up %s — equipped (DEF %d)" % [item.display_name, def])
-	elif item is Ring:
-		var old := inventory.equip_ring(item)
-		if old != null:
-			item_dropped.emit(old, grid_position)
-		_recalculate_stats()
-		print("Picked up %s — equipped (max HP %d)" % [item.display_name, max_hp])
-	else:
-		if inventory.add_to_bag(item):
+	var result := pickup_item(item)
+	match result:
+		Inventory.PickupResult.EQUIPPED, Inventory.PickupResult.EQUIPPED_AND_BAGGED_OLD:
+			if item is Weapon:
+				RunStats.record_weapon_equipped(item as Weapon)
+			_recalculate_stats()
+			print("Picked up %s — equipped" % item.display_name)
+		Inventory.PickupResult.BAGGED:
 			print("Picked up %s — in bag" % item.display_name)
-		else:
-			print("Bag full, could not pick up %s" % item.display_name)
+		Inventory.PickupResult.REJECTED_BAG_FULL:
+			print("Bag full — left %s on the floor" % item.display_name)
 	_notify_hotbar()
+	return result != Inventory.PickupResult.REJECTED_BAG_FULL
 
 func pickup_item(item: Item) -> Inventory.PickupResult:
 	return inventory.try_pickup(item)

@@ -19,7 +19,18 @@ var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
 	rng.randomize()
-	RunStats.reset()
+
+	var save_state: Dictionary = {}
+	if SaveManager.pending_load:
+		SaveManager.pending_load = false
+		save_state = SaveManager.load_state()
+
+	if save_state.is_empty():
+		RunStats.reset()
+	else:
+		current_floor = save_state.get("floor", 1)
+		RunStats.from_dict(save_state.get("run_stats", {}))
+		player.restore_state(save_state.get("player", {}))
 
 	player.dungeon = dungeon
 	player.turn_manager = turn_manager
@@ -58,12 +69,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if game_over_screen.visible:
 		if event.keycode == KEY_R:
-			get_tree().reload_current_scene()
 			get_viewport().set_input_as_handled()
+			get_tree().reload_current_scene()
 		elif event.keycode == KEY_ESCAPE:
+			get_viewport().set_input_as_handled()
 			AudioManager.stop_music(0.3)
 			get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
-			get_viewport().set_input_as_handled()
 		return
 	if event.keycode == KEY_ESCAPE:
 		if pause_menu.visible:
@@ -175,6 +186,7 @@ func _descend() -> void:
 	var was_boss_floor: bool = current_floor == 6
 	current_floor += 1
 	RunStats.record_floor(current_floor)
+	SaveManager.save(current_floor, player)
 
 	for enemy in turn_manager.enemies.duplicate():
 		if is_instance_valid(enemy):
@@ -215,8 +227,10 @@ func _item_at(pos: Vector2i) -> ItemEntity:
 
 func _try_pickup(pos: Vector2i) -> void:
 	var entity := _item_at(pos)
-	if entity != null:
-		player.pickup(entity.item)
+	if entity == null:
+		return
+	var taken: bool = player.pickup(entity.item)
+	if taken:
 		entity.queue_free()
 
 func _on_player_moved(to_pos: Vector2i) -> void:
@@ -236,11 +250,13 @@ func _on_player_item_dropped(item: Item, pos: Vector2i) -> void:
 	_refresh_entity_visibility()
 
 func _on_player_died() -> void:
+	SaveManager.clear()
 	print("You died on Floor %d" % current_floor)
 	game_over_screen.show_result()
 
 func _on_lich_truly_died(lich_pos: Vector2i) -> void:
 	RunStats.record_lich_defeated()
+	SaveManager.clear()
 	dungeon.grid.set_cell(lich_pos, Grid.CellType.STAIRS)
 	dungeon.stairs_position = lich_pos
 	for enemy in turn_manager.enemies.duplicate():
