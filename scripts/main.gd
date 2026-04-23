@@ -11,6 +11,7 @@ const ITEMS_PER_FLOOR_MAX: int = 3
 @onready var turn_manager: TurnManager = $TurnManager
 @onready var inventory_ui: InventoryUI = $InventoryUI
 @onready var effects_layer: Node2D = $World/EffectsLayer
+@onready var game_over_screen: CanvasLayer = $GameOverScreen
 
 var current_floor: int = 1
 var rng := RandomNumberGenerator.new()
@@ -40,9 +41,14 @@ func _ready() -> void:
 	print("Roguelike booted — Sprint 4b OK | Floor %d, %d rooms" % [current_floor, dungeon.rooms.size()])
 
 func _unhandled_input(event: InputEvent) -> void:
-	if inventory_ui.visible:
-		return
 	if not (event is InputEventKey) or not event.pressed or event.echo:
+		return
+	if game_over_screen.visible:
+		if event.keycode == KEY_R:
+			get_tree().reload_current_scene()
+			get_viewport().set_input_as_handled()
+		return
+	if inventory_ui.visible:
 		return
 	if event.keycode == KEY_I:
 		_open_inventory()
@@ -191,6 +197,7 @@ func _on_player_moved(to_pos: Vector2i) -> void:
 
 func _on_player_died() -> void:
 	print("You died on Floor %d" % current_floor)
+	game_over_screen.visible = true
 
 func _on_lich_truly_died(lich_pos: Vector2i) -> void:
 	dungeon.grid.set_cell(lich_pos, Grid.CellType.STAIRS)
