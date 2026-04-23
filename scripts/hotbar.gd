@@ -12,12 +12,22 @@ const HP_COLOR_LOW := Color(0.85, 0.15, 0.15, 1)
 const HP_COLOR_MID := Color(0.85, 0.75, 0.15, 1)
 const HP_COLOR_HIGH := Color(0.20, 0.75, 0.25, 1)
 
+const EQUIPPED_SLOT_SIZE := Vector2(48, 64)
+const SLOT_ICON_SIZE: int = 32
+const SLOT_BG_FILLED := Color(0.14, 0.14, 0.17, 0.95)
+const SLOT_BG_EMPTY := Color(0.10, 0.10, 0.12, 0.95)
+const SLOT_BORDER := Color(0.4, 0.4, 0.45, 1)
+
 var player: Player
 var current_floor: int = 1
 
 var _hp_bar: ProgressBar
 var _hp_label: Label
 var _floor_label: Label
+
+var _weapon_slot: Dictionary
+var _armor_slot: Dictionary
+var _ring_slot: Dictionary
 
 @onready var status_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/StatusContainer
 @onready var equipped_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/EquippedContainer
@@ -26,6 +36,7 @@ var _floor_label: Label
 func _ready() -> void:
 	layer = 5
 	_build_status()
+	_build_equipped()
 
 func _build_status() -> void:
 	var vbox := VBoxContainer.new()
@@ -81,9 +92,89 @@ func _refresh_status() -> void:
 	fill_style.corner_radius_bottom_left = 2
 	_hp_bar.add_theme_stylebox_override("fill", fill_style)
 
+func _build_equipped_slot() -> Dictionary:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = EQUIPPED_SLOT_SIZE
+
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 2)
+	panel.add_child(vbox)
+
+	var icon := TextureRect.new()
+	icon.custom_minimum_size = Vector2(SLOT_ICON_SIZE, SLOT_ICON_SIZE)
+	icon.expand_mode = TextureRect.EXPAND_FIT_HEIGHT_PROPORTIONAL
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vbox.add_child(icon)
+
+	var label := Label.new()
+	label.text = "—"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 10)
+	label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85, 1))
+	vbox.add_child(label)
+
+	equipped_container.add_child(panel)
+
+	return {"panel": panel, "icon": icon, "label": label}
+
+func _build_equipped() -> void:
+	_weapon_slot = _build_equipped_slot()
+	_armor_slot = _build_equipped_slot()
+	_ring_slot = _build_equipped_slot()
+
+func _refresh_equipped() -> void:
+	if player == null:
+		return
+	var inv := player.inventory
+	_set_equipped_slot(_weapon_slot, inv.weapon, "ATK")
+	_set_equipped_slot(_armor_slot, inv.armor, "DEF")
+	_set_equipped_slot(_ring_slot, inv.ring, "HP")
+
+func _set_equipped_slot(slot: Dictionary, item: Item, stat_name: String) -> void:
+	var panel: PanelContainer = slot["panel"]
+	var icon: TextureRect = slot["icon"]
+	var label: Label = slot["label"]
+
+	var stylebox := StyleBoxFlat.new()
+	stylebox.border_width_left = 1
+	stylebox.border_width_top = 1
+	stylebox.border_width_right = 1
+	stylebox.border_width_bottom = 1
+	stylebox.border_color = SLOT_BORDER
+	stylebox.corner_radius_top_left = 3
+	stylebox.corner_radius_top_right = 3
+	stylebox.corner_radius_bottom_right = 3
+	stylebox.corner_radius_bottom_left = 3
+	stylebox.content_margin_left = 4
+	stylebox.content_margin_top = 4
+	stylebox.content_margin_right = 4
+	stylebox.content_margin_bottom = 4
+
+	if item == null:
+		stylebox.bg_color = SLOT_BG_EMPTY
+		icon.visible = false
+		label.text = "—"
+	else:
+		stylebox.bg_color = SLOT_BG_FILLED
+		icon.visible = true
+		icon.texture = item.texture
+		var bonus: int = 0
+		if item is Weapon:
+			bonus = (item as Weapon).atk_bonus
+		elif item is Armor:
+			bonus = (item as Armor).def_bonus
+		elif item is Ring:
+			bonus = (item as Ring).max_hp_bonus
+		label.text = "+%d %s" % [bonus, stat_name]
+
+	panel.add_theme_stylebox_override("panel", stylebox)
+
 func refresh() -> void:
 	_refresh_status()
-	# _refresh_equipped and _refresh_bag added in Tasks 4-5.
+	_refresh_equipped()
+	# _refresh_bag added in Task 5.
 
 func use_consumable_slot(idx: int) -> void:
 	if player == null:
