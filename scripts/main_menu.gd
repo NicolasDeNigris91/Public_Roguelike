@@ -9,6 +9,7 @@ extends Control
 @onready var _settings_overlay: CanvasLayer = $SettingsOverlay
 @onready var _credits_overlay: CanvasLayer = $CreditsOverlay
 @onready var _settings_menu: Control = $SettingsOverlay/SettingsMenu
+@onready var _credits_screen: Control = $CreditsOverlay/CreditsScreen
 
 func _ready() -> void:
 	_play_button.pressed.connect(_on_play)
@@ -16,6 +17,7 @@ func _ready() -> void:
 	_credits_button.pressed.connect(_on_credits)
 	_quit_button.pressed.connect(_on_quit)
 	_settings_menu.closed.connect(_on_settings_closed)
+	_credits_screen.closed.connect(_on_credits_closed)
 	_play_button.grab_focus()
 
 func _on_play() -> void:
@@ -30,6 +32,10 @@ func _on_settings_closed() -> void:
 
 func _on_credits() -> void:
 	_credits_overlay.visible = true
+	_credits_screen.visible = true
+
+func _on_credits_closed() -> void:
+	_credits_overlay.visible = false
 
 func _on_quit() -> void:
 	get_tree().quit()

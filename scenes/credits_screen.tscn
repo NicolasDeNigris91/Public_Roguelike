@@ -1,0 +1,97 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/credits_screen.gd" id="1_cs"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cs"]
+bg_color = Color(0.06, 0.06, 0.08, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.45, 0.5, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="CreditsScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 0
+script = ExtResource("1_cs")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.75)
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -260.0
+offset_right = 320.0
+offset_bottom = 260.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cs")
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 32
+text = "Créditos"
+horizontal_alignment = 1
+
+[node name="Content" type="RichTextLabel" parent="Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+fit_content = true
+text = "[center][b]Cripta do Lich[/b]
+Roguelike turn-based — peça de portfolio
+[/center]
+
+[b]Desenvolvimento[/b]
+Nicolas De Nigris
+
+[b]Arte[/b]
+Dungeon Crawl Stone Soup — RLTiles (domínio público)
+https://github.com/crawl/crawl
+
+[b]Música[/b]
+Eric Matyas — CC-BY 4.0
+https://soundimage.org/
+
+[b]Efeitos sonoros[/b]
+Kenney — CC0
+https://kenney.nl/
+
+[b]Engine[/b]
+Godot 4.6 — MIT License
+https://godotengine.org/"
+
+[node name="BackButton" type="Button" parent="Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Voltar"
