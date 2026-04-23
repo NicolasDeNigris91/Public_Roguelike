@@ -26,20 +26,16 @@ var memory_layer: TileMapLayer
 
 var _bastion_tileset: TileSet
 var _catacombs_tileset: TileSet
+var _blood_sanctum_tileset: TileSet
 
 func _ready() -> void:
 	rng.randomize()
 
 	_bastion_tileset = load(TILESET_PATH)
-	# Catacombs biome reuses the same sources but swaps the floor + wall textures.
+	# Each biome reuses the same source IDs but swaps the floor + wall textures.
 	# Duplicate (deep) so editing the clone does not mutate the loaded resource.
-	_catacombs_tileset = _bastion_tileset.duplicate(true)
-	var catacomb_floor := _catacombs_tileset.get_source(SOURCE_FLOOR) as TileSetAtlasSource
-	if catacomb_floor != null:
-		catacomb_floor.texture = SpriteDB.tile("floor_catacombs")
-	var catacomb_wall := _catacombs_tileset.get_source(SOURCE_WALL) as TileSetAtlasSource
-	if catacomb_wall != null:
-		catacomb_wall.texture = SpriteDB.tile("wall_catacombs")
+	_catacombs_tileset = _build_biome_tileset("floor_catacombs", "wall_catacombs")
+	_blood_sanctum_tileset = _build_biome_tileset("floor_blood_sanctum", "wall_blood_sanctum")
 
 	memory_layer = TileMapLayer.new()
 	memory_layer.tile_set = _bastion_tileset
@@ -55,10 +51,24 @@ func _ready() -> void:
 # Called by main.gd whenever current_floor changes. Picks the biome's tileset.
 func set_biome(biome: StringName) -> void:
 	var target: TileSet = _bastion_tileset
-	if biome == ActConfig.BIOME_CATACOMBS:
-		target = _catacombs_tileset
+	match biome:
+		ActConfig.BIOME_CATACOMBS:
+			target = _catacombs_tileset
+		ActConfig.BIOME_BLOOD_SANCTUM:
+			target = _blood_sanctum_tileset
 	visible_layer.tile_set = target
 	memory_layer.tile_set = target
+
+# Builds a biome variant of the base tileset with floor+wall textures swapped.
+func _build_biome_tileset(floor_key: String, wall_key: String) -> TileSet:
+	var ts: TileSet = _bastion_tileset.duplicate(true)
+	var floor_src := ts.get_source(SOURCE_FLOOR) as TileSetAtlasSource
+	if floor_src != null:
+		floor_src.texture = SpriteDB.tile(floor_key)
+	var wall_src := ts.get_source(SOURCE_WALL) as TileSetAtlasSource
+	if wall_src != null:
+		wall_src.texture = SpriteDB.tile(wall_key)
+	return ts
 
 func regenerate() -> void:
 	visible_tiles.clear()

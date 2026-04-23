@@ -138,11 +138,13 @@ func _populate_boss_floor() -> void:
 	boss.turn_manager = turn_manager
 	boss.move_to(spawns["lich_spawn"], false)  # key reused for any boss spawn
 	turn_manager.register_enemy(boss)
-	# Both Lich and DeathKnight emit truly_died(Vector2i) when their true death lands.
+	# Lich, DeathKnight, and Abomination all emit truly_died(Vector2i).
 	if boss is Lich:
 		(boss as Lich).truly_died.connect(_on_boss_truly_died)
 	elif boss is DeathKnight:
 		(boss as DeathKnight).truly_died.connect(_on_boss_truly_died)
+	elif boss is Abomination:
+		(boss as Abomination).truly_died.connect(_on_boss_truly_died)
 	AudioManager.play_music("boss", 1.5)
 
 func _pick_enemy_type() -> Enemy:
@@ -175,14 +177,40 @@ func _pick_enemy_type() -> Enemy:
 		if roll < 0.8:
 			return Necrophage.new()
 		return Mage.new()
-	# Late Act 2 (14-17)
-	if roll < 0.3:
-		return Wraith.new()
-	if roll < 0.6:
+	if current_floor <= 17:
+		# Late Act 2 (14-17)
+		if roll < 0.3:
+			return Wraith.new()
+		if roll < 0.6:
+			return Necrophage.new()
+		if roll < 0.85:
+			return Mage.new()
+		return Archer.new()
+	# Act 3 — Blood Sanctum (19-29, boss on 30)
+	if current_floor <= 21:
+		# Early Act 3: introduce Flayed Ghost alongside Wraith/Necrophage carryover.
+		if roll < 0.3:
+			return Wraith.new()
+		if roll < 0.7:
+			return FlayedGhost.new()
 		return Necrophage.new()
+	if current_floor <= 25:
+		# Mid Act 3: FlayedGhost + RottingHulk main line, Necrophage filler.
+		if roll < 0.25:
+			return FlayedGhost.new()
+		if roll < 0.6:
+			return RottingHulk.new()
+		if roll < 0.85:
+			return Necrophage.new()
+		return Mage.new()
+	# Late Act 3 (26-29)
+	if roll < 0.3:
+		return RottingHulk.new()
+	if roll < 0.6:
+		return FlayedGhost.new()
 	if roll < 0.85:
 		return Mage.new()
-	return Archer.new()
+	return Wraith.new()
 
 func _spawn_enemy(at: Vector2i, atk_bonus: int) -> void:
 	var enemy := _pick_enemy_type()

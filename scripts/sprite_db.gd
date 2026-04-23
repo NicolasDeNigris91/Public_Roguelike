@@ -10,6 +10,9 @@ const _ACTORS := {
 	"wraith":       preload("res://assets/sprites/actors/wraith.png"),
 	"necrophage":   preload("res://assets/sprites/actors/necrophage.png"),
 	"death_knight": preload("res://assets/sprites/actors/death_knight.png"),
+	"flayed_ghost": preload("res://assets/sprites/actors/flayed_ghost.png"),
+	"rotting_hulk": preload("res://assets/sprites/actors/rotting_hulk.png"),
+	"abomination":  preload("res://assets/sprites/actors/abomination.png"),
 }
 
 const _ITEMS := {
@@ -59,8 +62,10 @@ const _CRYSTAL_SPEAR_FRAMES: Array = [
 const _TILES := {
 	"floor":            preload("res://assets/tiles/floor.png"),
 	"wall":             preload("res://assets/tiles/wall.png"),
-	"floor_catacombs":  preload("res://assets/tiles/floor_catacombs.png"),
-	"wall_catacombs":   preload("res://assets/tiles/wall_catacombs.png"),
+	"floor_catacombs":      preload("res://assets/tiles/floor_catacombs.png"),
+	"wall_catacombs":       preload("res://assets/tiles/wall_catacombs.png"),
+	"floor_blood_sanctum":  preload("res://assets/tiles/floor_blood_sanctum.png"),
+	"wall_blood_sanctum":   preload("res://assets/tiles/wall_blood_sanctum.png"),
 	"stairs_down":      preload("res://assets/tiles/stairs_down.png"),
 	"floor_n":          preload("res://assets/tiles/floor_borders/floor_n.png"),
 	"floor_s":          preload("res://assets/tiles/floor_borders/floor_s.png"),
