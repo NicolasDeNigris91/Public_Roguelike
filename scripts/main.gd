@@ -75,6 +75,25 @@ func _unhandled_input(event: InputEvent) -> void:
 		AudioManager.toggle_muted()
 		get_viewport().set_input_as_handled()
 		return
+	# Debug / playtest shortcuts. Remove or gate behind a dev flag before shipping.
+	if event.keycode == KEY_F1:
+		player.godmode = not player.godmode
+		print("[DEBUG] GODMODE: %s" % ("ON" if player.godmode else "OFF"))
+		get_viewport().set_input_as_handled()
+		return
+	if event.keycode == KEY_F2:
+		print("[DEBUG] warping from floor %d to %d" % [current_floor, current_floor + 1])
+		_descend()
+		get_viewport().set_input_as_handled()
+		return
+	if event.keycode == KEY_F3:
+		player.hp = player.max_hp
+		player.faith = Player.MAX_FAITH
+		player.faith_changed.emit(player.faith, Player.MAX_FAITH)
+		hotbar.refresh()
+		print("[DEBUG] healed to full + faith maxed")
+		get_viewport().set_input_as_handled()
+		return
 	if game_over_screen.visible:
 		if event.keycode == KEY_R:
 			get_viewport().set_input_as_handled()

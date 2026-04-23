@@ -30,6 +30,9 @@ var hotbar: CanvasLayer = null
 var bonus_atk: int = 0
 var bonus_def: int = 0
 var bonus_max_hp: int = 0
+# Debug / playtest flag. Toggled by F1 in main.gd — take_damage no-ops when on.
+# Not serialized; resets on restart.
+var godmode: bool = false
 # Per-act running totals of altar-granted stats. Reset by main.gd.reset_altar_cap
 # when the player descends into a new act (ActConfig.act_for_floor changes).
 # Sacrifices that would push gain past the per-act cap still consume the item
@@ -248,6 +251,9 @@ func _recalculate_stats() -> void:
 	_notify_hotbar()
 
 func take_damage(amount: int) -> void:
+	if godmode:
+		print("(godmode) ignored %d damage" % amount)
+		return
 	var effective: int = mini(amount, hp)
 	RunStats.record_damage_taken(effective)
 	hp = maxi(0, hp - amount)
