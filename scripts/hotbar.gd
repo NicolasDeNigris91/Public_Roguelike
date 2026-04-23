@@ -26,6 +26,7 @@ var current_floor: int = 1
 var _hp_bar: ProgressBar
 var _hp_label: Label
 var _floor_label: Label
+var _faith_label: Label
 
 var _weapon_slot: Dictionary
 var _armor_slot: Dictionary
@@ -72,11 +73,21 @@ func _build_status() -> void:
 	_hp_label.add_theme_font_size_override("font_size", 14)
 	hp_row.add_child(_hp_label)
 
+	var info_row := HBoxContainer.new()
+	info_row.add_theme_constant_override("separation", 12)
+	vbox.add_child(info_row)
+
 	_floor_label = Label.new()
 	_floor_label.text = "Andar 1/%d" % MAX_FLOOR
 	_floor_label.add_theme_font_size_override("font_size", 14)
 	_floor_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
-	vbox.add_child(_floor_label)
+	info_row.add_child(_floor_label)
+
+	_faith_label = Label.new()
+	_faith_label.text = "Fé 0/3"
+	_faith_label.add_theme_font_size_override("font_size", 14)
+	_faith_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35, 1))  # gold
+	info_row.add_child(_faith_label)
 
 func _refresh_status() -> void:
 	if player == null:
@@ -85,6 +96,7 @@ func _refresh_status() -> void:
 	_hp_bar.value = player.hp
 	_hp_label.text = "%d/%d" % [player.hp, player.max_hp]
 	_floor_label.text = "Andar %d/%d" % [current_floor, MAX_FLOOR]
+	_faith_label.text = "Fé %d/%d" % [player.faith, Player.MAX_FAITH]
 
 	# HP color: red→yellow→green via two-stage lerp
 	var ratio: float = 0.0

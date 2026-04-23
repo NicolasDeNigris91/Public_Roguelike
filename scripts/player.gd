@@ -3,11 +3,15 @@ extends Actor
 
 signal turn_done
 signal item_dropped(item: Item, pos: Vector2i)
+signal faith_changed(faith: int, max_faith: int)
 
 const BASE_ATK: int = 5
 const BASE_DEF: int = 3
 const BASE_MAX_HP: int = 20
 const BASE_VISION_RANGE: int = 8
+const MAX_FAITH: int = 3
+const SMITE_RANGE: int = 5
+const SMITE_DAMAGE_BONUS: int = 3
 
 var dungeon: Dungeon
 var turn_manager: TurnManager
@@ -16,6 +20,8 @@ var turn_active: bool = true
 var inventory: Inventory
 var vision_range: int = BASE_VISION_RANGE
 var vision_debuff_turns: int = 0
+var faith: int = 0
+var _last_direction: Vector2i = Vector2i(0, -1)
 
 func _ready() -> void:
 	max_hp = BASE_MAX_HP
@@ -29,6 +35,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not turn_active or is_tweening:
 		return
 	if not (event is InputEventKey) or not event.pressed or event.echo:
+		return
+
+	if event.keycode == KEY_Q:
+		get_viewport().set_input_as_handled()
+		if await try_smite():
+			_end_turn()
 		return
 
 	var direction := Vector2i.ZERO
@@ -45,6 +57,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 
 	get_viewport().set_input_as_handled()
+	_last_direction = direction
 
 	var target_pos := grid_position + direction
 	var target_enemy := _enemy_at(target_pos)
@@ -57,6 +70,39 @@ func _unhandled_input(event: InputEvent) -> void:
 		move_to(target_pos)
 		await moved
 		_end_turn()
+
+func try_smite() -> bool:
+	if faith <= 0:
+		return false
+	var target := _find_smite_target(_last_direction)
+	if target == null:
+		return false
+	faith -= 1
+	faith_changed.emit(faith, MAX_FAITH)
+	_notify_hotbar()
+	await Combat.smite(self, target)
+	return true
+
+func gain_faith() -> void:
+	if faith >= MAX_FAITH:
+		return
+	faith += 1
+	faith_changed.emit(faith, MAX_FAITH)
+	_notify_hotbar()
+
+func _find_smite_target(direction: Vector2i) -> Enemy:
+	if dungeon == null or direction == Vector2i.ZERO:
+		return null
+	for i in range(1, SMITE_RANGE + 1):
+		var check_pos: Vector2i = grid_position + direction * i
+		if not dungeon.grid.in_bounds(check_pos):
+			return null
+		if dungeon.grid.get_cell(check_pos) == Grid.CellType.WALL:
+			return null
+		var enemy := _enemy_at(check_pos)
+		if enemy != null:
+			return enemy
+	return null
 
 func _end_turn() -> void:
 	if vision_debuff_turns > 0:

@@ -63,6 +63,8 @@ static func attack(
 	if target.hp <= 0:
 		if not (target is Player):
 			AudioManager.play_sfx("enemy_die")
+			if attacker is Player:
+				(attacker as Player).gain_faith()
 		# Player death SFX is handled by Player.die() in Task 3.
 	elif target is Player:
 		AudioManager.play_sfx("player_hurt")
@@ -88,6 +90,22 @@ static func attack(
 
 	var pause: float = HIT_PAUSE_CRIT if is_crit else HIT_PAUSE_NORMAL
 	HitPause.freeze(target.get_tree(), pause)
+
+static func smite(attacker: Player, target: Enemy) -> void:
+	var dmg: int = attacker.atk + Player.SMITE_DAMAGE_BONUS
+	target.flash_white()
+	AudioManager.play_sfx("smite")
+	if effects_layer != null:
+		var world_pos: Vector2 = target.position - Vector2(0, 8)
+		DamageNumber.spawn(effects_layer, world_pos, "%d!" % dmg, DMG_COLOR_CRIT, 1.2)
+	target.take_damage(dmg)
+	if target.hp <= 0:
+		AudioManager.play_sfx("enemy_die")
+		attacker.gain_faith()
+	print("%s smites %s for %d (target HP: %d/%d)" % [
+		attacker.name, target.name, dmg, target.hp, target.max_hp
+	])
+	HitPause.freeze(attacker.get_tree(), HIT_PAUSE_CRIT)
 
 static func _is_adjacent(a: Actor, b: Actor) -> bool:
 	var dx: int = absi(a.grid_position.x - b.grid_position.x)
