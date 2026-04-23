@@ -29,6 +29,9 @@ const HOLY_SMITE_ICON: Texture2D = preload("res://assets/sprites/abilities/holy_
 var player: Player
 var current_floor: int = 1
 
+var _sacrifice_mode: bool = false
+var _sacrifice_prompt: Label
+
 var _hp_bar: ProgressBar
 var _hp_label: Label
 var _floor_label: Label
@@ -53,6 +56,7 @@ func _ready() -> void:
 	_build_abilities()
 	_build_equipped()
 	_build_bag()
+	_build_sacrifice_prompt()
 	AudioManager.mute_changed.connect(_on_mute_changed)
 	_on_mute_changed(AudioManager.is_muted())
 
@@ -469,13 +473,37 @@ func _process(_delta: float) -> void:
 	if tooltip_control.visible:
 		_reposition_tooltip()
 
-# Stub — implemented in Task 9
-func set_sacrifice_mode(_enabled: bool) -> void:
-	pass
+func _build_sacrifice_prompt() -> void:
+	_sacrifice_prompt = Label.new()
+	_sacrifice_prompt.text = "Altar profano: pressione 1–8 para sacrificar arma, armadura ou anel"
+	_sacrifice_prompt.add_theme_font_size_override("font_size", 14)
+	_sacrifice_prompt.add_theme_color_override("font_color", FAITH_COLOR)
+	_sacrifice_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_sacrifice_prompt.anchor_left = 0.0
+	_sacrifice_prompt.anchor_right = 1.0
+	_sacrifice_prompt.anchor_top = 1.0
+	_sacrifice_prompt.anchor_bottom = 1.0
+	_sacrifice_prompt.offset_top = -130.0
+	_sacrifice_prompt.offset_bottom = -110.0
+	_sacrifice_prompt.visible = false
+	add_child(_sacrifice_prompt)
 
-# Stub — implemented in Task 9
-func flash_slot_invalid(_slot: int) -> void:
-	pass
+func set_sacrifice_mode(enabled: bool) -> void:
+	_sacrifice_mode = enabled
+	if _sacrifice_prompt != null:
+		_sacrifice_prompt.visible = enabled
+	for slot in _bag_slots:
+		var panel: PanelContainer = slot["panel"]
+		panel.modulate = Color(1.25, 1.1, 0.55, 1.0) if enabled else Color.WHITE
+
+func flash_slot_invalid(slot_idx: int) -> void:
+	if slot_idx < 0 or slot_idx >= _bag_slots.size():
+		return
+	var panel: PanelContainer = _bag_slots[slot_idx]["panel"]
+	var base_color: Color = Color(1.25, 1.1, 0.55, 1.0) if _sacrifice_mode else Color.WHITE
+	var tween := create_tween()
+	tween.tween_property(panel, "modulate", Color(1.5, 0.3, 0.3, 1.0), 0.08)
+	tween.tween_property(panel, "modulate", base_color, 0.2)
 
 func use_consumable_slot(idx: int) -> void:
 	if player == null:
