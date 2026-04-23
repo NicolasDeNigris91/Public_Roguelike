@@ -166,6 +166,23 @@ func die() -> void:
 	turn_active = false
 	_notify_hotbar()
 
+func apply_altar_buff(item: Item) -> bool:
+	var buff := AltarBuff.compute(item)
+	if not buff["applicable"]:
+		return false
+	var stat: StringName = buff["stat"]
+	var delta: int = buff["delta"]
+	match stat:
+		AltarBuff.STAT_ATK:
+			bonus_atk += delta
+		AltarBuff.STAT_DEF:
+			bonus_def += delta
+		AltarBuff.STAT_MAX_HP:
+			bonus_max_hp += delta
+	_recalculate_stats()
+	stat_increased.emit(stat, delta)
+	return true
+
 func _recalculate_stats() -> void:
 	atk = BASE_ATK + bonus_atk
 	def = BASE_DEF + bonus_def
