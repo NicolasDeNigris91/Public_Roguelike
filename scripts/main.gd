@@ -1,6 +1,7 @@
 extends Node2D
 
 const MAX_ENEMIES_PER_FLOOR: int = 5
+const AltarScene: PackedScene = preload("res://scenes/altar.tscn")
 const ITEMS_PER_FLOOR_MIN: int = 2
 const ITEMS_PER_FLOOR_MAX: int = 3
 
@@ -12,6 +13,7 @@ const ITEMS_PER_FLOOR_MAX: int = 3
 @onready var hotbar: CanvasLayer = $Hotbar
 @onready var effects_layer: Node2D = $World/EffectsLayer
 @onready var game_over_screen: CanvasLayer = $GameOverScreen
+@onready var altars_layer: Node2D = $World/AltarsLayer
 @onready var pause_menu: CanvasLayer = $PauseMenu
 
 var current_floor: int = 1
@@ -108,6 +110,7 @@ func _populate_floor() -> void:
 			_spawn_enemy(dungeon.room_center(room_index), atk_bonus)
 
 	_spawn_items()
+	_spawn_altar()
 
 func _populate_boss_floor() -> void:
 	var spawns: Dictionary = dungeon.regenerate_as_boss_arena()
@@ -175,6 +178,7 @@ func _spawn_items() -> void:
 		if pos == player.grid_position: continue
 		if pos == dungeon.stairs_position: continue
 		if _item_at(pos) != null: continue
+		if _altar_at(pos) != null: continue
 
 		var entity := ItemEntity.new()
 		entity.item = ItemDB.random_item(rng)
@@ -194,6 +198,9 @@ func _descend() -> void:
 	turn_manager.enemies.clear()
 
 	for child in items_layer.get_children():
+		child.queue_free()
+
+	for child in altars_layer.get_children():
 		child.queue_free()
 
 	if current_floor != 6:
@@ -218,12 +225,41 @@ func _refresh_entity_visibility() -> void:
 			enemy.visible = dungeon.is_tile_visible(enemy.grid_position)
 	for item_entity in items_layer.get_children():
 		item_entity.visible = dungeon.is_tile_visible(item_entity.grid_position)
+	for altar in altars_layer.get_children():
+		altar.visible = dungeon.is_tile_visible(altar.grid_position)
 
 func _item_at(pos: Vector2i) -> ItemEntity:
 	for child in items_layer.get_children():
 		if child is ItemEntity and child.grid_position == pos:
 			return child
 	return null
+
+func _altar_at(pos: Vector2i) -> Altar:
+	for child in altars_layer.get_children():
+		if child is Altar and child.grid_position == pos:
+			return child
+	return null
+
+func _spawn_altar() -> void:
+	if current_floor == 6:
+		return  # Lich arena protected
+	var attempts := 0
+	while attempts < 30:
+		attempts += 1
+		var room := dungeon.rooms[rng.randi_range(0, dungeon.rooms.size() - 1)]
+		var pos := Vector2i(
+			rng.randi_range(room.position.x, room.position.x + room.size.x - 1),
+			rng.randi_range(room.position.y, room.position.y + room.size.y - 1)
+		)
+		if pos == player.grid_position: continue
+		if pos == dungeon.stairs_position: continue
+		if _item_at(pos) != null: continue
+		if _altar_at(pos) != null: continue
+		var altar := AltarScene.instantiate() as Altar
+		altar.grid_position = pos
+		altars_layer.add_child(altar)
+		return
+	push_warning("Could not place altar on floor %d after 30 attempts" % current_floor)
 
 func _try_pickup(pos: Vector2i) -> void:
 	var entity := _item_at(pos)
