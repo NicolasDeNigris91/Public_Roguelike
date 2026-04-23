@@ -95,6 +95,9 @@ func _build_portrait() -> void:
 	panel.add_child(icon)
 
 	portrait_container.add_child(panel)
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.mouse_entered.connect(_on_portrait_hover)
+	panel.mouse_exited.connect(_hide_tooltip)
 
 func _build_status() -> void:
 	var vbox := VBoxContainer.new()
@@ -111,11 +114,17 @@ func _build_status() -> void:
 	_hp_bar.min_value = 0
 	_hp_bar.max_value = 20
 	_hp_bar.value = 20
+	_hp_bar.mouse_filter = Control.MOUSE_FILTER_STOP
+	_hp_bar.mouse_entered.connect(_on_hp_hover)
+	_hp_bar.mouse_exited.connect(_hide_tooltip)
 	hp_row.add_child(_hp_bar)
 
 	_hp_label = Label.new()
 	_hp_label.text = "0/0"
 	_hp_label.add_theme_font_size_override("font_size", 14)
+	_hp_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	_hp_label.mouse_entered.connect(_on_hp_hover)
+	_hp_label.mouse_exited.connect(_hide_tooltip)
 	hp_row.add_child(_hp_label)
 
 	var info_row := HBoxContainer.new()
@@ -126,6 +135,9 @@ func _build_status() -> void:
 	_floor_label.text = "Andar 1/%d" % MAX_FLOOR
 	_floor_label.add_theme_font_size_override("font_size", 14)
 	_floor_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
+	_floor_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	_floor_label.mouse_entered.connect(_on_floor_hover)
+	_floor_label.mouse_exited.connect(_hide_tooltip)
 	info_row.add_child(_floor_label)
 
 	var stats_row := HBoxContainer.new()
@@ -136,12 +148,18 @@ func _build_status() -> void:
 	_atk_label.text = "⚔ 0"
 	_atk_label.add_theme_font_size_override("font_size", 14)
 	_atk_label.add_theme_color_override("font_color", Color(0.95, 0.6, 0.35, 1))
+	_atk_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	_atk_label.mouse_entered.connect(_on_atk_hover)
+	_atk_label.mouse_exited.connect(_hide_tooltip)
 	stats_row.add_child(_atk_label)
 
 	_def_label = Label.new()
 	_def_label.text = "🛡 0"
 	_def_label.add_theme_font_size_override("font_size", 14)
 	_def_label.add_theme_color_override("font_color", Color(0.4, 0.75, 0.95, 1))
+	_def_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	_def_label.mouse_entered.connect(_on_def_hover)
+	_def_label.mouse_exited.connect(_hide_tooltip)
 	stats_row.add_child(_def_label)
 
 func _refresh_status() -> void:
@@ -290,6 +308,36 @@ func _refresh_abilities() -> void:
 	stylebox.content_margin_bottom = 4
 	stylebox.bg_color = SLOT_BG_FILLED if available else SLOT_BG_EMPTY
 	panel.add_theme_stylebox_override("panel", stylebox)
+
+func _on_portrait_hover() -> void:
+	_show_tooltip("Paladino\nClasse de combate corpo-a-corpo com Holy Smite (Q) e fé renovável ao matar inimigos.")
+
+func _on_hp_hover() -> void:
+	if player == null:
+		_show_tooltip("Vida")
+		return
+	_show_tooltip("Vida: %d / %d\nMate inimigos ou use poções para recuperar." % [player.hp, player.max_hp])
+
+func _on_floor_hover() -> void:
+	_show_tooltip("Andar atual %d de %d\nDesça pelas escadas para progredir. O Lich espera no último." % [current_floor, MAX_FLOOR])
+
+func _on_atk_hover() -> void:
+	if player == null:
+		_show_tooltip("Ataque")
+		return
+	var weapon_bonus: int = 0
+	if player.inventory.weapon != null:
+		weapon_bonus = player.inventory.weapon.atk_bonus
+	_show_tooltip("Ataque: %d\nBase %d + Arma %d + Altar %d" % [player.atk, Player.BASE_ATK, weapon_bonus, player.bonus_atk])
+
+func _on_def_hover() -> void:
+	if player == null:
+		_show_tooltip("Defesa")
+		return
+	var armor_bonus: int = 0
+	if player.inventory.armor != null:
+		armor_bonus = player.inventory.armor.def_bonus
+	_show_tooltip("Defesa: %d\nBase %d + Armadura %d + Altar %d" % [player.def, Player.BASE_DEF, armor_bonus, player.bonus_def])
 
 func _on_smite_hover() -> void:
 	if player == null:
