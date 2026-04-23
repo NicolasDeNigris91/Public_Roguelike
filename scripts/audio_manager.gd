@@ -23,6 +23,7 @@ const _SFX := {
 	"breu_cast":    preload("res://assets/audio/sfx/breu_cast.ogg"),
 	"lich_revive":  preload("res://assets/audio/sfx/lich_revive.ogg"),
 	"smite":        preload("res://assets/audio/sfx/smite.ogg"),
+	"sacrifice":    preload("res://assets/audio/sfx/sacrifice.ogg"),
 }
 
 const _MUSIC := {
