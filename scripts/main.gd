@@ -23,6 +23,7 @@ func _ready() -> void:
 	player.turn_manager = turn_manager
 	player.died.connect(_on_player_died)
 	player.moved.connect(_on_player_moved)
+	player.item_dropped.connect(_on_player_item_dropped)
 	turn_manager.dungeon = dungeon
 	turn_manager.register_player(player)
 
@@ -48,6 +49,10 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey) or not event.pressed or event.echo:
+		return
+	if event.keycode == KEY_M:
+		AudioManager.toggle_muted()
+		get_viewport().set_input_as_handled()
 		return
 	if game_over_screen.visible:
 		if event.keycode == KEY_R:
@@ -205,6 +210,13 @@ func _on_player_moved(to_pos: Vector2i) -> void:
 		return
 	_try_pickup(to_pos)
 	dungeon.update_fov(to_pos, player.vision_range)
+	_refresh_entity_visibility()
+
+func _on_player_item_dropped(item: Item, pos: Vector2i) -> void:
+	var entity := ItemEntity.new()
+	entity.item = item
+	items_layer.add_child(entity)
+	entity.grid_position = pos
 	_refresh_entity_visibility()
 
 func _on_player_died() -> void:

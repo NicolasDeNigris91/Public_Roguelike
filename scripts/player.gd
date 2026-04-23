@@ -2,6 +2,7 @@ class_name Player
 extends Actor
 
 signal turn_done
+signal item_dropped(item: Item, pos: Vector2i)
 
 const BASE_ATK: int = 5
 const BASE_DEF: int = 3
@@ -79,19 +80,19 @@ func pickup(item: Item) -> void:
 	if item is Weapon:
 		var old := inventory.equip_weapon(item)
 		if old != null:
-			inventory.add_to_bag(old)
+			item_dropped.emit(old, grid_position)
 		_recalculate_stats()
 		print("Picked up %s — equipped (ATK %d)" % [item.display_name, atk])
 	elif item is Armor:
 		var old := inventory.equip_armor(item)
 		if old != null:
-			inventory.add_to_bag(old)
+			item_dropped.emit(old, grid_position)
 		_recalculate_stats()
 		print("Picked up %s — equipped (DEF %d)" % [item.display_name, def])
 	elif item is Ring:
 		var old := inventory.equip_ring(item)
 		if old != null:
-			inventory.add_to_bag(old)
+			item_dropped.emit(old, grid_position)
 		_recalculate_stats()
 		print("Picked up %s — equipped (max HP %d)" % [item.display_name, max_hp])
 	else:

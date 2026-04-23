@@ -29,11 +29,14 @@ const _MUSIC := {
 	"boss":    preload("res://assets/audio/music/boss.ogg"),
 }
 
+signal mute_changed(muted: bool)
+
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _sfx_next_idx: int = 0
 var _music_player: AudioStreamPlayer
 var _current_music_key: String = ""
 var _music_tween: Tween = null
+var _muted: bool = false
 
 func _enter_tree() -> void:
 	_ensure_buses()
@@ -119,6 +122,14 @@ func _kill_music_tween() -> void:
 	if _music_tween != null and _music_tween.is_valid():
 		_music_tween.kill()
 	_music_tween = null
+
+func is_muted() -> bool:
+	return _muted
+
+func toggle_muted() -> void:
+	_muted = not _muted
+	AudioServer.set_bus_mute(AudioServer.get_bus_index("Master"), _muted)
+	mute_changed.emit(_muted)
 
 func set_bus_volume_db(bus_name: String, db: float) -> void:
 	var idx: int = AudioServer.get_bus_index(bus_name)
