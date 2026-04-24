@@ -18,7 +18,7 @@ func show_result() -> void:
 	if RunStats.run_victory:
 		_title_label.text = "VITÓRIA FINAL"
 		_title_label.add_theme_color_override("font_color", TITLE_COLOR_FINAL_VICTORY)
-		_subtitle_label.text = "O Demon Lord caiu. A Bastion foi purificada."
+		_subtitle_label.text = "\"The final exorcism is wrought not with words, but with blood. I am the prison and the prisoner.\"\n— Benedict Rosarius"
 	elif RunStats.lich_defeated:
 		_title_label.text = "VITÓRIA"
 		_title_label.add_theme_color_override("font_color", TITLE_COLOR_VICTORY)

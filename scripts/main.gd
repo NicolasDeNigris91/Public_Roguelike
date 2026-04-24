@@ -5,6 +5,18 @@ const AltarScene: PackedScene = preload("res://scenes/altar.tscn")
 const ITEMS_PER_FLOOR_MIN: int = 2
 const ITEMS_PER_FLOOR_MAX: int = 3
 
+# Benedict's narration after each boss fight — fires once when the player
+# descends from the boss floor. Quote 5 is the Demon Lord / final-victory
+# quote, shown by the game-over screen instead of via the dialogue overlay
+# since there's no descent after floor 30.
+const BOSS_QUOTES := {
+	6: "The demon is a master of concealment. He feeds on our fatigue.",
+	12: "Evil's first tactic is to convince us it does not exist. But I feel the cold in the stones.",
+	18: "Where faith falters, the structure crumbles. I tread on ground that no longer belongs to God.",
+	24: "One cannot fight hell without burning one's own skin. Sacrifice demands the loss of purity.",
+}
+const DEMON_LORD_FINAL_QUOTE: String = "The final exorcism is wrought not with words, but with blood. I am the prison and the prisoner."
+
 @onready var dungeon: Dungeon = $World/Dungeon
 @onready var items_layer: Node2D = $World/ItemsLayer
 @onready var entity_layer: Node2D = $World/EntityLayer
@@ -15,6 +27,7 @@ const ITEMS_PER_FLOOR_MAX: int = 3
 @onready var game_over_screen: CanvasLayer = $GameOverScreen
 @onready var altars_layer: Node2D = $World/AltarsLayer
 @onready var pause_menu: CanvasLayer = $PauseMenu
+@onready var dialogue_overlay: CanvasLayer = $DialogueOverlay
 
 var current_floor: int = 1
 var _altar_under_player: Altar = null
@@ -56,6 +69,8 @@ func _ready() -> void:
 	player.hotbar = hotbar
 	player.stat_increased.connect(hotbar.on_stat_increased)
 
+	dialogue_overlay.closed.connect(_on_dialogue_closed)
+
 	dungeon.set_biome(ActConfig.biome_for_floor(current_floor))
 	_populate_floor()
 	dungeon.update_fov(player.grid_position, player.vision_range)
@@ -70,6 +85,9 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey) or not event.pressed or event.echo:
+		return
+	# Dialogue overlay claims input first — it handles X/Space/Enter to dismiss.
+	if dialogue_overlay.visible:
 		return
 	if event.keycode == KEY_M:
 		AudioManager.toggle_muted()
@@ -334,6 +352,14 @@ func _descend() -> void:
 		current_floor, dungeon.rooms.size(), turn_manager.enemies.size()
 	])
 
+	# Post-boss Benedict narration — fires after the descent to the first
+	# floor of the new act. Input is paused until the player presses X.
+	if was_boss_floor:
+		var prev_boss_floor: int = current_floor - 1
+		if BOSS_QUOTES.has(prev_boss_floor):
+			player.turn_active = false
+			dialogue_overlay.show_dialogue(BOSS_QUOTES[prev_boss_floor])
+
 func _refresh_entity_visibility() -> void:
 	for enemy in turn_manager.enemies:
 		if is_instance_valid(enemy):
@@ -420,6 +446,12 @@ func _on_player_item_dropped(item: Item, pos: Vector2i) -> void:
 	items_layer.add_child(entity)
 	entity.grid_position = pos
 	_refresh_entity_visibility()
+
+func _on_dialogue_closed() -> void:
+	# Restore normal input once Benedict finishes speaking, unless the run
+	# has already ended (game over screen already holds input).
+	if not game_over_screen.visible:
+		player.turn_active = true
 
 func _on_player_died() -> void:
 	SaveManager.clear()
