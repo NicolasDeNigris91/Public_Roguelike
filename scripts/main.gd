@@ -21,7 +21,7 @@ const DEMON_LORD_FINAL_QUOTE: String = "The final exorcism is wrought not with w
 # reads but Benedict supposedly cannot hear. Short and cryptic by design.
 const BOSS_WHISPERS := {
 	6: "Y'KRETH IT-SUL...",
-	12: "He turned me. He will turn you.",
+	12: "I wore that gold, once.",
 	18: "The sanctum feeds... always.",
 	24: "Below, he waits. Always.",
 	30: "You and I... both shadows now.",
