@@ -36,6 +36,7 @@ const BOSS_WHISPERS := {
 @onready var effects_layer: Node2D = $World/EffectsLayer
 @onready var game_over_screen: CanvasLayer = $GameOverScreen
 @onready var altars_layer: Node2D = $World/AltarsLayer
+@onready var decorations_layer: Node2D = $World/DecorationsLayer
 @onready var pause_menu: CanvasLayer = $PauseMenu
 @onready var dialogue_overlay: CanvasLayer = $DialogueOverlay
 
@@ -171,6 +172,51 @@ func _populate_floor() -> void:
 	else:
 		_restore_altars_from_data(_restore_altars)
 		_restore_altars = []  # consume once, subsequent floors spawn fresh
+
+	# Scripted narrative prop: Benedict's own rosary in the Infernal Throne,
+	# flanked by two torches against a wall. Discoverable on floor 28.
+	if current_floor == 28:
+		_spawn_floor_28_shrine()
+
+func _spawn_floor_28_shrine() -> void:
+	# Find a room with enough space for a centered shrine: 3 adjacent
+	# walkable tiles with a wall immediately north, and none occupied.
+	var attempts := 0
+	while attempts < 40:
+		attempts += 1
+		var room: Rect2i = dungeon.rooms[rng.randi_range(0, dungeon.rooms.size() - 1)]
+		# Pick a point along the room's top row — y = room.position.y.
+		# The tile immediately north (y - 1) is a wall in BSP rooms.
+		var x: int = rng.randi_range(room.position.x + 1, room.position.x + room.size.x - 2)
+		var y: int = room.position.y
+		var center := Vector2i(x, y)
+		var left := center + Vector2i(-1, 0)
+		var right := center + Vector2i(1, 0)
+		# All three must be walkable and free of existing props.
+		if not (dungeon.grid.is_walkable(center) and dungeon.grid.is_walkable(left) and dungeon.grid.is_walkable(right)):
+			continue
+		if center == player.grid_position or left == player.grid_position or right == player.grid_position:
+			continue
+		if center == dungeon.stairs_position or left == dungeon.stairs_position or right == dungeon.stairs_position:
+			continue
+		if _item_at(center) != null or _altar_at(center) != null:
+			continue
+		# Place rosary on center tile via normal item pipeline (player can pick up).
+		var rosary_entity := ItemEntity.new()
+		rosary_entity.item = ItemDB.rosary()
+		items_layer.add_child(rosary_entity)
+		rosary_entity.grid_position = center
+		# Torches flanking — decorative, no interaction.
+		_spawn_torch(left)
+		_spawn_torch(right)
+		print("[SHRINE] Rosary + torches placed at %s on floor 28" % center)
+		return
+	push_warning("Could not place floor-28 shrine after 40 attempts")
+
+func _spawn_torch(pos: Vector2i) -> void:
+	var t := Torch.new()
+	t.grid_position = pos
+	decorations_layer.add_child(t)
 
 func _populate_boss_floor() -> void:
 	print("[BOSS] Populating boss arena on floor %d" % current_floor)
@@ -339,6 +385,9 @@ func _descend() -> void:
 	for child in altars_layer.get_children():
 		child.queue_free()
 
+	for child in decorations_layer.get_children():
+		child.queue_free()
+
 	dungeon.set_biome(ActConfig.biome_for_floor(current_floor))
 	if not ActConfig.is_boss_floor(current_floor):
 		dungeon.regenerate()
@@ -378,6 +427,9 @@ func _refresh_entity_visibility() -> void:
 		item_entity.visible = dungeon.is_tile_visible(item_entity.grid_position)
 	for altar in altars_layer.get_children():
 		altar.visible = dungeon.is_tile_visible(altar.grid_position)
+	for decor in decorations_layer.get_children():
+		if decor is Torch:
+			decor.visible = dungeon.is_tile_visible(decor.grid_position)
 
 func _item_at(pos: Vector2i) -> ItemEntity:
 	for child in items_layer.get_children():

@@ -315,6 +315,19 @@ static func infernal_aegis() -> Shield:
 	s.def_bonus = 6
 	return s
 
+# Benedict's own rosary, found in the Infernal Throne. Equipped in the
+# shield slot but grants 0 DEF — the beads are as corrupted as the place.
+# Narrative artifact: discovering this on floor 28 tells the player that
+# the cult's reach is older and wider than any single boss encounter.
+# Does not spawn in the random loot pool; scripted placement only.
+static func rosary() -> Shield:
+	var s := Shield.new()
+	s.id = "rosary"
+	s.display_name = "Rosary"
+	s.texture = SpriteDB.item("rosary")
+	s.def_bonus = 0
+	return s
+
 static func from_id(id: String) -> Item:
 	match id:
 		"short_sword": return short_sword()
@@ -350,6 +363,7 @@ static func from_id(id: String) -> Item:
 		"aegis": return aegis()
 		"ember_shield": return ember_shield()
 		"infernal_aegis": return infernal_aegis()
+		"rosary": return rosary()
 		"banded_mail": return banded_mail()
 		"crystal_plate": return crystal_plate()
 		"dragon_plate": return dragon_plate()

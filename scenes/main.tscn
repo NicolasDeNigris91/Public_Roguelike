@@ -53,6 +53,8 @@ script = ExtResource("2_dungeon")
 
 [node name="AltarsLayer" type="Node2D" parent="World"]
 
+[node name="DecorationsLayer" type="Node2D" parent="World"]
+
 [node name="EntityLayer" type="Node2D" parent="World" unique_id=628288153]
 
 [node name="Player" type="Node2D" parent="World/EntityLayer" unique_id=766507503]

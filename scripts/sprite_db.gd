@@ -59,6 +59,7 @@ const _ITEMS := {
 	"aegis":           preload("res://assets/sprites/items/aegis.png"),
 	"ember_shield":    preload("res://assets/sprites/items/ember_shield.png"),
 	"infernal_aegis":  preload("res://assets/sprites/items/infernal_aegis.png"),
+	"rosary":          preload("res://assets/sprites/items/rosary.png"),
 }
 
 const _EFFECTS := {
