@@ -47,4 +47,11 @@ static func compute(item: Item) -> Dictionary:
 			"delta": 4,
 			"secondary": {},
 		}
+	if item is Amulet:
+		return {
+			"applicable": true,
+			"stat": STAT_MAX_HP,
+			"delta": 4,
+			"secondary": {},
+		}
 	return {"applicable": false}

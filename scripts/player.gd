@@ -242,10 +242,15 @@ func _recalculate_stats() -> void:
 	if inventory.ring != null:
 		atk += inventory.ring.atk_bonus
 		def += inventory.ring.def_bonus
+	if inventory.amulet != null:
+		atk += inventory.amulet.atk_bonus
+		def += inventory.amulet.def_bonus
 
 	var new_max_hp := BASE_MAX_HP + bonus_max_hp
 	if inventory.ring != null:
 		new_max_hp += inventory.ring.max_hp_bonus
+	if inventory.amulet != null:
+		new_max_hp += inventory.amulet.max_hp_bonus
 
 	var delta := new_max_hp - max_hp
 	max_hp = new_max_hp
@@ -285,6 +290,9 @@ func restore_state(data: Dictionary) -> void:
 	var ring_id: Variant = equipped.get("ring")
 	if ring_id != null:
 		inventory.ring = ItemDB.from_id(ring_id) as Ring
+	var amulet_id: Variant = equipped.get("amulet")
+	if amulet_id != null:
+		inventory.amulet = ItemDB.from_id(amulet_id) as Amulet
 	for id in data.get("bag", []):
 		var item: Item = ItemDB.from_id(id)
 		if item != null:
@@ -310,6 +318,9 @@ func restore_state(data: Dictionary) -> void:
 	if inventory.ring != null:
 		atk += inventory.ring.atk_bonus
 		def += inventory.ring.def_bonus
+	if inventory.amulet != null:
+		atk += inventory.amulet.atk_bonus
+		def += inventory.amulet.def_bonus
 
 	max_hp = data.get("max_hp", BASE_MAX_HP)
 	hp = data.get("hp", max_hp)

@@ -39,6 +39,7 @@ var _weapon_slot: Dictionary
 var _armor_slot: Dictionary
 var _shield_slot: Dictionary
 var _ring_slot: Dictionary
+var _amulet_slot: Dictionary
 var _bag_slots: Array = []
 
 @onready var portrait_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/PortraitContainer
@@ -376,6 +377,8 @@ func _build_equipped() -> void:
 	_shield_slot["kind"] = "shield"
 	_ring_slot = _build_equipped_slot()
 	_ring_slot["kind"] = "ring"
+	_amulet_slot = _build_equipped_slot()
+	_amulet_slot["kind"] = "amulet"
 
 func _refresh_equipped() -> void:
 	if player == null:
@@ -385,6 +388,7 @@ func _refresh_equipped() -> void:
 	_set_equipped_slot(_armor_slot, inv.armor, "DEF")
 	_set_equipped_slot(_shield_slot, inv.shield, "DEF")
 	_set_equipped_slot(_ring_slot, inv.ring, "HP")
+	_set_equipped_slot(_amulet_slot, inv.amulet, "HP")
 
 # Produces a "+N STAT" label for an item, inspecting its actual bonus so rings
 # with varied primary stats read correctly ("+2 ATK" vs "+15 HP").
@@ -402,6 +406,17 @@ func _item_bonus_label(item: Item, default_stat_name: String) -> String:
 		if r.def_bonus > 0:
 			return "+%d DEF" % r.def_bonus
 		return "+%d HP" % r.max_hp_bonus
+	if item is Amulet:
+		var a := item as Amulet
+		# Amulets can stack multiple bonuses (e.g. faith has atk+def). Show them all.
+		var parts: Array = []
+		if a.atk_bonus > 0:
+			parts.append("+%d ATK" % a.atk_bonus)
+		if a.def_bonus > 0:
+			parts.append("+%d DEF" % a.def_bonus)
+		if a.max_hp_bonus > 0:
+			parts.append("+%d HP" % a.max_hp_bonus)
+		return " ".join(parts) if not parts.is_empty() else "—"
 	return "+0 %s" % default_stat_name
 
 func _set_equipped_slot(slot: Dictionary, item: Item, stat_name: String) -> void:
@@ -545,6 +560,10 @@ func _on_equipped_hover(slot_data: Dictionary) -> void:
 			item = inv.ring
 			if item != null:
 				stat_text = _item_bonus_label(item, "HP")
+		"amulet":
+			item = inv.amulet
+			if item != null:
+				stat_text = _item_bonus_label(item, "HP")
 	if item == null:
 		_show_tooltip("Vazio")
 	else:
@@ -569,6 +588,8 @@ func _on_bag_hover(slot_data: Dictionary) -> void:
 	elif item is Shield:
 		detail = "+%d DEF" % (item as Shield).def_bonus
 	elif item is Ring:
+		detail = _item_bonus_label(item, "HP")
+	elif item is Amulet:
 		detail = _item_bonus_label(item, "HP")
 	if detail != "":
 		_show_tooltip("%s\n%s" % [item.display_name, detail])

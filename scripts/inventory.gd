@@ -17,6 +17,7 @@ var weapon: Weapon
 var armor: Armor
 var shield: Shield
 var ring: Ring
+var amulet: Amulet
 var bag: Array[Item] = []
 
 func equip_weapon(new_weapon: Weapon) -> Weapon:
@@ -39,6 +40,11 @@ func equip_ring(new_ring: Ring) -> Ring:
 	ring = new_ring
 	return previous
 
+func equip_amulet(new_amulet: Amulet) -> Amulet:
+	var previous := amulet
+	amulet = new_amulet
+	return previous
+
 func add_to_bag(item: Item) -> bool:
 	if bag.size() >= BAG_SIZE:
 		return false
@@ -54,6 +60,8 @@ func try_pickup(item: Item) -> PickupResult:
 		return _pickup_shield(item as Shield)
 	if item is Ring:
 		return _pickup_ring(item as Ring)
+	if item is Amulet:
+		return _pickup_amulet(item as Amulet)
 	if add_to_bag(item):
 		return PickupResult.BAGGED
 	return PickupResult.REJECTED_BAG_FULL
@@ -105,5 +113,15 @@ func _pickup_ring(new_ring: Ring) -> PickupResult:
 		ring = new_ring
 		return PickupResult.EQUIPPED
 	if add_to_bag(new_ring):
+		return PickupResult.BAGGED
+	return PickupResult.REJECTED_BAG_FULL
+
+func _pickup_amulet(new_amulet: Amulet) -> PickupResult:
+	if amulet == null:
+		amulet = new_amulet
+		return PickupResult.EQUIPPED
+	# Amulets, like rings, don't auto-swap — different variants have non-comparable
+	# effects. Second amulet goes to the bag; player manually chooses which to wear.
+	if add_to_bag(new_amulet):
 		return PickupResult.BAGGED
 	return PickupResult.REJECTED_BAG_FULL

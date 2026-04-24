@@ -124,6 +124,31 @@ static func ring_of_vitality() -> Ring:
 	r.max_hp_bonus = 15
 	return r
 
+static func amulet_of_faith() -> Amulet:
+	var a := Amulet.new()
+	a.id = "amulet_of_faith"
+	a.display_name = "Amulet of Faith"
+	a.texture = SpriteDB.item("amulet_of_faith")
+	a.atk_bonus = 1
+	a.def_bonus = 1
+	return a
+
+static func amulet_of_warding() -> Amulet:
+	var a := Amulet.new()
+	a.id = "amulet_of_warding"
+	a.display_name = "Amulet of Warding"
+	a.texture = SpriteDB.item("amulet_of_warding")
+	a.def_bonus = 3
+	return a
+
+static func amulet_of_resolve() -> Amulet:
+	var a := Amulet.new()
+	a.id = "amulet_of_resolve"
+	a.display_name = "Amulet of Resolve"
+	a.texture = SpriteDB.item("amulet_of_resolve")
+	a.max_hp_bonus = 20
+	return a
+
 static func buckler() -> Shield:
 	var s := Shield.new()
 	s.id = "buckler"
@@ -165,6 +190,9 @@ static func from_id(id: String) -> Item:
 		"ring_of_strength": return ring_of_strength()
 		"ring_of_protection": return ring_of_protection()
 		"ring_of_vitality": return ring_of_vitality()
+		"amulet_of_faith": return amulet_of_faith()
+		"amulet_of_warding": return amulet_of_warding()
+		"amulet_of_resolve": return amulet_of_resolve()
 		"buckler": return buckler()
 		"kite_shield": return kite_shield()
 		"tower_shield": return tower_shield()
@@ -221,15 +249,26 @@ static func random_shield(rng: RandomNumberGenerator) -> Shield:
 		_:
 			return tower_shield()
 
+static func random_amulet(rng: RandomNumberGenerator) -> Amulet:
+	match rng.randi() % 3:
+		0:
+			return amulet_of_faith()
+		1:
+			return amulet_of_warding()
+		_:
+			return amulet_of_resolve()
+
 static func random_item(rng: RandomNumberGenerator) -> Item:
 	var roll := rng.randf()
-	if roll < 0.30:
+	if roll < 0.28:
 		return random_weapon(rng)
-	elif roll < 0.50:
+	elif roll < 0.46:
 		return random_armor(rng)
-	elif roll < 0.65:
+	elif roll < 0.60:
 		return random_shield(rng)
-	elif roll < 0.90:
+	elif roll < 0.82:
 		return random_consumable(rng)
-	else:
+	elif roll < 0.93:
 		return random_ring(rng)
+	else:
+		return random_amulet(rng)
