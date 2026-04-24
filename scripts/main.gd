@@ -281,7 +281,7 @@ func _spawn_items() -> void:
 		if _altar_at(pos) != null: continue
 
 		var entity := ItemEntity.new()
-		entity.item = ItemDB.random_item(rng)
+		entity.item = ItemDB.random_item(rng, current_floor)
 		items_layer.add_child(entity)
 		entity.grid_position = pos
 		spawned += 1

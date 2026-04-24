@@ -40,6 +40,42 @@ static func dagger() -> Weapon:
 	w.atk_bonus = 0
 	return w
 
+# Act 2 themed weapon — bones of the catacombs fused into a blade.
+static func ancient_sword() -> Weapon:
+	var w := Weapon.new()
+	w.id = "ancient_sword"
+	w.display_name = "Ancient Sword"
+	w.texture = SpriteDB.item("ancient_sword")
+	w.atk_bonus = 5
+	return w
+
+# Act 3 themed weapon — harvests sacrificial blood with every strike.
+static func scythe_of_curses() -> Weapon:
+	var w := Weapon.new()
+	w.id = "scythe_of_curses"
+	w.display_name = "Scythe of Curses"
+	w.texture = SpriteDB.item("scythe_of_curses")
+	w.atk_bonus = 6
+	return w
+
+# Act 4 themed weapon — fire-demon blade, heavy and hot.
+static func sword_of_cerebov() -> Weapon:
+	var w := Weapon.new()
+	w.id = "sword_of_cerebov"
+	w.display_name = "Sword of Cerebov"
+	w.texture = SpriteDB.item("sword_of_cerebov")
+	w.atk_bonus = 7
+	return w
+
+# Act 5 themed weapon — the Demon Lord's own pattern, infernal steel.
+static func demon_blade() -> Weapon:
+	var w := Weapon.new()
+	w.id = "demon_blade"
+	w.display_name = "Demon Blade"
+	w.texture = SpriteDB.item("demon_blade")
+	w.atk_bonus = 8
+	return w
+
 static func leather_armor() -> Armor:
 	var a := Armor.new()
 	a.id = "leather_armor"
@@ -202,6 +238,10 @@ static func from_id(id: String) -> Item:
 		"axe": return axe()
 		"hammer": return hammer()
 		"dagger": return dagger()
+		"ancient_sword": return ancient_sword()
+		"scythe_of_curses": return scythe_of_curses()
+		"sword_of_cerebov": return sword_of_cerebov()
+		"demon_blade": return demon_blade()
 		"leather_armor": return leather_armor()
 		"chain_mail": return chain_mail()
 		"plate_armor": return plate_armor()
@@ -222,18 +262,57 @@ static func from_id(id: String) -> Item:
 		"tower_shield": return tower_shield()
 	return null
 
-static func random_weapon(rng: RandomNumberGenerator) -> Weapon:
-	match rng.randi() % 5:
-		0:
-			return short_sword()
+static func random_weapon(rng: RandomNumberGenerator, floor_num: int = 1) -> Weapon:
+	# Act-aware weapon pool. Each act drops thematically appropriate gear —
+	# weak starters disappear from late acts, and each act's signature
+	# weapon (ancient_sword/scythe_of_curses/sword_of_cerebov/demon_blade)
+	# only appears from its act onward, escalating ATK through the descent.
+	var act: int = ActConfig.act_for_floor(floor_num)
+	var roll := rng.randf()
+	match act:
 		1:
+			# Act 1 — Bastion: basic starters only. Max atk = 2.
+			if roll < 0.4:
+				return dagger()
+			if roll < 0.75:
+				return short_sword()
 			return long_sword()
 		2:
-			return axe()
+			# Act 2 — Catacombs: intro Ancient Sword. Old weapons fade out.
+			if roll < 0.2:
+				return short_sword()
+			if roll < 0.45:
+				return long_sword()
+			if roll < 0.7:
+				return axe()
+			if roll < 0.9:
+				return hammer()
+			return ancient_sword()
 		3:
-			return hammer()
+			# Act 3 — Blood Sanctum: Scythe of Curses enters top slot.
+			if roll < 0.2:
+				return axe()
+			if roll < 0.45:
+				return hammer()
+			if roll < 0.75:
+				return ancient_sword()
+			return scythe_of_curses()
+		4:
+			# Act 4 — Burning Halls: Sword of Cerebov drops in.
+			if roll < 0.2:
+				return hammer()
+			if roll < 0.45:
+				return ancient_sword()
+			if roll < 0.75:
+				return scythe_of_curses()
+			return sword_of_cerebov()
 		_:
-			return dagger()
+			# Act 5 — Infernal Throne: only top-tier infernal weapons appear.
+			if roll < 0.25:
+				return scythe_of_curses()
+			if roll < 0.55:
+				return sword_of_cerebov()
+			return demon_blade()
 
 static func random_armor(rng: RandomNumberGenerator) -> Armor:
 	match rng.randi() % 3:
@@ -286,10 +365,10 @@ static func random_amulet(rng: RandomNumberGenerator) -> Amulet:
 		_:
 			return amulet_of_resolve()
 
-static func random_item(rng: RandomNumberGenerator) -> Item:
+static func random_item(rng: RandomNumberGenerator, floor_num: int = 1) -> Item:
 	var roll := rng.randf()
 	if roll < 0.28:
-		return random_weapon(rng)
+		return random_weapon(rng, floor_num)
 	elif roll < 0.46:
 		return random_armor(rng)
 	elif roll < 0.60:
