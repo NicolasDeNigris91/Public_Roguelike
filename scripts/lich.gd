@@ -88,7 +88,10 @@ func _phase_1_turn(player: Player, dist: int, has_los: bool) -> bool:
 			summon_cooldown = SUMMON_COOLDOWN_MAX
 			return true
 	if has_los and dist <= 3:
-		Combat.attack(self, player, true)
+		# Phase 1 is the "reach" opener — a normal physical ranged hit so the
+		# player's armor matters on the approach. Phases 2 (lifesteal) and 3
+		# (Breu) still ignore DEF because they are explicitly magical.
+		Combat.attack(self, player)
 		if summon_cooldown > 0:
 			summon_cooldown -= 1
 		return true
