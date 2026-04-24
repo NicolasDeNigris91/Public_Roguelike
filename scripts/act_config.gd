@@ -2,10 +2,10 @@ class_name ActConfig
 # Central source of truth for floor → act/biome/boss mapping.
 # Extended per act as the game expands (Act 1 → 2 → ... → 5).
 
-const MAX_FLOOR: int = 48  # Full Version C+ scope. Demon Lord waits on 48.
+const MAX_FLOOR: int = 30  # 5 acts x 6 floors. Boss every 6 — tighter pacing.
 
 # Floors that end an act with a boss fight. Must stay sorted ascending.
-const BOSS_FLOORS: Array[int] = [6, 18, 30, 42, 48]
+const BOSS_FLOORS: Array[int] = [6, 12, 18, 24, 30]
 
 # Biome keys — resolved to tile textures via SpriteDB.tile("floor_<biome>"), etc.
 const BIOME_BASTION: StringName = &"bastion"
@@ -32,24 +32,24 @@ static func spawn_boss(floor: int) -> Enemy:
 	match floor:
 		6:
 			return Lich.new()
-		18:
+		12:
 			return DeathKnight.new()
-		30:
+		18:
 			return Abomination.new()
-		42:
+		24:
 			return FireGiant.new()
-		48:
+		30:
 			return DemonLord.new()
 	return null
 
 static func biome_for_floor(floor: int) -> StringName:
 	if floor <= 6:
 		return BIOME_BASTION
-	if floor <= 18:
+	if floor <= 12:
 		return BIOME_CATACOMBS
-	if floor <= 30:
+	if floor <= 18:
 		return BIOME_BLOOD_SANCTUM
-	if floor <= 42:
+	if floor <= 24:
 		return BIOME_BURNING_HALLS
 	return BIOME_INFERNAL_THRONE
 
@@ -62,10 +62,10 @@ static func is_final_boss_floor(floor: int) -> bool:
 static func act_for_floor(floor: int) -> int:
 	if floor <= 6:
 		return 1
-	if floor <= 18:
+	if floor <= 12:
 		return 2
-	if floor <= 30:
+	if floor <= 18:
 		return 3
-	if floor <= 42:
+	if floor <= 24:
 		return 4
 	return 5

@@ -174,104 +174,79 @@ func _populate_boss_floor() -> void:
 
 func _pick_enemy_type() -> Enemy:
 	var roll := rng.randf()
-	# Act 1 — Bastion
+	# Act 1 — Bastion (1-5, Lich on 6)
 	if current_floor <= 2:
 		return Slime.new()
 	if current_floor <= 4:
 		if roll < 0.5:
 			return Skeleton.new()
 		return Slime.new()
-	if current_floor <= 6:
+	if current_floor <= 5:
 		if roll < 0.3:
 			return Slime.new()
 		if roll < 0.7:
 			return Skeleton.new()
 		return Archer.new()
-	# Act 2 — Catacombs (floors 7-17, boss on 18)
-	if current_floor <= 9:
+	# Act 2 — Catacombs (7-11, Death Knight on 12)
+	if current_floor <= 8:
+		# Early Act 2: intro Wraith alongside Skeleton/Archer carryover.
 		if roll < 0.3:
 			return Skeleton.new()
-		if roll < 0.7:
+		if roll < 0.6:
 			return Archer.new()
 		return Wraith.new()
-	if current_floor <= 13:
-		if roll < 0.2:
-			return Skeleton.new()
-		if roll < 0.5:
+	if current_floor <= 11:
+		# Late Act 2: Wraith + Necrophage lead, Mage filler.
+		if roll < 0.35:
 			return Wraith.new()
-		if roll < 0.8:
-			return Necrophage.new()
-		return Mage.new()
-	if current_floor <= 17:
-		# Late Act 2 (14-17)
-		if roll < 0.3:
-			return Wraith.new()
-		if roll < 0.6:
+		if roll < 0.65:
 			return Necrophage.new()
 		if roll < 0.85:
 			return Mage.new()
 		return Archer.new()
-	# Act 3 — Blood Sanctum (19-29, boss on 30)
-	if current_floor <= 21:
-		# Early Act 3: introduce Flayed Ghost alongside Wraith/Necrophage carryover.
-		if roll < 0.3:
-			return Wraith.new()
+	# Act 3 — Blood Sanctum (13-17, Abomination on 18)
+	if current_floor <= 14:
+		# Early Act 3: intro Flayed Ghost.
+		if roll < 0.4:
+			return FlayedGhost.new()
 		if roll < 0.7:
-			return FlayedGhost.new()
+			return Wraith.new()
 		return Necrophage.new()
-	if current_floor <= 25:
-		# Mid Act 3: FlayedGhost + RottingHulk main line, Necrophage filler.
-		if roll < 0.25:
-			return FlayedGhost.new()
-		if roll < 0.6:
+	if current_floor <= 17:
+		# Late Act 3: Rotting Hulk joins the line.
+		if roll < 0.3:
 			return RottingHulk.new()
-		if roll < 0.85:
+		if roll < 0.55:
+			return FlayedGhost.new()
+		if roll < 0.8:
 			return Necrophage.new()
 		return Mage.new()
-	if current_floor <= 29:
-		# Late Act 3 (26-29)
-		if roll < 0.3:
-			return RottingHulk.new()
-		if roll < 0.6:
-			return FlayedGhost.new()
-		if roll < 0.85:
-			return Mage.new()
-		return Wraith.new()
-	# Act 4 — Burning Halls (31-41, boss on 42)
-	if current_floor <= 33:
-		# Early Act 4: introduce Imp + first demons. Rotting Hulk carryover.
+	# Act 4 — Burning Halls (19-23, Fire Giant on 24)
+	if current_floor <= 20:
+		# Early Act 4: first demons appear. Rotting Hulk carryover.
 		if roll < 0.4:
 			return Imp.new()
 		if roll < 0.7:
 			return RottingHulk.new()
 		return FlayedGhost.new()
-	if current_floor <= 37:
-		# Mid Act 4: add Hell Hound as pack melee.
-		if roll < 0.3:
+	if current_floor <= 23:
+		# Late Act 4: add Hell Hound + Salamander.
+		if roll < 0.25:
 			return Imp.new()
-		if roll < 0.6:
+		if roll < 0.55:
 			return HellHound.new()
-		if roll < 0.85:
-			return RottingHulk.new()
-		return Salamander.new()
-	if current_floor <= 41:
-		# Late Act 4 (38-41)
-		if roll < 0.3:
-			return HellHound.new()
-		if roll < 0.6:
+		if roll < 0.8:
 			return Salamander.new()
-		if roll < 0.85:
-			return Imp.new()
 		return RottingHulk.new()
-	# Act 5 — Infernal Throne (43-47, Demon Lord on 48)
-	if current_floor <= 45:
-		# Early Act 5: Hellwing intro, heavier demons start showing.
+	# Act 5 — Infernal Throne (25-29, Demon Lord on 30)
+	if current_floor <= 26:
+		# Early Act 5: Hellwing intro.
 		if roll < 0.4:
 			return Hellwing.new()
 		if roll < 0.7:
 			return HellHound.new()
 		return Salamander.new()
-	# Late Act 5 (46-47) — Executioner elites anchor the line before the Demon Lord.
+	# Late Act 5 (27-29) — Executioner elites.
 	if roll < 0.35:
 		return Executioner.new()
 	if roll < 0.65:
