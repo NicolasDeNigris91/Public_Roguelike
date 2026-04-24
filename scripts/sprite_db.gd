@@ -41,6 +41,8 @@ const _ITEMS := {
 	"amulet_of_faith":     preload("res://assets/sprites/items/amulet_of_faith.png"),
 	"amulet_of_warding":   preload("res://assets/sprites/items/amulet_of_warding.png"),
 	"amulet_of_resolve":   preload("res://assets/sprites/items/amulet_of_resolve.png"),
+	"potion_of_strength":   preload("res://assets/sprites/items/potion_of_strength.png"),
+	"potion_of_resistance": preload("res://assets/sprites/items/potion_of_resistance.png"),
 	"buckler":         preload("res://assets/sprites/items/buckler.png"),
 	"kite_shield":     preload("res://assets/sprites/items/kite_shield.png"),
 	"tower_shield":    preload("res://assets/sprites/items/tower_shield.png"),

@@ -97,9 +97,21 @@ func _serialize_player(player: Player) -> Dictionary:
 		"bonus_def": player.bonus_def,
 		"bonus_max_hp": player.bonus_max_hp,
 		"altar_gains_this_act": _serialize_altar_gains(player.altar_gains_this_act),
+		"timed_buffs": _serialize_timed_buffs(player.timed_buffs),
 		"equipped": equipped,
 		"bag": bag,
 	}
+
+# JSON strings for StringName buff keys.
+func _serialize_timed_buffs(buffs: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	for key in buffs.keys():
+		var entry: Dictionary = buffs[key]
+		out[str(key)] = {
+			"bonus": int(entry.get("bonus", 0)),
+			"turns_left": int(entry.get("turns_left", 0)),
+		}
+	return out
 
 # JSON objects use strings for keys, so convert StringName keys to String.
 func _serialize_altar_gains(gains: Dictionary) -> Dictionary:

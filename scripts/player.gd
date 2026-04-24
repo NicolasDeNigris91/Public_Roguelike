@@ -42,6 +42,10 @@ var altar_gains_this_act: Dictionary = {
 	&"def": 0,
 	&"max_hp": 0,
 }
+# Timed buffs from consumables. Key: StringName stat ("atk" / "def").
+# Value: {bonus: int, turns_left: int}. Ticks down each turn; at 0 the buff
+# expires. Cleared on death, serialized across saves.
+var timed_buffs: Dictionary = {}
 var turn_active: bool = true
 var inventory: Inventory
 var vision_range: int = BASE_VISION_RANGE
@@ -140,7 +144,35 @@ func _end_turn() -> void:
 			if dungeon != null:
 				dungeon.update_fov(grid_position, vision_range)
 			print("Player vision restored")
+	_tick_timed_buffs()
 	turn_done.emit()
+
+# Adds or refreshes a timed buff. If already active, refreshes the duration
+# (taking the longer of current and new) and replaces the bonus with whichever
+# is stronger. This avoids exploits from stacking multiple potions.
+func apply_timed_buff(stat: StringName, bonus: int, duration: int) -> void:
+	var existing: Dictionary = timed_buffs.get(stat, {})
+	var new_bonus: int = maxi(int(existing.get("bonus", 0)), bonus)
+	var new_turns: int = maxi(int(existing.get("turns_left", 0)), duration)
+	timed_buffs[stat] = {"bonus": new_bonus, "turns_left": new_turns}
+	_recalculate_stats()
+	stat_increased.emit(stat, bonus)
+
+func _tick_timed_buffs() -> void:
+	var expired: Array = []
+	for stat in timed_buffs.keys():
+		var entry: Dictionary = timed_buffs[stat]
+		entry["turns_left"] = int(entry["turns_left"]) - 1
+		if entry["turns_left"] <= 0:
+			expired.append(stat)
+		else:
+			timed_buffs[stat] = entry
+	for stat in expired:
+		timed_buffs.erase(stat)
+		print("Buff expired: %s" % stat)
+	if not expired.is_empty():
+		_recalculate_stats()
+		_notify_hotbar()
 
 func apply_vision_debuff(new_range: int, turns: int) -> void:
 	vision_range = new_range
@@ -245,6 +277,11 @@ func _recalculate_stats() -> void:
 	if inventory.amulet != null:
 		atk += inventory.amulet.atk_bonus
 		def += inventory.amulet.def_bonus
+	# Timed buffs from consumables — transient, top-up on everything else.
+	if timed_buffs.has(&"atk"):
+		atk += int(timed_buffs[&"atk"]["bonus"])
+	if timed_buffs.has(&"def"):
+		def += int(timed_buffs[&"def"]["bonus"])
 
 	var new_max_hp := BASE_MAX_HP + bonus_max_hp
 	if inventory.ring != null:
@@ -307,6 +344,14 @@ func restore_state(data: Dictionary) -> void:
 		&"def": int(saved_gains.get("def", 0)),
 		&"max_hp": int(saved_gains.get("max_hp", 0)),
 	}
+	timed_buffs = {}
+	var saved_buffs: Dictionary = data.get("timed_buffs", {})
+	for key_str in saved_buffs.keys():
+		var entry: Dictionary = saved_buffs[key_str]
+		timed_buffs[StringName(key_str)] = {
+			"bonus": int(entry.get("bonus", 0)),
+			"turns_left": int(entry.get("turns_left", 0)),
+		}
 	atk = BASE_ATK + bonus_atk
 	if inventory.weapon != null:
 		atk += inventory.weapon.atk_bonus

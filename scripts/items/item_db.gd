@@ -92,6 +92,28 @@ static func teleport_scroll() -> Consumable:
 	c.effect = Consumable.Effect.TELEPORT
 	return c
 
+static func potion_of_strength() -> Consumable:
+	var c := Consumable.new()
+	c.id = "potion_of_strength"
+	c.display_name = "Potion of Strength"
+	c.description = "+3 ATK por 10 turnos"
+	c.texture = SpriteDB.item("potion_of_strength")
+	c.effect = Consumable.Effect.BUFF_ATK
+	c.amount = 3
+	c.duration = 10
+	return c
+
+static func potion_of_resistance() -> Consumable:
+	var c := Consumable.new()
+	c.id = "potion_of_resistance"
+	c.display_name = "Potion of Resistance"
+	c.description = "+3 DEF por 10 turnos"
+	c.texture = SpriteDB.item("potion_of_resistance")
+	c.effect = Consumable.Effect.BUFF_DEF
+	c.amount = 3
+	c.duration = 10
+	return c
+
 static func ring_of_life() -> Ring:
 	var r := Ring.new()
 	r.id = "ring_of_life"
@@ -186,6 +208,8 @@ static func from_id(id: String) -> Item:
 		"healing_potion": return healing_potion()
 		"greater_potion": return greater_potion()
 		"teleport_scroll": return teleport_scroll()
+		"potion_of_strength": return potion_of_strength()
+		"potion_of_resistance": return potion_of_resistance()
 		"ring_of_life": return ring_of_life()
 		"ring_of_strength": return ring_of_strength()
 		"ring_of_protection": return ring_of_protection()
@@ -222,12 +246,16 @@ static func random_armor(rng: RandomNumberGenerator) -> Armor:
 
 static func random_consumable(rng: RandomNumberGenerator) -> Consumable:
 	var roll := rng.randf()
-	if roll < 0.5:
+	if roll < 0.35:
 		return healing_potion()
-	elif roll < 0.8:
+	elif roll < 0.55:
 		return greater_potion()
-	else:
+	elif roll < 0.70:
 		return teleport_scroll()
+	elif roll < 0.85:
+		return potion_of_strength()
+	else:
+		return potion_of_resistance()
 
 static func random_ring(rng: RandomNumberGenerator) -> Ring:
 	match rng.randi() % 4:
