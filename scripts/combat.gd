@@ -42,14 +42,23 @@ static func attack(
 	var dmg_info := calculate_damage(attacker, target, ignore_def)
 	var dmg: int = dmg_info["dmg"]
 	var is_crit: bool = dmg_info["is_crit"]
+	# Cache adjacency BEFORE the animation await — an actor can be freed
+	# during the await (e.g. dying to a counterattack), and re-querying
+	# _is_adjacent on a freed Node crashes with "previously freed".
+	var is_melee: bool = _is_adjacent(attacker, target)
 
-	if _is_adjacent(attacker, target):
+	if is_melee:
 		await attacker.nudge_toward(target.grid_position)
 	else:
 		await _await_ranged_vfx(attacker, target)
 
+	# If either side got freed during the animation, bail out — the damage
+	# number and SFX for this hit become meaningless.
+	if not is_instance_valid(attacker) or not is_instance_valid(target):
+		return
+
 	# SFX: hit sound (melee or ranged) + crit overlay
-	if _is_adjacent(attacker, target):
+	if is_melee:
 		AudioManager.play_sfx("melee_hit")
 	else:
 		AudioManager.play_sfx("ranged_hit")
@@ -108,6 +117,9 @@ static func enemy_smite(attacker: Actor, target: Actor, damage_bonus: int) -> vo
 		var to := _tile_center(target.position)
 		await Projectile.spawn_directional(effects_layer, from, to, SpriteDB.crystal_spear_frames())
 		Projectile.spawn_burst(effects_layer, to, SpriteDB.effect("searing_burst"), 0.25)
+	# Actor may have been freed during the projectile travel.
+	if not is_instance_valid(attacker) or not is_instance_valid(target):
+		return
 	target.flash_white()
 	if effects_layer != null:
 		var dmg_pos: Vector2 = target.position - Vector2(0, 8)
@@ -126,6 +138,8 @@ static func smite(attacker: Player, target: Enemy) -> void:
 		var to := _tile_center(target.position)
 		await Projectile.spawn_directional(effects_layer, from, to, SpriteDB.crystal_spear_frames())
 		Projectile.spawn_burst(effects_layer, to, SpriteDB.effect("searing_burst"), 0.25)
+	if not is_instance_valid(attacker) or not is_instance_valid(target):
+		return
 	target.flash_white()
 	if effects_layer != null:
 		var dmg_pos: Vector2 = target.position - Vector2(0, 8)

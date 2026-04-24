@@ -6,16 +6,6 @@ signal item_dropped(item: Item, pos: Vector2i)
 signal faith_changed(faith: int, max_faith: int)
 signal stat_increased(stat: StringName, delta: int)
 
-func _play_sfx(sfx: String) -> void:
-	var am := Engine.get_singleton("AudioManager")
-	if am != null:
-		am.play_sfx(sfx)
-
-func _stop_music(fade: float) -> void:
-	var am := Engine.get_singleton("AudioManager")
-	if am != null:
-		am.stop_music(fade)
-
 const BASE_ATK: int = 6
 const BASE_DEF: int = 3
 const BASE_MAX_HP: int = 25
@@ -96,7 +86,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		await Combat.attack(self, target_enemy)
 		_end_turn()
 	elif dungeon and dungeon.grid.is_walkable(target_pos):
-		_play_sfx("step")
+		AudioManager.play_sfx("step")
 		move_to(target_pos)
 		await moved
 		_end_turn()
@@ -182,7 +172,7 @@ func apply_vision_debuff(new_range: int, turns: int) -> void:
 	print("Player vision reduced to %d for %d turns" % [new_range, turns])
 
 func pickup(item: Item) -> bool:
-	_play_sfx("pickup")
+	AudioManager.play_sfx("pickup")
 	var result := pickup_item(item)
 	match result:
 		Inventory.PickupResult.EQUIPPED, Inventory.PickupResult.EQUIPPED_AND_BAGGED_OLD:
@@ -201,8 +191,8 @@ func pickup_item(item: Item) -> Inventory.PickupResult:
 	return inventory.try_pickup(item)
 
 func die() -> void:
-	_play_sfx("player_die")
-	_stop_music(0.5)
+	AudioManager.play_sfx("player_die")
+	AudioManager.stop_music(0.5)
 	if Combat.world_node != null:
 		Shake.apply(Combat.world_node, Combat.SHAKE_DEATH.x, Combat.SHAKE_DEATH.y)
 		HitPause.freeze(get_tree(), 0.1)

@@ -145,6 +145,7 @@ func _populate_floor() -> void:
 		_restore_altars = []  # consume once, subsequent floors spawn fresh
 
 func _populate_boss_floor() -> void:
+	print("[BOSS] Populating boss arena on floor %d" % current_floor)
 	var spawns: Dictionary = dungeon.regenerate_as_boss_arena()
 	player.move_to(spawns["player_spawn"], false)
 
@@ -157,6 +158,7 @@ func _populate_boss_floor() -> void:
 	boss.turn_manager = turn_manager
 	boss.move_to(spawns["lich_spawn"], false)  # key reused for any boss spawn
 	turn_manager.register_enemy(boss)
+	print("[BOSS] %s spawned on floor %d (HP %d, ATK %d)" % [boss.name, current_floor, boss.hp, boss.atk])
 	# All act bosses emit truly_died(Vector2i) when their final death lands.
 	if boss is Lich:
 		(boss as Lich).truly_died.connect(_on_boss_truly_died)
