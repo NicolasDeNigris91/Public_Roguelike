@@ -26,6 +26,7 @@ const ABILITY_DISABLED_MODULATE := Color(0.4, 0.4, 0.4, 0.55)
 const HOLY_SMITE_ICON: Texture2D = preload("res://assets/sprites/abilities/holy_smite.png")
 
 var player: Player
+var current_floor: int = 1
 
 var _sacrifice_mode: bool = false
 var _sacrifice_prompt: Label
@@ -34,8 +35,10 @@ var _hp_bar: ProgressBar
 var _hp_label: Label
 var _atk_label: Label
 var _def_label: Label
+var _floor_label: Label
 
 var _smite_slot: Dictionary
+var _weapon_ability_slot: Dictionary
 var _weapon_slot: Dictionary
 var _armor_slot: Dictionary
 var _shield_slot: Dictionary
@@ -157,6 +160,12 @@ func _build_status() -> void:
 	_def_label.mouse_exited.connect(_hide_tooltip)
 	stats_row.add_child(_def_label)
 
+	_floor_label = Label.new()
+	_floor_label.text = "Floor 1"
+	_floor_label.add_theme_font_size_override("font_size", 14)
+	_floor_label.add_theme_color_override("font_color", Color(0.75, 0.72, 0.65, 1))
+	stats_row.add_child(_floor_label)
+
 func _refresh_status() -> void:
 	if player == null:
 		return
@@ -184,6 +193,7 @@ func _refresh_status() -> void:
 
 	_atk_label.text = "⚔ %d" % player.atk
 	_def_label.text = "🛡 %d" % player.def
+	_floor_label.text = "Floor %d" % current_floor
 
 func on_stat_increased(stat: StringName, _delta: int) -> void:
 	var target: Label = null
@@ -205,6 +215,7 @@ func on_stat_increased(stat: StringName, _delta: int) -> void:
 
 func _build_abilities() -> void:
 	_smite_slot = _build_ability_slot(HOLY_SMITE_ICON, "Q")
+	_weapon_ability_slot = _build_weapon_ability_slot()
 
 func _build_ability_slot(icon_tex: Texture2D, hotkey: String) -> Dictionary:
 	var panel := PanelContainer.new()
@@ -302,6 +313,119 @@ func _refresh_abilities() -> void:
 	stylebox.content_margin_bottom = 4
 	stylebox.bg_color = SLOT_BG_FILLED if available else SLOT_BG_EMPTY
 	panel.add_theme_stylebox_override("panel", stylebox)
+
+	_refresh_weapon_ability()
+
+# Builds the E-slot shell. Icon texture is assigned per-refresh based on the
+# currently equipped weapon; a bottom-center label doubles as the cooldown
+# readout when the ability is on cooldown.
+func _build_weapon_ability_slot() -> Dictionary:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = EQUIPPED_SLOT_SIZE
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 4)
+	margin.add_theme_constant_override("margin_top", 4)
+	margin.add_theme_constant_override("margin_right", 4)
+	margin.add_theme_constant_override("margin_bottom", 4)
+	panel.add_child(margin)
+
+	var stack := Control.new()
+	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stack.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	margin.add_child(stack)
+
+	var key_label := Label.new()
+	key_label.text = "E"
+	key_label.add_theme_font_size_override("font_size", 10)
+	key_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
+	key_label.position = Vector2(0, 0)
+	stack.add_child(key_label)
+
+	var icon := TextureRect.new()
+	icon.expand_mode = TextureRect.EXPAND_FIT_HEIGHT_PROPORTIONAL
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.anchor_left = 0.5
+	icon.anchor_top = 0.0
+	icon.anchor_right = 0.5
+	icon.anchor_bottom = 0.0
+	icon.offset_left = -16.0
+	icon.offset_top = 2.0
+	icon.offset_right = 16.0
+	icon.offset_bottom = 34.0
+	stack.add_child(icon)
+
+	# Big cooldown readout centered over the icon when on cooldown.
+	var cd_label := Label.new()
+	cd_label.text = ""
+	cd_label.add_theme_font_size_override("font_size", 22)
+	cd_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	cd_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	cd_label.add_theme_constant_override("outline_size", 4)
+	cd_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cd_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	cd_label.anchor_left = 0.0
+	cd_label.anchor_top = 0.0
+	cd_label.anchor_right = 1.0
+	cd_label.anchor_bottom = 1.0
+	stack.add_child(cd_label)
+
+	abilities_container.add_child(panel)
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	var slot_data := {"panel": panel, "icon": icon, "cd_label": cd_label, "key_label": key_label}
+	panel.mouse_entered.connect(_on_weapon_ability_hover)
+	panel.mouse_exited.connect(_hide_tooltip)
+	return slot_data
+
+func _refresh_weapon_ability() -> void:
+	var panel: PanelContainer = _weapon_ability_slot["panel"]
+	var icon: TextureRect = _weapon_ability_slot["icon"]
+	var cd_label: Label = _weapon_ability_slot["cd_label"]
+
+	var weapon: Weapon = player.inventory.weapon if player.inventory != null else null
+	var has_ability: bool = weapon != null and weapon.ability != Weapon.Ability.NONE
+	var cd: int = player.weapon_ability_cooldown
+	var ready: bool = has_ability and cd <= 0
+
+	if has_ability:
+		icon.visible = true
+		icon.texture = weapon.ability_icon
+		icon.modulate = Color.WHITE if ready else ABILITY_DISABLED_MODULATE
+	else:
+		icon.visible = false
+
+	cd_label.text = str(cd) if cd > 0 else ""
+
+	var stylebox := StyleBoxFlat.new()
+	stylebox.border_width_left = 1
+	stylebox.border_width_top = 1
+	stylebox.border_width_right = 1
+	stylebox.border_width_bottom = 1
+	stylebox.border_color = FAITH_COLOR if ready else SLOT_BORDER
+	stylebox.corner_radius_top_left = 3
+	stylebox.corner_radius_top_right = 3
+	stylebox.corner_radius_bottom_right = 3
+	stylebox.corner_radius_bottom_left = 3
+	stylebox.content_margin_left = 4
+	stylebox.content_margin_top = 4
+	stylebox.content_margin_right = 4
+	stylebox.content_margin_bottom = 4
+	stylebox.bg_color = SLOT_BG_FILLED if has_ability else SLOT_BG_EMPTY
+	panel.add_theme_stylebox_override("panel", stylebox)
+
+func _on_weapon_ability_hover() -> void:
+	if player == null:
+		return
+	var weapon: Weapon = player.inventory.weapon if player.inventory != null else null
+	if weapon == null or weapon.ability == Weapon.Ability.NONE:
+		_show_tooltip("Weapon Ability (E)\nEquipe uma arma lendária para desbloquear.")
+		return
+	var status: String
+	if player.weapon_ability_cooldown > 0:
+		status = "Recarga: %d turnos" % player.weapon_ability_cooldown
+	else:
+		status = "Pronto (recarga %d turnos)" % Player.WEAPON_ABILITY_COOLDOWN
+	_show_tooltip("%s (E)\n%s\n%s" % [weapon.ability_name, weapon.ability_description, status])
 
 func _on_portrait_hover() -> void:
 	_show_tooltip("Benedict Rosarius, Paladino\nClasse de combate corpo-a-corpo com Holy Smite (Q) e fé renovável ao matar inimigos.")

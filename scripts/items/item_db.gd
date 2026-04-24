@@ -22,6 +22,11 @@ static func axe() -> Weapon:
 	w.display_name = "Axe"
 	w.texture = SpriteDB.item("axe")
 	w.atk_bonus = 3
+	w.melee_vfx = SpriteDB.effect("melee_cleave")
+	w.ability = Weapon.Ability.CLEAVE
+	w.ability_name = "Cleave"
+	w.ability_description = "Atinge o inimigo à frente e todos os adjacentes a ele."
+	w.ability_icon = SpriteDB.ability_icon("cleave")
 	return w
 
 static func hammer() -> Weapon:
@@ -30,6 +35,11 @@ static func hammer() -> Weapon:
 	w.display_name = "Hammer"
 	w.texture = SpriteDB.item("hammer")
 	w.atk_bonus = 4
+	w.melee_vfx = SpriteDB.effect("melee_sandblast")
+	w.ability = Weapon.Ability.QUAKE
+	w.ability_name = "Quake"
+	w.ability_description = "Golpe que ignora toda a DEF e soma +5 de dano."
+	w.ability_icon = SpriteDB.ability_icon("quake")
 	return w
 
 static func dagger() -> Weapon:
@@ -47,6 +57,11 @@ static func ancient_sword() -> Weapon:
 	w.display_name = "Ancient Sword"
 	w.texture = SpriteDB.item("ancient_sword")
 	w.atk_bonus = 5
+	w.melee_vfx = SpriteDB.effect("melee_necrotic")
+	w.ability = Weapon.Ability.DRAIN
+	w.ability_name = "Soul Drain"
+	w.ability_description = "Projétil necrótico à distância; cura HP igual ao dano causado."
+	w.ability_icon = SpriteDB.ability_icon("drain")
 	return w
 
 # Act 3 themed weapon — harvests sacrificial blood with every strike.
@@ -56,6 +71,11 @@ static func scythe_of_curses() -> Weapon:
 	w.display_name = "Scythe of Curses"
 	w.texture = SpriteDB.item("scythe_of_curses")
 	w.atk_bonus = 6
+	w.melee_vfx = SpriteDB.effect("melee_blood")
+	w.ability = Weapon.Ability.HARVEST
+	w.ability_name = "Blood Harvest"
+	w.ability_description = "Ceifa o inimigo adjacente causando 2× de dano e restaurando 5 HP."
+	w.ability_icon = SpriteDB.ability_icon("harvest")
 	return w
 
 # Act 4 themed weapon — fire-demon blade, heavy and hot.
@@ -65,6 +85,11 @@ static func sword_of_cerebov() -> Weapon:
 	w.display_name = "Sword of Cerebov"
 	w.texture = SpriteDB.item("sword_of_cerebov")
 	w.atk_bonus = 7
+	w.melee_vfx = SpriteDB.effect("melee_flame")
+	w.ability = Weapon.Ability.FIREBOLT
+	w.ability_name = "Firebolt"
+	w.ability_description = "Projétil flamejante que atinge o primeiro inimigo na linha."
+	w.ability_icon = SpriteDB.ability_icon("firebolt")
 	return w
 
 # Act 5 themed weapon — the Demon Lord's own pattern, infernal steel.
@@ -74,6 +99,11 @@ static func demon_blade() -> Weapon:
 	w.display_name = "Demon Blade"
 	w.texture = SpriteDB.item("demon_blade")
 	w.atk_bonus = 8
+	w.melee_vfx = SpriteDB.effect("melee_chaos")
+	w.ability = Weapon.Ability.CHAOS
+	w.ability_name = "Chaos Strike"
+	w.ability_description = "Esfera caótica à distância com crítico garantido (2×)."
+	w.ability_icon = SpriteDB.ability_icon("chaos")
 	return w
 
 static func leather_armor() -> Armor:

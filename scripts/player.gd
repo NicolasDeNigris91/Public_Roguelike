@@ -13,6 +13,10 @@ const BASE_VISION_RANGE: int = 8
 const MAX_FAITH: int = 3
 const SMITE_RANGE: int = 5
 const SMITE_DAMAGE_BONUS: int = 3
+# Shared cooldown (in player turns) for the weapon ability on key E. Per-player
+# not per-weapon, so swapping weapons mid-cooldown cannot be exploited to spam.
+const WEAPON_ABILITY_COOLDOWN: int = 8
+const WEAPON_ABILITY_RANGE: int = 5
 
 var dungeon: Dungeon
 var turn_manager: TurnManager
@@ -41,6 +45,7 @@ var inventory: Inventory
 var vision_range: int = BASE_VISION_RANGE
 var vision_debuff_turns: int = 0
 var faith: int = 0
+var weapon_ability_cooldown: int = 0
 var _last_direction: Vector2i = Vector2i(0, -1)
 
 func _ready() -> void:
@@ -60,6 +65,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.keycode == KEY_Q:
 		get_viewport().set_input_as_handled()
 		if await try_smite():
+			_end_turn()
+		return
+
+	if event.keycode == KEY_E:
+		get_viewport().set_input_as_handled()
+		if await try_weapon_ability():
 			_end_turn()
 		return
 
@@ -103,6 +114,43 @@ func try_smite() -> bool:
 	await Combat.smite(self, target)
 	return true
 
+# Casts the equipped weapon's active ability in the last-walked direction.
+# Returns true on cast (consumes turn + cooldown); false if unavailable or no target.
+func try_weapon_ability() -> bool:
+	if weapon_ability_cooldown > 0:
+		return false
+	var weapon: Weapon = inventory.weapon
+	if weapon == null or weapon.ability == Weapon.Ability.NONE:
+		return false
+	var target := _find_ability_target(weapon.ability)
+	if target == null:
+		return false
+	weapon_ability_cooldown = WEAPON_ABILITY_COOLDOWN
+	_notify_hotbar()
+	await Combat.weapon_ability(self, target, weapon.ability)
+	return true
+
+# Melee abilities need an adjacent enemy in the facing direction; ranged
+# abilities scan the line up to WEAPON_ABILITY_RANGE for the first enemy.
+func _find_ability_target(ability: Weapon.Ability) -> Enemy:
+	if dungeon == null or _last_direction == Vector2i.ZERO:
+		return null
+	var is_ranged: bool = ability == Weapon.Ability.DRAIN \
+		or ability == Weapon.Ability.FIREBOLT \
+		or ability == Weapon.Ability.CHAOS
+	if is_ranged:
+		for i in range(1, WEAPON_ABILITY_RANGE + 1):
+			var check_pos: Vector2i = grid_position + _last_direction * i
+			if not dungeon.grid.in_bounds(check_pos):
+				return null
+			if dungeon.grid.get_cell(check_pos) == Grid.CellType.WALL:
+				return null
+			var enemy := _enemy_at(check_pos)
+			if enemy != null:
+				return enemy
+		return null
+	return _enemy_at(grid_position + _last_direction)
+
 func gain_faith() -> void:
 	if faith >= MAX_FAITH:
 		return
@@ -135,6 +183,9 @@ func _end_turn() -> void:
 				dungeon.update_fov(grid_position, vision_range)
 			print("Player vision restored")
 	_tick_timed_buffs()
+	if weapon_ability_cooldown > 0:
+		weapon_ability_cooldown -= 1
+		_notify_hotbar()
 	turn_done.emit()
 
 # Adds or refreshes a timed buff. If already active, refreshes the duration
@@ -271,6 +322,12 @@ func transform_into_lich() -> void:
 	sprite_node.texture = SpriteDB.actor("lich")
 	print("Benedict has become the Lich.")
 
+# Rosary ending: after the grace moment, Benedict is pulled back from the
+# lich form and walks out as himself. Undoes `transform_into_lich`.
+func revert_from_lich() -> void:
+	sprite_node.texture = SpriteDB.actor("player")
+	print("Benedict is pulled back by grace.")
+
 func _recalculate_stats() -> void:
 	atk = BASE_ATK + bonus_atk
 	def = BASE_DEF + bonus_def
@@ -393,6 +450,7 @@ func restore_state(data: Dictionary) -> void:
 	max_hp = data.get("max_hp", BASE_MAX_HP)
 	hp = data.get("hp", max_hp)
 	faith = data.get("faith", 0)
+	weapon_ability_cooldown = data.get("weapon_ability_cooldown", 0)
 	vision_range = data.get("vision_range", BASE_VISION_RANGE)
 	vision_debuff_turns = data.get("vision_debuff_turns", 0)
 

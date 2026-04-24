@@ -97,6 +97,7 @@ func _serialize_player(player: Player) -> Dictionary:
 		"hp": player.hp,
 		"max_hp": player.max_hp,
 		"faith": player.faith,
+		"weapon_ability_cooldown": player.weapon_ability_cooldown,
 		"vision_range": player.vision_range,
 		"vision_debuff_turns": player.vision_debuff_turns,
 		"bonus_atk": player.bonus_atk,

@@ -66,6 +66,7 @@ static func attack(
 		AudioManager.play_sfx("crit")
 
 	target.flash_white()
+	_spawn_melee_vfx(attacker, target, is_melee)
 	_spawn_damage_number(target, dmg, is_crit, false)
 
 	target.take_damage(dmg)
@@ -155,6 +156,146 @@ static func smite(attacker: Player, target: Enemy) -> void:
 	])
 	HitPause.freeze(attacker.get_tree(), HIT_PAUSE_CRIT)
 
+# Weapon abilities (key E). Entry point — dispatches by kind so all ability
+# logic stays in one file. Each ability handles its own SFX, VFX, damage, and
+# post-effect (lifesteal, heal, AoE). Target nullability is already guarded
+# by Player._find_ability_target; we trust the target here.
+static func weapon_ability(attacker: Player, target: Enemy, ability: Weapon.Ability) -> void:
+	match ability:
+		Weapon.Ability.CLEAVE:
+			await _ability_cleave(attacker, target)
+		Weapon.Ability.QUAKE:
+			await _ability_quake(attacker, target)
+		Weapon.Ability.DRAIN:
+			await _ability_drain(attacker, target)
+		Weapon.Ability.HARVEST:
+			await _ability_harvest(attacker, target)
+		Weapon.Ability.FIREBOLT:
+			await _ability_firebolt(attacker, target)
+		Weapon.Ability.CHAOS:
+			await _ability_chaos(attacker, target)
+
+# Hits the primary target plus every enemy orthogonally adjacent to it.
+static func _ability_cleave(attacker: Player, target: Enemy) -> void:
+	AudioManager.play_sfx("melee_hit")
+	await attacker.nudge_toward(target.grid_position)
+	if not is_instance_valid(target):
+		return
+	_resolve_ability_hit(attacker, target, false, 0, 0.0, false, SpriteDB.effect("melee_cleave"))
+	# Collect other enemies adjacent to the primary target, then strike.
+	if attacker.turn_manager != null:
+		var victims: Array = []
+		for e in attacker.turn_manager.enemies:
+			if not is_instance_valid(e) or e == target:
+				continue
+			var dx: int = absi(e.grid_position.x - target.grid_position.x)
+			var dy: int = absi(e.grid_position.y - target.grid_position.y)
+			if dx + dy == 1:
+				victims.append(e)
+		for v in victims:
+			if is_instance_valid(v):
+				_resolve_ability_hit(attacker, v, false, 0, 0.0, false, SpriteDB.effect("melee_cleave"))
+	HitPause.freeze(attacker.get_tree(), HIT_PAUSE_CRIT)
+
+# Heavy melee strike that ignores DEF entirely and adds +5 flat damage.
+static func _ability_quake(attacker: Player, target: Enemy) -> void:
+	AudioManager.play_sfx("melee_hit")
+	await attacker.nudge_toward(target.grid_position)
+	if not is_instance_valid(target):
+		return
+	_resolve_ability_hit(attacker, target, true, 5, 0.0, false, SpriteDB.effect("melee_sandblast"))
+	HitPause.freeze(attacker.get_tree(), HIT_PAUSE_CRIT)
+
+# Ranged necrotic bolt that heals the attacker for 100% of damage dealt.
+static func _ability_drain(attacker: Player, target: Enemy) -> void:
+	AudioManager.play_sfx("ranged_hit")
+	if effects_layer != null:
+		var from := _tile_center(attacker.position)
+		var to := _tile_center(target.position)
+		await Projectile.spawn(effects_layer, from, to, SpriteDB.effect("necro_bolt"))
+	if not is_instance_valid(target):
+		return
+	_resolve_ability_hit(attacker, target, false, 0, 1.0, false, SpriteDB.effect("melee_necrotic"))
+	HitPause.freeze(attacker.get_tree(), HIT_PAUSE_CRIT)
+
+# Double-damage melee strike that also heals the attacker for a flat 5 HP.
+static func _ability_harvest(attacker: Player, target: Enemy) -> void:
+	AudioManager.play_sfx("melee_hit")
+	await attacker.nudge_toward(target.grid_position)
+	if not is_instance_valid(attacker) or not is_instance_valid(target):
+		return
+	_resolve_ability_hit(attacker, target, false, 0, 0.0, true, SpriteDB.effect("melee_blood"))
+	# Flat heal on cast, separate from per-hit lifesteal.
+	var new_hp: int = mini(attacker.max_hp, attacker.hp + 5)
+	var healed: int = new_hp - attacker.hp
+	attacker.hp = new_hp
+	attacker.queue_redraw()
+	if healed > 0:
+		_spawn_damage_number(attacker, healed, false, true)
+	HitPause.freeze(attacker.get_tree(), HIT_PAUSE_CRIT)
+
+# Ranged fire projectile with +5 flat damage.
+static func _ability_firebolt(attacker: Player, target: Enemy) -> void:
+	AudioManager.play_sfx("ranged_hit")
+	if effects_layer != null:
+		var from := _tile_center(attacker.position)
+		var to := _tile_center(target.position)
+		await Projectile.spawn(effects_layer, from, to, SpriteDB.effect("melee_flame"))
+	if not is_instance_valid(target):
+		return
+	_resolve_ability_hit(attacker, target, false, 5, 0.0, false, SpriteDB.effect("melee_flame"))
+	HitPause.freeze(attacker.get_tree(), HIT_PAUSE_CRIT)
+
+# Ranged chaos orb with a guaranteed critical hit (forced 2× damage).
+static func _ability_chaos(attacker: Player, target: Enemy) -> void:
+	AudioManager.play_sfx("ranged_hit")
+	if effects_layer != null:
+		var from := _tile_center(attacker.position)
+		var to := _tile_center(target.position)
+		await Projectile.spawn(effects_layer, from, to, SpriteDB.effect("melee_chaos"))
+	if not is_instance_valid(target):
+		return
+	_resolve_ability_hit(attacker, target, false, 0, 0.0, false, SpriteDB.effect("melee_chaos"), true)
+	HitPause.freeze(attacker.get_tree(), HIT_PAUSE_CRIT)
+
+# Shared damage application for weapon abilities. Computes damage with the
+# requested modifiers, applies lifesteal/heal/crit flags, spawns damage number
+# and impact burst, and records stats.
+static func _resolve_ability_hit(
+	attacker: Player,
+	target: Enemy,
+	ignore_def: bool,
+	bonus_damage: int,
+	lifesteal_ratio: float,
+	double_damage: bool,
+	burst_texture: Texture2D,
+	force_crit: bool = false
+) -> void:
+	if not is_instance_valid(target):
+		return
+	var dmg_info := calculate_damage(attacker, target, ignore_def)
+	var dmg: int = dmg_info["dmg"] + bonus_damage
+	var is_crit: bool = dmg_info["is_crit"] or force_crit
+	if force_crit and not dmg_info["is_crit"]:
+		dmg *= CRIT_MULTIPLIER
+	if double_damage:
+		dmg *= 2
+	if is_crit:
+		AudioManager.play_sfx("crit")
+	target.flash_white()
+	if effects_layer != null and burst_texture != null:
+		Projectile.spawn_burst(effects_layer, _tile_center(target.position), burst_texture, 0.22)
+	_spawn_damage_number(target, dmg, is_crit, false)
+	target.take_damage(dmg)
+	RunStats.record_damage_dealt(dmg)
+	if target.hp <= 0:
+		AudioManager.play_sfx("enemy_die")
+		RunStats.record_kill()
+		attacker.gain_faith()
+	var healed := _apply_lifesteal(attacker, dmg, lifesteal_ratio, -1)
+	if healed > 0:
+		_spawn_damage_number(attacker, healed, false, true)
+
 static func _await_ranged_vfx(attacker: Actor, target: Actor) -> void:
 	if effects_layer == null:
 		return
@@ -183,6 +324,16 @@ static func _apply_lifesteal(attacker: Actor, dmg: int, ratio: float, cap: int) 
 	attacker.hp = new_hp
 	attacker.queue_redraw()
 	return healed
+
+# Per-weapon impact burst, player-only. Each late-game weapon has its own vfx
+# so the player feels the difference (cleave/sandblast/necro/blood/flame/chaos).
+static func _spawn_melee_vfx(attacker: Actor, target: Actor, is_melee: bool) -> void:
+	if not is_melee or effects_layer == null or not (attacker is Player):
+		return
+	var weapon: Weapon = (attacker as Player).inventory.weapon
+	if weapon == null or weapon.melee_vfx == null:
+		return
+	Projectile.spawn_burst(effects_layer, _tile_center(target.position), weapon.melee_vfx, 0.22)
 
 static func _spawn_damage_number(target: Actor, amount: int, is_crit: bool, is_heal: bool) -> void:
 	if effects_layer == null:

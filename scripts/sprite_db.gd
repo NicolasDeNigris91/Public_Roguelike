@@ -62,11 +62,28 @@ const _ITEMS := {
 	"rosary":          preload("res://assets/sprites/items/rosary.png"),
 }
 
+const _ABILITY_ICONS := {
+	"cleave":   preload("res://assets/sprites/abilities/weapon/cleave.png"),
+	"quake":    preload("res://assets/sprites/abilities/weapon/quake.png"),
+	"drain":    preload("res://assets/sprites/abilities/weapon/drain.png"),
+	"harvest":  preload("res://assets/sprites/abilities/weapon/harvest.png"),
+	"firebolt": preload("res://assets/sprites/abilities/weapon/firebolt.png"),
+	"chaos":    preload("res://assets/sprites/abilities/weapon/chaos.png"),
+}
+
 const _EFFECTS := {
 	"magic_bolt":     preload("res://assets/sprites/effects/magic_bolt.png"),
 	"searing_burst":  preload("res://assets/sprites/effects/searing_burst.png"),
 	"necro_bolt":     preload("res://assets/sprites/effects/necro_bolt.png"),
 	"gloom":          preload("res://assets/sprites/effects/gloom.png"),
+	"divine_halo":    preload("res://assets/sprites/effects/divine_halo.png"),
+	# Per-weapon melee impact bursts (axe through demon_blade).
+	"melee_sandblast":  preload("res://assets/sprites/effects/melee/sandblast.png"),
+	"melee_cleave":     preload("res://assets/sprites/effects/melee/cleave.png"),
+	"melee_necrotic":   preload("res://assets/sprites/effects/melee/necrotic.png"),
+	"melee_blood":      preload("res://assets/sprites/effects/melee/blood_drain.png"),
+	"melee_flame":      preload("res://assets/sprites/effects/melee/flame.png"),
+	"melee_chaos":      preload("res://assets/sprites/effects/melee/chaos.png"),
 }
 
 const _ARROW_FRAMES: Array = [
@@ -103,6 +120,8 @@ const _TILES := {
 	"floor_infernal_throne":  preload("res://assets/tiles/floor_infernal_throne.png"),
 	"wall_infernal_throne":   preload("res://assets/tiles/wall_infernal_throne.png"),
 	"stairs_down":      preload("res://assets/tiles/stairs_down.png"),
+	"stairs_up":        preload("res://assets/tiles/stairs_up.png"),
+	"victory_portal":   preload("res://assets/tiles/victory_portal.png"),
 	"floor_n":          preload("res://assets/tiles/floor_borders/floor_n.png"),
 	"floor_s":          preload("res://assets/tiles/floor_borders/floor_s.png"),
 	"floor_e":          preload("res://assets/tiles/floor_borders/floor_e.png"),
@@ -124,6 +143,9 @@ static func tile(key: String) -> Texture2D:
 
 static func effect(key: String) -> Texture2D:
 	return _EFFECTS[key]
+
+static func ability_icon(key: String) -> Texture2D:
+	return _ABILITY_ICONS[key]
 
 static func arrow_frames() -> Array:
 	return _ARROW_FRAMES
