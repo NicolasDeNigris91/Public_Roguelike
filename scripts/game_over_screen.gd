@@ -20,9 +20,9 @@ func show_result() -> void:
 		_title_label.add_theme_color_override("font_color", Color(0.6, 0.55, 0.75, 1))
 		_subtitle_label.text = "\"But yet it is...\"\nBenedict falls in the Bastion. The next paladin is already descending."
 	elif RunStats.run_victory:
-		_title_label.text = "VITÓRIA FINAL"
+		_title_label.text = "THE END"
 		_title_label.add_theme_color_override("font_color", TITLE_COLOR_FINAL_VICTORY)
-		_subtitle_label.text = "\"The final exorcism is wrought not with words, but with blood. I am the prison and the prisoner.\"\n— Benedict Rosarius"
+		_subtitle_label.text = "The shield of iron protects the flesh, but the beads of wood protect the soul.\nOne does not enter the Kingdom of Heaven carrying the weight of hell."
 	elif RunStats.lich_defeated:
 		_title_label.text = "VITÓRIA"
 		_title_label.add_theme_color_override("font_color", TITLE_COLOR_VICTORY)
