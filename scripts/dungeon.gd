@@ -78,6 +78,19 @@ func _build_biome_tileset(floor_key: String, wall_key: String) -> TileSet:
 		wall_src.texture = SpriteDB.tile(wall_key)
 	return ts
 
+# Swaps the stairs sprite between descending (default) and ascending. Used by
+# the Lich ending after the Demon Lord falls — stairs spawn on the corpse
+# and Benedict climbs upward instead of further into the abyss.
+func set_stairs_ascending(ascending: bool) -> void:
+	var tex_key: String = "stairs_up" if ascending else "stairs_down"
+	var tex: Texture2D = SpriteDB.tile(tex_key)
+	for ts in [_bastion_tileset, _catacombs_tileset, _blood_sanctum_tileset, _burning_halls_tileset, _infernal_throne_tileset]:
+		var src := ts.get_source(SOURCE_STAIRS) as TileSetAtlasSource
+		if src != null:
+			src.texture = tex
+	if stairs_position != Vector2i(-1, -1):
+		redraw_cell(stairs_position)
+
 func regenerate() -> void:
 	visible_tiles.clear()
 	explored_tiles.clear()
