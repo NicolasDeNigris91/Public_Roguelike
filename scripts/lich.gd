@@ -77,6 +77,12 @@ func _update_phase() -> void:
 	if phase != previous_phase:
 		summon_cooldown = 0
 		breu_cooldown = 0
+		# Phase transitions echo the death whisper so the player keeps
+		# hearing the cult name throughout the fight, not only at the end.
+		if previous_phase != 1 or phase != 1:
+			if Combat.effects_layer != null:
+				var world_pos: Vector2 = Vector2(grid_position.x, grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, 0)
+				BossWhisper.spawn(Combat.effects_layer, world_pos, "Y'KRETH IT-SUL...")
 		print("Lich enters phase %d (hp %d/%d)" % [phase, hp, max_hp])
 
 func _phase_1_turn(player: Player, dist: int, has_los: bool) -> bool:
