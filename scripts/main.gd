@@ -17,6 +17,16 @@ const BOSS_QUOTES := {
 }
 const DEMON_LORD_FINAL_QUOTE: String = "The final exorcism is wrought not with words, but with blood. I am the prison and the prisoner."
 
+# Whisper that floats above each boss as it dies — flavor line the player
+# reads but Benedict supposedly cannot hear. Short and cryptic by design.
+const BOSS_WHISPERS := {
+	6: "I am only... the first door.",
+	12: "He turned me. He will turn you.",
+	18: "The sanctum feeds... always.",
+	24: "Below, he waits. Always.",
+	30: "You and I... both shadows now.",
+}
+
 @onready var dungeon: Dungeon = $World/Dungeon
 @onready var items_layer: Node2D = $World/ItemsLayer
 @onready var entity_layer: Node2D = $World/EntityLayer
@@ -462,6 +472,13 @@ func _on_boss_truly_died(pos: Vector2i) -> void:
 	# Act 1 milestone: Lich defeated. Still used as a stats flag.
 	if current_floor == 6:
 		RunStats.record_lich_defeated()
+
+	# Whisper floats above the corpse — flavor line from the boss at the
+	# moment of its true death. Spawned before minion cleanup so the
+	# whisper has a parent layer that will survive the frame.
+	if BOSS_WHISPERS.has(current_floor) and Combat.effects_layer != null:
+		var whisper_world_pos: Vector2 = Vector2(pos.x, pos.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, 0)
+		BossWhisper.spawn(Combat.effects_layer, whisper_world_pos, BOSS_WHISPERS[current_floor])
 
 	# Clean up boss-summoned minions (Lich/DK/Demon Lord all summon Skeletons
 	# or Imps). Filter by the concrete classes we know get summoned.
