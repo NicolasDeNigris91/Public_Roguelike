@@ -80,6 +80,7 @@ func _serialize_player(player: Player) -> Dictionary:
 	var equipped := {
 		"weapon": _id_or_null(player.inventory.weapon),
 		"armor": _id_or_null(player.inventory.armor),
+		"shield": _id_or_null(player.inventory.shield),
 		"ring": _id_or_null(player.inventory.ring),
 	}
 	var bag: Array = []
@@ -139,7 +140,7 @@ func _serialize_altars(altars: Array) -> Array:
 
 func _validate_item_paths(player_dict: Dictionary) -> bool:
 	var equipped: Dictionary = player_dict.get("equipped", {})
-	for slot in ["weapon", "armor", "ring"]:
+	for slot in ["weapon", "armor", "shield", "ring"]:
 		var id: Variant = equipped.get(slot)
 		if id != null and ItemDB.from_id(id) == null:
 			return false

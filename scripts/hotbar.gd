@@ -37,6 +37,7 @@ var _def_label: Label
 var _smite_slot: Dictionary
 var _weapon_slot: Dictionary
 var _armor_slot: Dictionary
+var _shield_slot: Dictionary
 var _ring_slot: Dictionary
 var _bag_slots: Array = []
 
@@ -371,6 +372,8 @@ func _build_equipped() -> void:
 	_weapon_slot["kind"] = "weapon"
 	_armor_slot = _build_equipped_slot()
 	_armor_slot["kind"] = "armor"
+	_shield_slot = _build_equipped_slot()
+	_shield_slot["kind"] = "shield"
 	_ring_slot = _build_equipped_slot()
 	_ring_slot["kind"] = "ring"
 
@@ -380,6 +383,7 @@ func _refresh_equipped() -> void:
 	var inv := player.inventory
 	_set_equipped_slot(_weapon_slot, inv.weapon, "ATK")
 	_set_equipped_slot(_armor_slot, inv.armor, "DEF")
+	_set_equipped_slot(_shield_slot, inv.shield, "DEF")
 	_set_equipped_slot(_ring_slot, inv.ring, "HP")
 
 func _set_equipped_slot(slot: Dictionary, item: Item, stat_name: String) -> void:
@@ -415,6 +419,8 @@ func _set_equipped_slot(slot: Dictionary, item: Item, stat_name: String) -> void
 			bonus = (item as Weapon).atk_bonus
 		elif item is Armor:
 			bonus = (item as Armor).def_bonus
+		elif item is Shield:
+			bonus = (item as Shield).def_bonus
 		elif item is Ring:
 			bonus = (item as Ring).max_hp_bonus
 		label.text = "+%d %s" % [bonus, stat_name]
@@ -522,6 +528,10 @@ func _on_equipped_hover(slot_data: Dictionary) -> void:
 			item = inv.armor
 			if item != null:
 				stat_text = "+%d DEF" % (item as Armor).def_bonus
+		"shield":
+			item = inv.shield
+			if item != null:
+				stat_text = "+%d DEF" % (item as Shield).def_bonus
 		"ring":
 			item = inv.ring
 			if item != null:
@@ -547,6 +557,8 @@ func _on_bag_hover(slot_data: Dictionary) -> void:
 		detail = "+%d ATK" % (item as Weapon).atk_bonus
 	elif item is Armor:
 		detail = "+%d DEF" % (item as Armor).def_bonus
+	elif item is Shield:
+		detail = "+%d DEF" % (item as Shield).def_bonus
 	elif item is Ring:
 		detail = "+%d max HP" % (item as Ring).max_hp_bonus
 	if detail != "":

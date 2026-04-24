@@ -33,6 +33,13 @@ static func compute(item: Item) -> Dictionary:
 			"delta": 2,
 			"secondary": {STAT_MAX_HP: 1},
 		}
+	if item is Shield:
+		return {
+			"applicable": true,
+			"stat": STAT_DEF,
+			"delta": 2,
+			"secondary": {STAT_MAX_HP: 1},
+		}
 	if item is Ring:
 		return {
 			"applicable": true,

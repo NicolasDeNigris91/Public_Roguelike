@@ -237,6 +237,8 @@ func _recalculate_stats() -> void:
 		atk += inventory.weapon.atk_bonus
 	if inventory.armor != null:
 		def += inventory.armor.def_bonus
+	if inventory.shield != null:
+		def += inventory.shield.def_bonus
 
 	var new_max_hp := BASE_MAX_HP + bonus_max_hp
 	if inventory.ring != null:
@@ -274,6 +276,9 @@ func restore_state(data: Dictionary) -> void:
 	var armor_id: Variant = equipped.get("armor")
 	if armor_id != null:
 		inventory.armor = ItemDB.from_id(armor_id) as Armor
+	var shield_id: Variant = equipped.get("shield")
+	if shield_id != null:
+		inventory.shield = ItemDB.from_id(shield_id) as Shield
 	var ring_id: Variant = equipped.get("ring")
 	if ring_id != null:
 		inventory.ring = ItemDB.from_id(ring_id) as Ring
@@ -297,6 +302,8 @@ func restore_state(data: Dictionary) -> void:
 	def = BASE_DEF + bonus_def
 	if inventory.armor != null:
 		def += inventory.armor.def_bonus
+	if inventory.shield != null:
+		def += inventory.shield.def_bonus
 
 	max_hp = data.get("max_hp", BASE_MAX_HP)
 	hp = data.get("hp", max_hp)

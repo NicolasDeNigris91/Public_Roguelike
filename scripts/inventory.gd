@@ -15,6 +15,7 @@ enum PickupResult {
 
 var weapon: Weapon
 var armor: Armor
+var shield: Shield
 var ring: Ring
 var bag: Array[Item] = []
 
@@ -26,6 +27,11 @@ func equip_weapon(new_weapon: Weapon) -> Weapon:
 func equip_armor(new_armor: Armor) -> Armor:
 	var previous := armor
 	armor = new_armor
+	return previous
+
+func equip_shield(new_shield: Shield) -> Shield:
+	var previous := shield
+	shield = new_shield
 	return previous
 
 func equip_ring(new_ring: Ring) -> Ring:
@@ -44,6 +50,8 @@ func try_pickup(item: Item) -> PickupResult:
 		return _pickup_weapon(item as Weapon)
 	if item is Armor:
 		return _pickup_armor(item as Armor)
+	if item is Shield:
+		return _pickup_shield(item as Shield)
 	if item is Ring:
 		return _pickup_ring(item as Ring)
 	if add_to_bag(item):
@@ -75,6 +83,20 @@ func _pickup_armor(new_armor: Armor) -> PickupResult:
 		armor = new_armor
 		return PickupResult.EQUIPPED_AND_BAGGED_OLD
 	if add_to_bag(new_armor):
+		return PickupResult.BAGGED
+	return PickupResult.REJECTED_BAG_FULL
+
+func _pickup_shield(new_shield: Shield) -> PickupResult:
+	if shield == null:
+		shield = new_shield
+		return PickupResult.EQUIPPED
+	if new_shield.def_bonus > shield.def_bonus:
+		if bag.size() >= BAG_SIZE:
+			return PickupResult.REJECTED_BAG_FULL
+		bag.append(shield)
+		shield = new_shield
+		return PickupResult.EQUIPPED_AND_BAGGED_OLD
+	if add_to_bag(new_shield):
 		return PickupResult.BAGGED
 	return PickupResult.REJECTED_BAG_FULL
 
