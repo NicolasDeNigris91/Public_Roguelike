@@ -264,6 +264,13 @@ func _apply_altar_delta(stat: StringName, raw_delta: int) -> int:
 func reset_altar_cap() -> void:
 	altar_gains_this_act = {&"atk": 0, &"def": 0, &"max_hp": 0}
 
+# Lich ending: visually transform Benedict's sprite. Called once when the
+# Demon Lord falls without the rosary equipped — Benedict's body becomes
+# the thing he descended to destroy.
+func transform_into_lich() -> void:
+	sprite_node.texture = SpriteDB.actor("lich")
+	print("Benedict has become the Lich.")
+
 func _recalculate_stats() -> void:
 	atk = BASE_ATK + bonus_atk
 	def = BASE_DEF + bonus_def

@@ -17,6 +17,10 @@ var lich_defeated: bool = false
 # killed. Distinct from lich_defeated — the Lich is now a mid-arc boss and
 # its death doesn't end the run.
 var run_victory: bool = false
+# Lich ending: Demon Lord defeated without the rosary; Benedict transformed
+# and was killed by the Redeemer in the Bastion. Mutually exclusive with
+# run_victory — distinct final state for the cycle-continues conclusion.
+var lich_ending: bool = false
 
 func reset() -> void:
 	floor_reached = 1
@@ -29,6 +33,7 @@ func reset() -> void:
 	total_faith_gained = 0
 	lich_defeated = false
 	run_victory = false
+	lich_ending = false
 
 func record_kill() -> void:
 	enemies_killed += 1
@@ -59,6 +64,9 @@ func record_lich_defeated() -> void:
 func record_run_victory() -> void:
 	run_victory = true
 
+func record_lich_ending() -> void:
+	lich_ending = true
+
 func from_dict(d: Dictionary) -> void:
 	floor_reached = d.get("floor_reached", 1)
 	enemies_killed = d.get("enemies_killed", 0)
@@ -70,3 +78,4 @@ func from_dict(d: Dictionary) -> void:
 	total_faith_gained = d.get("total_faith_gained", 0)
 	lich_defeated = d.get("lich_defeated", false)
 	run_victory = d.get("run_victory", false)
+	lich_ending = d.get("lich_ending", false)

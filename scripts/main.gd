@@ -45,6 +45,10 @@ var _altar_under_player: Altar = null
 var _altar_sacrifice_made_this_visit: bool = false
 var _restore_altars: Array = []
 var rng := RandomNumberGenerator.new()
+# Lich ending: true once Benedict falls the Demon Lord without the rosary
+# equipped. Flips _descend / _populate_floor into the ascension mode where
+# Benedict-as-Lich climbs 5 empty biome floors before the final confrontation.
+var _ascending: bool = false
 
 func _ready() -> void:
 	rng.randomize()
@@ -152,6 +156,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _populate_floor() -> void:
+	if _ascending:
+		_populate_ascension_floor()
+		return
 	if ActConfig.is_boss_floor(current_floor):
 		_populate_boss_floor()
 		return
@@ -217,6 +224,56 @@ func _spawn_torch(pos: Vector2i) -> void:
 	var t := Torch.new()
 	t.grid_position = pos
 	decorations_layer.add_child(t)
+
+# Lich-ending ascension floors (31-35). Empty dungeons in reverse biome
+# order — Benedict climbs back through the memory of every act on his way
+# to the Bastion where the cycle resets. No enemies, no items, no altars.
+# Each floor spawns an "IT CAN'T BE" whisper above the player the instant
+# it loads. The final ascension floor (Bastion) gets the Redeemer Paladin.
+func _populate_ascension_floor() -> void:
+	if dungeon.rooms.size() >= 1:
+		player.move_to(dungeon.room_center(0), false)
+	_spawn_ascension_whisper("IT CAN'T BE")
+	if current_floor == 35:
+		_spawn_redeemer_paladin()
+
+func _ascension_biome() -> StringName:
+	# Reverse descent order: Benedict climbs from the Throne back to the Bastion.
+	match current_floor:
+		31:
+			return ActConfig.BIOME_INFERNAL_THRONE
+		32:
+			return ActConfig.BIOME_BURNING_HALLS
+		33:
+			return ActConfig.BIOME_BLOOD_SANCTUM
+		34:
+			return ActConfig.BIOME_CATACOMBS
+		_:
+			return ActConfig.BIOME_BASTION
+
+func _spawn_ascension_whisper(text: String) -> void:
+	if Combat.effects_layer == null:
+		return
+	var world_pos: Vector2 = Vector2(player.grid_position.x, player.grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, 0)
+	BossWhisper.spawn(Combat.effects_layer, world_pos, text)
+
+func _spawn_redeemer_paladin() -> void:
+	# Final confrontation of the Lich ending: a new paladin descends into
+	# the Bastion wearing Benedict's exact appearance. Scripted lethality —
+	# the fight is not meant to be won.
+	if dungeon.rooms.size() < 1:
+		return
+	var paladin_pos: Vector2i = dungeon.room_center(dungeon.rooms.size() - 1)
+	# Don't stack the paladin on top of the Lich-Benedict.
+	if paladin_pos == player.grid_position and dungeon.rooms.size() > 1:
+		paladin_pos = dungeon.room_center(dungeon.rooms.size() - 2)
+	var paladin := RedeemerPaladin.new()
+	entity_layer.add_child(paladin)
+	paladin.dungeon = dungeon
+	paladin.turn_manager = turn_manager
+	paladin.move_to(paladin_pos, false)
+	turn_manager.register_enemy(paladin)
+	print("[LICH ENDING] The Redeemer has arrived.")
 
 func _populate_boss_floor() -> void:
 	print("[BOSS] Populating boss arena on floor %d" % current_floor)
@@ -388,8 +445,11 @@ func _descend() -> void:
 	for child in decorations_layer.get_children():
 		child.queue_free()
 
-	dungeon.set_biome(ActConfig.biome_for_floor(current_floor))
-	if not ActConfig.is_boss_floor(current_floor):
+	if _ascending:
+		dungeon.set_biome(_ascension_biome())
+	else:
+		dungeon.set_biome(ActConfig.biome_for_floor(current_floor))
+	if _ascending or not ActConfig.is_boss_floor(current_floor):
 		dungeon.regenerate()
 	# Boss floors regenerate inside _populate_boss_floor; skip BSP pass.
 	_populate_floor()
@@ -517,7 +577,17 @@ func _on_dialogue_closed() -> void:
 
 func _on_player_died() -> void:
 	SaveManager.clear()
-	print("You died on Floor %d" % current_floor)
+	# Lich ending: if Benedict falls during the ascent (to the Redeemer on
+	# floor 35), surface the final cryptic whisper over his corpse and flag
+	# the run as the cycle-continues ending.
+	if _ascending:
+		RunStats.record_lich_ending()
+		if Combat.effects_layer != null:
+			var world_pos: Vector2 = Vector2(player.grid_position.x, player.grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, 0)
+			BossWhisper.spawn(Combat.effects_layer, world_pos, "But yet it is...")
+		print("[LICH ENDING] Benedict falls to the Redeemer. The cycle continues.")
+	else:
+		print("You died on Floor %d" % current_floor)
 	game_over_screen.show_result()
 
 func _on_boss_truly_died(pos: Vector2i) -> void:
@@ -539,15 +609,28 @@ func _on_boss_truly_died(pos: Vector2i) -> void:
 			enemy.queue_free()
 	turn_manager.enemies = turn_manager.enemies.filter(func(e): return is_instance_valid(e))
 
-	# Final boss of the game: end the run with a victory screen. Save clears
-	# so the next launch starts fresh. No stairs spawn — there's nothing below.
+	# Final boss of the game: two endings depending on whether Benedict is
+	# currently wearing the rosary recovered from floor 28.
 	if ActConfig.is_final_boss_floor(current_floor):
-		RunStats.record_run_victory()
-		SaveManager.clear()
-		player.turn_active = false
+		var has_rosary: bool = player.inventory.shield != null and player.inventory.shield.id == "rosary"
+		if has_rosary:
+			# Rosary ending (good — design pending separately).
+			RunStats.record_run_victory()
+			SaveManager.clear()
+			player.turn_active = false
+			AudioManager.stop_music(0.5)
+			game_over_screen.show_result()
+			print("VICTORY — Demon Lord defeated on floor %d with the rosary." % current_floor)
+			return
+		# Lich ending — Benedict becomes what he came to destroy. Stairs
+		# spawn upward and ascension mode begins.
+		_ascending = true
+		player.transform_into_lich()
+		dungeon.grid.set_cell(pos, Grid.CellType.STAIRS)
+		dungeon.stairs_position = pos
+		dungeon.redraw_cell(pos)
 		AudioManager.stop_music(0.5)
-		game_over_screen.show_result()
-		print("VICTORY — Demon Lord defeated on floor %d." % current_floor)
+		print("[LICH ENDING] The Demon Lord has fallen; Benedict ascends.")
 		return
 
 	# Mid-arc boss: spawn stairs so the player can continue to the next act.

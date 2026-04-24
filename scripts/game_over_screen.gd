@@ -15,7 +15,11 @@ const TITLE_COLOR_FINAL_VICTORY := Color(1.0, 0.85, 0.35, 1)
 @onready var _stats_vbox: VBoxContainer = $Control/PanelContainer/MarginContainer/VBoxContainer/StatsPanel/StatsVBox
 
 func show_result() -> void:
-	if RunStats.run_victory:
+	if RunStats.lich_ending:
+		_title_label.text = "THE CYCLE CONTINUES"
+		_title_label.add_theme_color_override("font_color", Color(0.6, 0.55, 0.75, 1))
+		_subtitle_label.text = "\"But yet it is...\"\nBenedict falls in the Bastion. The next paladin is already descending."
+	elif RunStats.run_victory:
 		_title_label.text = "VITÓRIA FINAL"
 		_title_label.add_theme_color_override("font_color", TITLE_COLOR_FINAL_VICTORY)
 		_subtitle_label.text = "\"The final exorcism is wrought not with words, but with blood. I am the prison and the prisoner.\"\n— Benedict Rosarius"
