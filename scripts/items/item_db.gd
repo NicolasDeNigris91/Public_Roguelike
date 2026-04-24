@@ -100,6 +100,30 @@ static func ring_of_life() -> Ring:
 	r.max_hp_bonus = 10
 	return r
 
+static func ring_of_strength() -> Ring:
+	var r := Ring.new()
+	r.id = "ring_of_strength"
+	r.display_name = "Ring of Strength"
+	r.texture = SpriteDB.item("ring_of_strength")
+	r.atk_bonus = 2
+	return r
+
+static func ring_of_protection() -> Ring:
+	var r := Ring.new()
+	r.id = "ring_of_protection"
+	r.display_name = "Ring of Protection"
+	r.texture = SpriteDB.item("ring_of_protection")
+	r.def_bonus = 2
+	return r
+
+static func ring_of_vitality() -> Ring:
+	var r := Ring.new()
+	r.id = "ring_of_vitality"
+	r.display_name = "Ring of Vitality"
+	r.texture = SpriteDB.item("ring_of_vitality")
+	r.max_hp_bonus = 15
+	return r
+
 static func buckler() -> Shield:
 	var s := Shield.new()
 	s.id = "buckler"
@@ -138,6 +162,9 @@ static func from_id(id: String) -> Item:
 		"greater_potion": return greater_potion()
 		"teleport_scroll": return teleport_scroll()
 		"ring_of_life": return ring_of_life()
+		"ring_of_strength": return ring_of_strength()
+		"ring_of_protection": return ring_of_protection()
+		"ring_of_vitality": return ring_of_vitality()
 		"buckler": return buckler()
 		"kite_shield": return kite_shield()
 		"tower_shield": return tower_shield()
@@ -174,8 +201,16 @@ static func random_consumable(rng: RandomNumberGenerator) -> Consumable:
 	else:
 		return teleport_scroll()
 
-static func random_ring(_rng: RandomNumberGenerator) -> Ring:
-	return ring_of_life()
+static func random_ring(rng: RandomNumberGenerator) -> Ring:
+	match rng.randi() % 4:
+		0:
+			return ring_of_life()
+		1:
+			return ring_of_strength()
+		2:
+			return ring_of_protection()
+		_:
+			return ring_of_vitality()
 
 static func random_shield(rng: RandomNumberGenerator) -> Shield:
 	match rng.randi() % 3:

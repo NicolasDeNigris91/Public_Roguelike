@@ -386,6 +386,24 @@ func _refresh_equipped() -> void:
 	_set_equipped_slot(_shield_slot, inv.shield, "DEF")
 	_set_equipped_slot(_ring_slot, inv.ring, "HP")
 
+# Produces a "+N STAT" label for an item, inspecting its actual bonus so rings
+# with varied primary stats read correctly ("+2 ATK" vs "+15 HP").
+func _item_bonus_label(item: Item, default_stat_name: String) -> String:
+	if item is Weapon:
+		return "+%d ATK" % (item as Weapon).atk_bonus
+	if item is Armor:
+		return "+%d DEF" % (item as Armor).def_bonus
+	if item is Shield:
+		return "+%d DEF" % (item as Shield).def_bonus
+	if item is Ring:
+		var r := item as Ring
+		if r.atk_bonus > 0:
+			return "+%d ATK" % r.atk_bonus
+		if r.def_bonus > 0:
+			return "+%d DEF" % r.def_bonus
+		return "+%d HP" % r.max_hp_bonus
+	return "+0 %s" % default_stat_name
+
 func _set_equipped_slot(slot: Dictionary, item: Item, stat_name: String) -> void:
 	var panel: PanelContainer = slot["panel"]
 	var icon: TextureRect = slot["icon"]
@@ -414,16 +432,7 @@ func _set_equipped_slot(slot: Dictionary, item: Item, stat_name: String) -> void
 		stylebox.bg_color = SLOT_BG_FILLED
 		icon.visible = true
 		icon.texture = item.texture
-		var bonus: int = 0
-		if item is Weapon:
-			bonus = (item as Weapon).atk_bonus
-		elif item is Armor:
-			bonus = (item as Armor).def_bonus
-		elif item is Shield:
-			bonus = (item as Shield).def_bonus
-		elif item is Ring:
-			bonus = (item as Ring).max_hp_bonus
-		label.text = "+%d %s" % [bonus, stat_name]
+		label.text = _item_bonus_label(item, stat_name)
 
 	panel.add_theme_stylebox_override("panel", stylebox)
 
@@ -535,7 +544,7 @@ func _on_equipped_hover(slot_data: Dictionary) -> void:
 		"ring":
 			item = inv.ring
 			if item != null:
-				stat_text = "+%d max HP" % (item as Ring).max_hp_bonus
+				stat_text = _item_bonus_label(item, "HP")
 	if item == null:
 		_show_tooltip("Vazio")
 	else:
@@ -560,7 +569,7 @@ func _on_bag_hover(slot_data: Dictionary) -> void:
 	elif item is Shield:
 		detail = "+%d DEF" % (item as Shield).def_bonus
 	elif item is Ring:
-		detail = "+%d max HP" % (item as Ring).max_hp_bonus
+		detail = _item_bonus_label(item, "HP")
 	if detail != "":
 		_show_tooltip("%s\n%s" % [item.display_name, detail])
 	else:
