@@ -100,6 +100,33 @@ static func plate_armor() -> Armor:
 	a.def_bonus = 3
 	return a
 
+# Act 3 themed armor — dark banded mail for the blood-splattered sanctum.
+static func banded_mail() -> Armor:
+	var a := Armor.new()
+	a.id = "banded_mail"
+	a.display_name = "Banded Mail"
+	a.texture = SpriteDB.item("banded_mail")
+	a.def_bonus = 4
+	return a
+
+# Act 4 themed armor — crystallised plate tempered in the burning halls.
+static func crystal_plate() -> Armor:
+	var a := Armor.new()
+	a.id = "crystal_plate"
+	a.display_name = "Crystal Plate"
+	a.texture = SpriteDB.item("crystal_plate")
+	a.def_bonus = 5
+	return a
+
+# Act 5 themed armor — dragon-hide plate, as good as armor gets.
+static func dragon_plate() -> Armor:
+	var a := Armor.new()
+	a.id = "dragon_plate"
+	a.display_name = "Dragon Plate"
+	a.texture = SpriteDB.item("dragon_plate")
+	a.def_bonus = 6
+	return a
+
 static func healing_potion() -> Consumable:
 	var c := Consumable.new()
 	c.id = "healing_potion"
@@ -231,6 +258,33 @@ static func tower_shield() -> Shield:
 	s.def_bonus = 3
 	return s
 
+# Act 3 themed shield — sanctified steel that repels profane edges.
+static func aegis() -> Shield:
+	var s := Shield.new()
+	s.id = "aegis"
+	s.display_name = "Aegis"
+	s.texture = SpriteDB.item("aegis")
+	s.def_bonus = 4
+	return s
+
+# Act 4 themed shield — forged in the burning halls, flame-hardened.
+static func ember_shield() -> Shield:
+	var s := Shield.new()
+	s.id = "ember_shield"
+	s.display_name = "Ember Shield"
+	s.texture = SpriteDB.item("ember_shield")
+	s.def_bonus = 5
+	return s
+
+# Act 5 themed shield — last line between Benedict and the Demon Lord.
+static func infernal_aegis() -> Shield:
+	var s := Shield.new()
+	s.id = "infernal_aegis"
+	s.display_name = "Infernal Aegis"
+	s.texture = SpriteDB.item("infernal_aegis")
+	s.def_bonus = 6
+	return s
+
 static func from_id(id: String) -> Item:
 	match id:
 		"short_sword": return short_sword()
@@ -260,6 +314,12 @@ static func from_id(id: String) -> Item:
 		"buckler": return buckler()
 		"kite_shield": return kite_shield()
 		"tower_shield": return tower_shield()
+		"aegis": return aegis()
+		"ember_shield": return ember_shield()
+		"infernal_aegis": return infernal_aegis()
+		"banded_mail": return banded_mail()
+		"crystal_plate": return crystal_plate()
+		"dragon_plate": return dragon_plate()
 	return null
 
 static func random_weapon(rng: RandomNumberGenerator, floor_num: int = 1) -> Weapon:
@@ -314,14 +374,42 @@ static func random_weapon(rng: RandomNumberGenerator, floor_num: int = 1) -> Wea
 				return sword_of_cerebov()
 			return demon_blade()
 
-static func random_armor(rng: RandomNumberGenerator) -> Armor:
-	match rng.randi() % 3:
-		0:
-			return leather_armor()
+static func random_armor(rng: RandomNumberGenerator, floor_num: int = 1) -> Armor:
+	# Act-aware armor pool. Weak armor fades out of late acts; each late
+	# act drops an exclusive piece that pushes DEF ceiling higher.
+	var act: int = ActConfig.act_for_floor(floor_num)
+	var roll := rng.randf()
+	match act:
 		1:
-			return chain_mail()
-		_:
+			if roll < 0.5:
+				return leather_armor()
+			if roll < 0.85:
+				return chain_mail()
 			return plate_armor()
+		2:
+			if roll < 0.25:
+				return leather_armor()
+			if roll < 0.6:
+				return chain_mail()
+			return plate_armor()
+		3:
+			if roll < 0.3:
+				return chain_mail()
+			if roll < 0.65:
+				return plate_armor()
+			return banded_mail()
+		4:
+			if roll < 0.25:
+				return plate_armor()
+			if roll < 0.6:
+				return banded_mail()
+			return crystal_plate()
+		_:
+			if roll < 0.3:
+				return banded_mail()
+			if roll < 0.6:
+				return crystal_plate()
+			return dragon_plate()
 
 static func random_consumable(rng: RandomNumberGenerator) -> Consumable:
 	var roll := rng.randf()
@@ -347,14 +435,38 @@ static func random_ring(rng: RandomNumberGenerator) -> Ring:
 		_:
 			return ring_of_vitality()
 
-static func random_shield(rng: RandomNumberGenerator) -> Shield:
-	match rng.randi() % 3:
-		0:
-			return buckler()
+static func random_shield(rng: RandomNumberGenerator, floor_num: int = 1) -> Shield:
+	var act: int = ActConfig.act_for_floor(floor_num)
+	var roll := rng.randf()
+	match act:
 		1:
+			if roll < 0.6:
+				return buckler()
 			return kite_shield()
-		_:
+		2:
+			if roll < 0.3:
+				return buckler()
+			if roll < 0.7:
+				return kite_shield()
 			return tower_shield()
+		3:
+			if roll < 0.3:
+				return kite_shield()
+			if roll < 0.65:
+				return tower_shield()
+			return aegis()
+		4:
+			if roll < 0.3:
+				return tower_shield()
+			if roll < 0.65:
+				return aegis()
+			return ember_shield()
+		_:
+			if roll < 0.3:
+				return aegis()
+			if roll < 0.6:
+				return ember_shield()
+			return infernal_aegis()
 
 static func random_amulet(rng: RandomNumberGenerator) -> Amulet:
 	match rng.randi() % 3:
@@ -370,9 +482,9 @@ static func random_item(rng: RandomNumberGenerator, floor_num: int = 1) -> Item:
 	if roll < 0.28:
 		return random_weapon(rng, floor_num)
 	elif roll < 0.46:
-		return random_armor(rng)
+		return random_armor(rng, floor_num)
 	elif roll < 0.60:
-		return random_shield(rng)
+		return random_shield(rng, floor_num)
 	elif roll < 0.82:
 		return random_consumable(rng)
 	elif roll < 0.93:

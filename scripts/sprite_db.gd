@@ -35,6 +35,9 @@ const _ITEMS := {
 	"leather_armor":   preload("res://assets/sprites/items/leather_armor.png"),
 	"chain_mail":      preload("res://assets/sprites/items/leather_armor.png"),
 	"plate_armor":     preload("res://assets/sprites/items/plate_armor.png"),
+	"banded_mail":     preload("res://assets/sprites/items/banded_mail.png"),
+	"crystal_plate":   preload("res://assets/sprites/items/crystal_plate.png"),
+	"dragon_plate":    preload("res://assets/sprites/items/dragon_plate.png"),
 	"healing_potion":  preload("res://assets/sprites/items/healing_potion.png"),
 	"greater_potion":  preload("res://assets/sprites/items/greater_potion.png"),
 	"teleport_scroll": preload("res://assets/sprites/items/teleport_scroll.png"),
@@ -50,6 +53,9 @@ const _ITEMS := {
 	"buckler":         preload("res://assets/sprites/items/buckler.png"),
 	"kite_shield":     preload("res://assets/sprites/items/kite_shield.png"),
 	"tower_shield":    preload("res://assets/sprites/items/tower_shield.png"),
+	"aegis":           preload("res://assets/sprites/items/aegis.png"),
+	"ember_shield":    preload("res://assets/sprites/items/ember_shield.png"),
+	"infernal_aegis":  preload("res://assets/sprites/items/infernal_aegis.png"),
 }
 
 const _EFFECTS := {
