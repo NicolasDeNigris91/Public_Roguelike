@@ -4,7 +4,8 @@ extends RefCounted
 # stronger weapons/armor auto-equip (old goes to bag), weaker go to bag,
 # rings never auto-swap, all else falls back to add_to_bag.
 
-const BAG_SIZE: int = 8
+const BAG_SIZE: int = 5                 # equipables only now (consumables moved to potion_stacks)
+const MAX_POTION_STACKS: int = 3        # distinct consumable types held at once
 
 enum PickupResult {
 	EQUIPPED,                # slot was empty, item equipped directly
@@ -24,7 +25,12 @@ var armor: Armor
 var shield: Shield
 var ring: Ring
 var amulet: Amulet
+# Bag holds equipable-only items (weapons/armor/shields/rings/amulets) now.
+# Consumables never enter here; they stack in potion_stacks instead.
 var bag: Array[Item] = []
+# Potion stacks: up to 3 entries, each {"item_id": String, "count": int}.
+# Same item_id collapses into a single stack with count incremented.
+var potion_stacks: Array = []
 
 func equip_weapon(new_weapon: Weapon) -> Weapon:
 	var previous := weapon
@@ -58,6 +64,8 @@ func add_to_bag(item: Item) -> bool:
 	return true
 
 func try_pickup(item: Item) -> PickupResult:
+	if item is Consumable:
+		return _pickup_potion(item as Consumable)
 	if item is Weapon:
 		return _pickup_weapon(item as Weapon)
 	if item is Armor:
@@ -71,6 +79,35 @@ func try_pickup(item: Item) -> PickupResult:
 	if add_to_bag(item):
 		return PickupResult.BAGGED
 	return PickupResult.REJECTED_BAG_FULL
+
+# Consumables stack by item_id up to MAX_POTION_STACKS distinct types.
+# Beyond that, pickup is rejected (item stays on floor).
+func _pickup_potion(consumable: Consumable) -> PickupResult:
+	for stack in potion_stacks:
+		if stack["item_id"] == consumable.id:
+			stack["count"] = int(stack["count"]) + 1
+			return PickupResult.BAGGED
+	if potion_stacks.size() < MAX_POTION_STACKS:
+		potion_stacks.append({"item_id": consumable.id, "count": 1})
+		return PickupResult.BAGGED
+	return PickupResult.REJECTED_BAG_FULL
+
+# Peek at a potion stack without consuming. Returns empty string if the
+# slot index is out of range.
+func peek_potion(stack_idx: int) -> String:
+	if stack_idx < 0 or stack_idx >= potion_stacks.size():
+		return ""
+	return String(potion_stacks[stack_idx]["item_id"])
+
+# Decrement the stack at stack_idx by one; if count hits zero, drop the
+# stack entirely so subsequent stacks collapse toward index 0.
+func consume_potion(stack_idx: int) -> void:
+	if stack_idx < 0 or stack_idx >= potion_stacks.size():
+		return
+	var stack: Dictionary = potion_stacks[stack_idx]
+	stack["count"] = int(stack["count"]) - 1
+	if stack["count"] <= 0:
+		potion_stacks.remove_at(stack_idx)
 
 func _pickup_weapon(new_weapon: Weapon) -> PickupResult:
 	if weapon == null:

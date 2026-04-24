@@ -339,10 +339,24 @@ func restore_state(data: Dictionary) -> void:
 	var amulet_id: Variant = equipped.get("amulet")
 	if amulet_id != null:
 		inventory.amulet = ItemDB.from_id(amulet_id) as Amulet
+	# Old saves (pre-potion-stacks) lumped consumables and equipables into
+	# `bag`. Route consumables found there into potion_stacks so nothing is
+	# lost on upgrade; equipables keep landing in `bag`.
 	for id in data.get("bag", []):
 		var item: Item = ItemDB.from_id(id)
-		if item != null:
+		if item == null:
+			continue
+		if item is Consumable:
+			inventory.try_pickup(item)
+		else:
 			inventory.bag.append(item)
+	# Modern saves persist potion_stacks directly.
+	for entry in data.get("potion_stacks", []):
+		var stack_item_id: String = String(entry.get("item_id", ""))
+		var stack_count: int = int(entry.get("count", 0))
+		if stack_item_id == "" or stack_count <= 0:
+			continue
+		inventory.potion_stacks.append({"item_id": stack_item_id, "count": stack_count})
 
 	bonus_atk = data.get("bonus_atk", 0)
 	bonus_def = data.get("bonus_def", 0)

@@ -87,6 +87,12 @@ func _serialize_player(player: Player) -> Dictionary:
 	var bag: Array = []
 	for item in player.inventory.bag:
 		bag.append(item.id)
+	var potion_stacks: Array = []
+	for stack in player.inventory.potion_stacks:
+		potion_stacks.append({
+			"item_id": String(stack["item_id"]),
+			"count": int(stack["count"]),
+		})
 	return {
 		"hp": player.hp,
 		"max_hp": player.max_hp,
@@ -100,6 +106,7 @@ func _serialize_player(player: Player) -> Dictionary:
 		"timed_buffs": _serialize_timed_buffs(player.timed_buffs),
 		"equipped": equipped,
 		"bag": bag,
+		"potion_stacks": potion_stacks,
 	}
 
 # JSON strings for StringName buff keys.

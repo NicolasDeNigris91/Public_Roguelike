@@ -72,6 +72,10 @@ theme_override_constants/separation = 6
 layout_mode = 2
 theme_override_constants/separation = 6
 
+[node name="PotionsContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
 [node name="BagContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 4

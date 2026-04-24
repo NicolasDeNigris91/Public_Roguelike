@@ -147,13 +147,24 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if not player.turn_active:
 		return
-	if event.keycode >= KEY_1 and event.keycode <= KEY_8:
-		var slot: int = event.keycode - KEY_1
+	# Keys 1-3: potion stacks. Keys 4-8: bag (equipables / altar sacrifices).
+	if event.keycode >= KEY_1 and event.keycode <= KEY_3:
+		var stack_idx: int = event.keycode - KEY_1
 		if _altar_under_player != null and _altar_under_player.is_active():
-			_try_sacrifice(slot)
+			# Consumables can't be sacrificed — surface the rejection.
+			hotbar.flash_slot_invalid(stack_idx)
 		else:
-			hotbar.use_consumable_slot(slot)
+			hotbar.use_potion_slot(stack_idx)
 		get_viewport().set_input_as_handled()
+		return
+	if event.keycode >= KEY_4 and event.keycode <= KEY_8:
+		var bag_idx: int = event.keycode - KEY_4
+		if _altar_under_player != null and _altar_under_player.is_active():
+			_try_sacrifice(bag_idx)
+		# Outside an altar, bag keys are reserved for sacrifice only —
+		# equipables don't have a "use" action.
+		get_viewport().set_input_as_handled()
+		return
 
 func _populate_floor() -> void:
 	if _ascending:
@@ -662,14 +673,19 @@ func _try_sacrifice(slot: int) -> void:
 	hotbar.refresh()
 	player.turn_done.emit()
 
-func _on_hotbar_consumable_used(slot_idx: int) -> void:
-	if slot_idx >= player.inventory.bag.size():
+func _on_hotbar_consumable_used(stack_idx: int) -> void:
+	# stack_idx points into Inventory.potion_stacks. Build a fresh Consumable
+	# from the stack's item_id, apply it, and decrement the stack count on
+	# success.
+	var potion_id: String = player.inventory.peek_potion(stack_idx)
+	if potion_id == "":
 		return
-	var item: Item = player.inventory.bag[slot_idx]
+	var item: Item = ItemDB.from_id(potion_id)
 	if not (item is Consumable):
 		return
-	var consumed: bool = item.use_on(player)
+	var consumed: bool = (item as Consumable).use_on(player)
 	if consumed:
-		player.inventory.bag.remove_at(slot_idx)
+		player.inventory.consume_potion(stack_idx)
 		hotbar.refresh()
+		player.turn_done.emit()
 		player.turn_done.emit()

@@ -2,7 +2,7 @@ extends CanvasLayer
 # Permanent bottom hotbar. No class_name to avoid autoload-style collisions
 # and because the scene-root identity is sufficient for external refs.
 
-signal consumable_used(slot_idx: int)
+signal consumable_used(stack_idx: int)
 
 const HP_BAR_SIZE := Vector2(120, 16)
 
@@ -12,7 +12,8 @@ const HP_COLOR_HIGH := Color(0.20, 0.75, 0.25, 1)
 
 const EQUIPPED_SLOT_SIZE := Vector2(48, 64)
 const BAG_SLOT_SIZE := Vector2(44, 58)
-const BAG_SLOT_COUNT: int = 8
+const POTION_SLOT_COUNT: int = 3   # keys 1-3
+const BAG_SLOT_COUNT: int = 5      # keys 4-8 (equipables only)
 const SLOT_ICON_SIZE: int = 32
 const SLOT_BG_FILLED := Color(0.14, 0.14, 0.17, 0.95)
 const SLOT_BG_EMPTY := Color(0.10, 0.10, 0.12, 0.95)
@@ -40,12 +41,14 @@ var _armor_slot: Dictionary
 var _shield_slot: Dictionary
 var _ring_slot: Dictionary
 var _amulet_slot: Dictionary
+var _potion_slots: Array = []
 var _bag_slots: Array = []
 
 @onready var portrait_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/PortraitContainer
 @onready var status_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/StatusContainer
 @onready var abilities_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/AbilitiesContainer
 @onready var equipped_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/EquippedContainer
+@onready var potions_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/PotionsContainer
 @onready var bag_container: HBoxContainer = $PanelContainer/MarginContainer/HBoxContainer/BagContainer
 @onready var tooltip_control: Control = $TooltipControl
 @onready var tooltip_label: Label = $TooltipControl/TooltipPanel/TooltipLabel
@@ -57,6 +60,7 @@ func _ready() -> void:
 	_build_status()
 	_build_abilities()
 	_build_equipped()
+	_build_potions()
 	_build_bag()
 	_build_sacrifice_prompt()
 	AudioManager.mute_changed.connect(_on_mute_changed)
@@ -469,7 +473,8 @@ func _build_bag() -> void:
 		margin.add_child(stack)
 
 		var number_label := Label.new()
-		number_label.text = str(i + 1)
+		# Bag slots start at keyboard 4, since keys 1-3 are potion slots.
+		number_label.text = str(POTION_SLOT_COUNT + i + 1)
 		number_label.add_theme_font_size_override("font_size", 10)
 		number_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
 		number_label.position = Vector2(0, 0)
@@ -497,6 +502,136 @@ func _build_bag() -> void:
 		panel.mouse_exited.connect(_hide_tooltip)
 
 		_bag_slots.append(slot_data)
+
+# Three fixed slots for consumables (healing potion, buff potions, scrolls).
+# Each slot stacks one item_id with a count badge. Keys 1-3 use them.
+func _build_potions() -> void:
+	for i in range(POTION_SLOT_COUNT):
+		var panel := PanelContainer.new()
+		panel.custom_minimum_size = BAG_SLOT_SIZE
+
+		var margin := MarginContainer.new()
+		margin.add_theme_constant_override("margin_left", 4)
+		margin.add_theme_constant_override("margin_top", 4)
+		margin.add_theme_constant_override("margin_right", 4)
+		margin.add_theme_constant_override("margin_bottom", 4)
+		panel.add_child(margin)
+
+		var stack := Control.new()
+		stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		stack.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		margin.add_child(stack)
+
+		var number_label := Label.new()
+		number_label.text = str(i + 1)
+		number_label.add_theme_font_size_override("font_size", 10)
+		number_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
+		number_label.position = Vector2(0, 0)
+		stack.add_child(number_label)
+
+		var icon := TextureRect.new()
+		icon.custom_minimum_size = Vector2(SLOT_ICON_SIZE, SLOT_ICON_SIZE)
+		icon.expand_mode = TextureRect.EXPAND_FIT_HEIGHT_PROPORTIONAL
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.anchor_left = 0.5
+		icon.anchor_top = 0.5
+		icon.anchor_right = 0.5
+		icon.anchor_bottom = 0.5
+		icon.offset_left = -16.0
+		icon.offset_top = -16.0
+		icon.offset_right = 16.0
+		icon.offset_bottom = 16.0
+		stack.add_child(icon)
+
+		var count_label := Label.new()
+		count_label.text = ""
+		count_label.add_theme_font_size_override("font_size", 12)
+		count_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+		count_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+		count_label.add_theme_constant_override("outline_size", 3)
+		count_label.anchor_left = 1.0
+		count_label.anchor_top = 1.0
+		count_label.anchor_right = 1.0
+		count_label.anchor_bottom = 1.0
+		count_label.offset_left = -22.0
+		count_label.offset_top = -16.0
+		count_label.offset_right = -2.0
+		count_label.offset_bottom = 0.0
+		count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		stack.add_child(count_label)
+
+		potions_container.add_child(panel)
+
+		var slot_data := {"panel": panel, "icon": icon, "count_label": count_label, "index": i}
+		panel.mouse_filter = Control.MOUSE_FILTER_STOP
+		panel.mouse_entered.connect(_on_potion_hover.bind(slot_data))
+		panel.mouse_exited.connect(_hide_tooltip)
+
+		_potion_slots.append(slot_data)
+
+func _refresh_potions() -> void:
+	if player == null:
+		return
+	var stacks: Array = player.inventory.potion_stacks
+	for i in range(POTION_SLOT_COUNT):
+		var slot: Dictionary = _potion_slots[i]
+		var panel: PanelContainer = slot["panel"]
+		var icon: TextureRect = slot["icon"]
+		var count_label: Label = slot["count_label"]
+
+		var stylebox := StyleBoxFlat.new()
+		stylebox.border_width_left = 1
+		stylebox.border_width_top = 1
+		stylebox.border_width_right = 1
+		stylebox.border_width_bottom = 1
+		stylebox.border_color = SLOT_BORDER
+		stylebox.corner_radius_top_left = 3
+		stylebox.corner_radius_top_right = 3
+		stylebox.corner_radius_bottom_right = 3
+		stylebox.corner_radius_bottom_left = 3
+
+		if i < stacks.size():
+			var stack: Dictionary = stacks[i]
+			var tpl := ItemDB.from_id(String(stack["item_id"]))
+			stylebox.bg_color = SLOT_BG_FILLED
+			icon.visible = true
+			if tpl != null:
+				icon.texture = tpl.texture
+			var c: int = int(stack["count"])
+			count_label.text = ("×%d" % c) if c > 1 else ""
+		else:
+			stylebox.bg_color = SLOT_BG_EMPTY
+			icon.visible = false
+			count_label.text = ""
+
+		panel.add_theme_stylebox_override("panel", stylebox)
+
+func _on_potion_hover(slot_data: Dictionary) -> void:
+	if player == null:
+		return
+	var idx: int = slot_data["index"]
+	var stacks: Array = player.inventory.potion_stacks
+	if idx >= stacks.size():
+		_show_tooltip("Vazio")
+		return
+	var stack: Dictionary = stacks[idx]
+	var tpl := ItemDB.from_id(String(stack["item_id"]))
+	if tpl == null:
+		_show_tooltip("Vazio")
+		return
+	var detail: String = ""
+	if tpl is Consumable:
+		detail = tpl.description
+	_show_tooltip("%s ×%d\n%s" % [tpl.display_name, int(stack["count"]), detail])
+
+# Called by main.gd when keys 1-3 are pressed outside of sacrifice mode.
+func use_potion_slot(idx: int) -> void:
+	if player == null:
+		return
+	var stacks: Array = player.inventory.potion_stacks
+	if idx < 0 or idx >= stacks.size():
+		return
+	consumable_used.emit(idx)
 
 func _refresh_bag() -> void:
 	if player == null:
@@ -534,6 +669,7 @@ func refresh() -> void:
 	_refresh_status()
 	_refresh_abilities()
 	_refresh_equipped()
+	_refresh_potions()
 	_refresh_bag()
 
 func _on_equipped_hover(slot_data: Dictionary) -> void:
@@ -649,13 +785,3 @@ func flash_slot_invalid(slot_idx: int) -> void:
 	var tween := create_tween()
 	tween.tween_property(panel, "modulate", Color(1.5, 0.3, 0.3, 1.0), 0.08)
 	tween.tween_property(panel, "modulate", base_color, 0.2)
-
-func use_consumable_slot(idx: int) -> void:
-	if player == null:
-		return
-	if idx < 0 or idx >= player.inventory.bag.size():
-		return
-	var item: Item = player.inventory.bag[idx]
-	if not (item is Consumable):
-		return
-	consumable_used.emit(idx)
