@@ -9,7 +9,7 @@ func _ready() -> void:
 	name = "Wraith"
 	hp = 8
 	max_hp = 8
-	atk = 5
+	atk = 3
 	def = 0
 	ranged_projectile_texture = SpriteDB.effect("necro_bolt")
 	super._ready()
@@ -23,7 +23,10 @@ func take_turn() -> void:
 	var dist := _distance_to(player.grid_position)
 
 	if dist == 1:
-		Combat.attack(self, player, true)  # ignore DEF — spectral
+		# Melee is a physical claw: armor works. Only the spectral bolt
+		# at range still bypasses DEF (matches Lich phase-3 principle —
+		# magical attacks ignore armor, physical ones do not).
+		Combat.attack(self, player)
 		return
 
 	if dist <= ATTACK_RANGE and FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position):
