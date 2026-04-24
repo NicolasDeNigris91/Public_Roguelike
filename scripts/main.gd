@@ -723,7 +723,13 @@ func _spawn_victory_portal(grid_pos: Vector2i) -> void:
 	_victory_portal_sprite.texture = SpriteDB.tile("victory_portal")
 	_victory_portal_sprite.centered = true
 	_victory_portal_sprite.position = Vector2(grid_pos.x, grid_pos.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, Grid.TILE_SIZE * 0.5)
-	altars_layer.add_child(_victory_portal_sprite)
+	# Parked on the effects layer (transient VFX home), not altars_layer —
+	# nothing else iterates effects_layer expecting grid_position, so the
+	# plain Sprite2D can't crash any visibility/altar loop.
+	if Combat.effects_layer != null:
+		Combat.effects_layer.add_child(_victory_portal_sprite)
+	else:
+		add_child(_victory_portal_sprite)
 	# Gentle pulse so the portal reads as alive, not decorative.
 	var tw := _victory_portal_sprite.create_tween().set_loops()
 	tw.tween_property(_victory_portal_sprite, "modulate", Color(1.3, 1.25, 0.85, 1.0), 1.2)
