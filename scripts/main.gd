@@ -506,7 +506,10 @@ func _refresh_entity_visibility() -> void:
 	for item_entity in items_layer.get_children():
 		item_entity.visible = dungeon.is_tile_visible(item_entity.grid_position)
 	for altar in altars_layer.get_children():
-		altar.visible = dungeon.is_tile_visible(altar.grid_position)
+		# The layer also hosts the rosary-ending victory portal, a plain
+		# Sprite2D without grid_position. Skip anything not an Altar.
+		if altar is Altar:
+			altar.visible = dungeon.is_tile_visible(altar.grid_position)
 	for decor in decorations_layer.get_children():
 		if decor is Torch:
 			decor.visible = dungeon.is_tile_visible(decor.grid_position)
@@ -663,16 +666,20 @@ func _on_boss_truly_died(pos: Vector2i) -> void:
 # control to walk out of the throne under their own power; stepping onto
 # the portal triggers the victory screen.
 func _play_rosary_ending(demon_pos: Vector2i) -> void:
+	# in_cinematic is orthogonal to turn_active: TurnManager restores
+	# turn_active to true at the end of the enemy phase that fires during
+	# the boss-kill frame, so turn_active alone would unlock input mid-scene.
+	player.in_cinematic = true
 	player.turn_active = false
 	AudioManager.stop_music(0.8)
 
-	# Phase 1 — the same horror as the bad ending, held ~3s so the player
-	# genuinely thinks the rosary failed.
+	# Phase 1 — the same horror as the bad ending, held long enough that the
+	# whisper fully plays (BossWhisper: 0.6 fade-in + 3.2 hold + 1.2 fade-out).
 	player.transform_into_lich()
 	var whisper_world: Vector2 = Vector2(player.grid_position.x, player.grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, 0)
 	if Combat.effects_layer != null:
 		BossWhisper.spawn(Combat.effects_layer, whisper_world, "It can't be...")
-	await get_tree().create_timer(3.0).timeout
+	await get_tree().create_timer(5.2).timeout
 
 	# Phase 2 — halo descends, the rosary's grace rewrites the curse.
 	if Combat.effects_layer != null:
@@ -681,7 +688,7 @@ func _play_rosary_ending(demon_pos: Vector2i) -> void:
 		var whisper2_world: Vector2 = Vector2(player.grid_position.x, player.grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, 0)
 		BossWhisper.spawn(Combat.effects_layer, whisper2_world, "...and yet, by His grace, it shall not be.")
 	AudioManager.play_sfx("smite")
-	await get_tree().create_timer(3.0).timeout
+	await get_tree().create_timer(5.2).timeout
 
 	# Phase 3 — mortal form returns, portal opens on the corpse. Player walks
 	# out under their own power; stepping onto the portal finalises the run.
@@ -689,6 +696,7 @@ func _play_rosary_ending(demon_pos: Vector2i) -> void:
 	_spawn_victory_portal(demon_pos)
 	_awaiting_rosary_victory = true
 	_victory_portal_pos = demon_pos
+	player.in_cinematic = false
 	player.turn_active = true
 	RunStats.record_run_victory()
 	print("VICTORY — grace pulled Benedict back on floor %d." % current_floor)

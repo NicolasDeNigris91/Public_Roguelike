@@ -41,6 +41,10 @@ var altar_gains_this_act: Dictionary = {
 # expires. Cleared on death, serialized across saves.
 var timed_buffs: Dictionary = {}
 var turn_active: bool = true
+# Set by main.gd during cinematic sequences (Rosary ending transformation).
+# Orthogonal to turn_active because TurnManager toggles turn_active at the end
+# of each enemy phase, so scripted sequences need a separate lockout.
+var in_cinematic: bool = false
 var inventory: Inventory
 var vision_range: int = BASE_VISION_RANGE
 var vision_debuff_turns: int = 0
@@ -57,7 +61,7 @@ func _ready() -> void:
 	sprite_node.texture = SpriteDB.actor("player")
 
 func _unhandled_input(event: InputEvent) -> void:
-	if hp <= 0 or not turn_active or is_tweening:
+	if hp <= 0 or not turn_active or is_tweening or in_cinematic:
 		return
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return

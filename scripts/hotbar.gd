@@ -385,12 +385,12 @@ func _refresh_weapon_ability() -> void:
 	var weapon: Weapon = player.inventory.weapon if player.inventory != null else null
 	var has_ability: bool = weapon != null and weapon.ability != Weapon.Ability.NONE
 	var cd: int = player.weapon_ability_cooldown
-	var ready: bool = has_ability and cd <= 0
+	var is_ready: bool = has_ability and cd <= 0
 
 	if has_ability:
 		icon.visible = true
 		icon.texture = weapon.ability_icon
-		icon.modulate = Color.WHITE if ready else ABILITY_DISABLED_MODULATE
+		icon.modulate = Color.WHITE if is_ready else ABILITY_DISABLED_MODULATE
 	else:
 		icon.visible = false
 
@@ -401,7 +401,7 @@ func _refresh_weapon_ability() -> void:
 	stylebox.border_width_top = 1
 	stylebox.border_width_right = 1
 	stylebox.border_width_bottom = 1
-	stylebox.border_color = FAITH_COLOR if ready else SLOT_BORDER
+	stylebox.border_color = FAITH_COLOR if is_ready else SLOT_BORDER
 	stylebox.corner_radius_top_left = 3
 	stylebox.corner_radius_top_right = 3
 	stylebox.corner_radius_bottom_right = 3
