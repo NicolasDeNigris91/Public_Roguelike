@@ -21,7 +21,9 @@ func take_turn() -> void:
 	var dist := _distance_to(player.grid_position)
 
 	if dist == 1:
-		Combat.attack(self, player, true)
+		# Staff strike — physical, armor works. Only the magic bolt at range
+		# bypasses DEF.
+		Combat.attack(self, player)
 		return
 
 	if dist <= ATTACK_RANGE and FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position):

@@ -23,7 +23,9 @@ func take_turn() -> void:
 	var dist := _distance_to(player.grid_position)
 
 	if dist == 1:
-		Combat.attack(self, player, true)  # ignore DEF — spectral
+		# Spectral claw is still physical contact — armor works up close.
+		# The signature nerve-bolt at range keeps the DEF bypass.
+		Combat.attack(self, player)
 		return
 
 	if dist <= ATTACK_RANGE and FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position):
