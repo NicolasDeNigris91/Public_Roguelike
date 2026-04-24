@@ -9,7 +9,7 @@ func _ready() -> void:
 	name = "Wraith"
 	hp = 4
 	max_hp = 4
-	atk = 2
+	atk = 1
 	def = 0
 	ranged_projectile_texture = SpriteDB.effect("necro_bolt")
 	super._ready()
