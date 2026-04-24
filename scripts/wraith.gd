@@ -3,7 +3,7 @@ extends Enemy
 # Act 2 ranged undead (floors 7-14). Shadow spirit that fires dark bolts.
 # Similar to Archer but ignores DEF (spectral attacks pass through armor).
 
-const ATTACK_RANGE: int = 2
+const ATTACK_RANGE: int = 3
 
 func _ready() -> void:
 	name = "Wraith"
