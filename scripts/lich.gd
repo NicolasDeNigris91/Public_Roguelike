@@ -21,6 +21,7 @@ var summoned_skeletons: Array[Skeleton] = []
 var has_revived: bool = false
 var last_seen_player: Vector2i = Vector2i(-1, -1)
 var turns_without_los: int = 0
+var _first_sighting_done: bool = false
 
 func _ready() -> void:
 	name = "Lich"
@@ -37,6 +38,14 @@ func _ready() -> void:
 func take_turn() -> void:
 	if turn_manager == null or not is_instance_valid(turn_manager.player):
 		return
+
+	# First time the player sees the Lich, plant the cult name above him.
+	# Fires once per fight, before phase logic runs.
+	if not _first_sighting_done and dungeon != null and dungeon.is_tile_visible(grid_position):
+		_first_sighting_done = true
+		if Combat.effects_layer != null:
+			var world_pos: Vector2 = Vector2(grid_position.x, grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, 0)
+			BossWhisper.spawn(Combat.effects_layer, world_pos, "Y'KRETH IT-SUL...")
 
 	_update_phase()
 
