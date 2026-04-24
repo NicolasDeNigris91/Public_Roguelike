@@ -209,6 +209,26 @@ static func ring_of_vitality() -> Ring:
 	r.max_hp_bonus = 15
 	return r
 
+# Act 4 themed ring — fury of the infernal, high ATK with a bit of HP.
+static func ring_of_the_damned() -> Ring:
+	var r := Ring.new()
+	r.id = "ring_of_the_damned"
+	r.display_name = "Ring of the Damned"
+	r.texture = SpriteDB.item("ring_of_the_damned")
+	r.atk_bonus = 3
+	r.max_hp_bonus = 5
+	return r
+
+# Act 5 legendary ring — the Demon Lord's own signet.
+static func demon_lord_signet() -> Ring:
+	var r := Ring.new()
+	r.id = "demon_lord_signet"
+	r.display_name = "Demon Lord's Signet"
+	r.texture = SpriteDB.item("demon_lord_signet")
+	r.atk_bonus = 4
+	r.def_bonus = 4
+	return r
+
 static func amulet_of_faith() -> Amulet:
 	var a := Amulet.new()
 	a.id = "amulet_of_faith"
@@ -232,6 +252,16 @@ static func amulet_of_resolve() -> Amulet:
 	a.display_name = "Amulet of Resolve"
 	a.texture = SpriteDB.item("amulet_of_resolve")
 	a.max_hp_bonus = 20
+	return a
+
+# Act 4-5 themed amulet — hybrid ATK + HP, blood crystal housing infernal flame.
+static func amulet_of_the_pyre() -> Amulet:
+	var a := Amulet.new()
+	a.id = "amulet_of_the_pyre"
+	a.display_name = "Amulet of the Pyre"
+	a.texture = SpriteDB.item("amulet_of_the_pyre")
+	a.atk_bonus = 3
+	a.max_hp_bonus = 15
 	return a
 
 static func buckler() -> Shield:
@@ -308,9 +338,12 @@ static func from_id(id: String) -> Item:
 		"ring_of_strength": return ring_of_strength()
 		"ring_of_protection": return ring_of_protection()
 		"ring_of_vitality": return ring_of_vitality()
+		"ring_of_the_damned": return ring_of_the_damned()
+		"demon_lord_signet": return demon_lord_signet()
 		"amulet_of_faith": return amulet_of_faith()
 		"amulet_of_warding": return amulet_of_warding()
 		"amulet_of_resolve": return amulet_of_resolve()
+		"amulet_of_the_pyre": return amulet_of_the_pyre()
 		"buckler": return buckler()
 		"kite_shield": return kite_shield()
 		"tower_shield": return tower_shield()
@@ -424,15 +457,39 @@ static func random_consumable(rng: RandomNumberGenerator) -> Consumable:
 	else:
 		return potion_of_resistance()
 
-static func random_ring(rng: RandomNumberGenerator) -> Ring:
-	match rng.randi() % 4:
-		0:
-			return ring_of_life()
-		1:
+static func random_ring(rng: RandomNumberGenerator, floor_num: int = 1) -> Ring:
+	var act: int = ActConfig.act_for_floor(floor_num)
+	var roll := rng.randf()
+	match act:
+		1, 2:
+			# Early: only ring_of_life. Simple HP bump.
+			if roll < 0.6:
+				return ring_of_life()
 			return ring_of_strength()
-		2:
+		3:
+			# Mid: full base lineup.
+			if roll < 0.3:
+				return ring_of_life()
+			if roll < 0.55:
+				return ring_of_strength()
+			if roll < 0.8:
+				return ring_of_protection()
+			return ring_of_vitality()
+		4:
+			# Late: introduce Ring of the Damned. Weak rings drop out.
+			if roll < 0.2:
+				return ring_of_strength()
+			if roll < 0.4:
+				return ring_of_vitality()
+			if roll < 0.75:
+				return ring_of_the_damned()
 			return ring_of_protection()
 		_:
+			# Act 5: only top tiers — Damned + Demon Lord's Signet.
+			if roll < 0.4:
+				return ring_of_the_damned()
+			if roll < 0.75:
+				return demon_lord_signet()
 			return ring_of_vitality()
 
 static func random_shield(rng: RandomNumberGenerator, floor_num: int = 1) -> Shield:
@@ -468,14 +525,27 @@ static func random_shield(rng: RandomNumberGenerator, floor_num: int = 1) -> Shi
 				return ember_shield()
 			return infernal_aegis()
 
-static func random_amulet(rng: RandomNumberGenerator) -> Amulet:
-	match rng.randi() % 3:
-		0:
+static func random_amulet(rng: RandomNumberGenerator, floor_num: int = 1) -> Amulet:
+	var act: int = ActConfig.act_for_floor(floor_num)
+	var roll := rng.randf()
+	match act:
+		1, 2:
 			return amulet_of_faith()
-		1:
+		3:
+			if roll < 0.5:
+				return amulet_of_faith()
 			return amulet_of_warding()
+		4:
+			if roll < 0.3:
+				return amulet_of_warding()
+			if roll < 0.65:
+				return amulet_of_resolve()
+			return amulet_of_the_pyre()
 		_:
-			return amulet_of_resolve()
+			# Act 5: resolve + pyre, faith/warding phased out.
+			if roll < 0.45:
+				return amulet_of_resolve()
+			return amulet_of_the_pyre()
 
 static func random_item(rng: RandomNumberGenerator, floor_num: int = 1) -> Item:
 	var roll := rng.randf()
@@ -488,6 +558,6 @@ static func random_item(rng: RandomNumberGenerator, floor_num: int = 1) -> Item:
 	elif roll < 0.82:
 		return random_consumable(rng)
 	elif roll < 0.93:
-		return random_ring(rng)
+		return random_ring(rng, floor_num)
 	else:
-		return random_amulet(rng)
+		return random_amulet(rng, floor_num)
