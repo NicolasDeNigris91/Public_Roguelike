@@ -7,9 +7,9 @@ const ATTACK_RANGE: int = 4
 
 func _ready() -> void:
 	name = "Wraith"
-	hp = 8
-	max_hp = 8
-	atk = 3
+	hp = 4
+	max_hp = 4
+	atk = 2
 	def = 0
 	ranged_projectile_texture = SpriteDB.effect("necro_bolt")
 	super._ready()
