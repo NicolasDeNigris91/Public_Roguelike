@@ -16,10 +16,16 @@ const LIFESTEAL_CAP: int = 30
 const SUMMON_COOLDOWN_MAX: int = 5
 const SUMMON_CAP: int = 2
 const VISION: int = 14
+# Unholy Smite — a corrupted mirror of Benedict's Holy Smite. Ranged, ignores
+# DEF, hits for atk + bonus. Active in both phases, cooldown shared.
+const SMITE_COOLDOWN_MAX: int = 3
+const SMITE_RANGE: int = 5
+const SMITE_DAMAGE_BONUS: int = 4
 
 var phase: int = 1
 var previous_phase: int = 1
 var summon_cooldown: int = 0
+var smite_cooldown: int = 0
 var summoned_skeletons: Array[Skeleton] = []
 
 func _ready() -> void:
@@ -61,6 +67,14 @@ func take_turn() -> void:
 		else:
 			Combat.attack(self, player)
 		return
+
+	# Unholy Smite — dark mirror of the paladin's Holy Smite. Ranged, big hit.
+	if smite_cooldown == 0 and dist <= SMITE_RANGE and FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position):
+		Combat.enemy_smite(self, player, SMITE_DAMAGE_BONUS)
+		smite_cooldown = SMITE_COOLDOWN_MAX
+		return
+	if smite_cooldown > 0:
+		smite_cooldown -= 1
 
 	# Step toward player
 	if dist <= vision_range:

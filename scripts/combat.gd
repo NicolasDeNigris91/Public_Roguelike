@@ -97,6 +97,27 @@ static func attack(
 	var pause: float = HIT_PAUSE_CRIT if is_crit else HIT_PAUSE_NORMAL
 	HitPause.freeze(target.get_tree(), pause)
 
+# Enemy-side mirror of Player.smite — used by Death Knight's Unholy Smite.
+# Distinct from Combat.attack because it uses the crystal_spear VFX + searing
+# burst and ignores DEF with a flat damage bonus, mirroring the player's smite.
+static func enemy_smite(attacker: Actor, target: Actor, damage_bonus: int) -> void:
+	var dmg: int = attacker.atk + damage_bonus
+	AudioManager.play_sfx("smite")
+	if effects_layer != null:
+		var from := _tile_center(attacker.position)
+		var to := _tile_center(target.position)
+		await Projectile.spawn_directional(effects_layer, from, to, SpriteDB.crystal_spear_frames())
+		Projectile.spawn_burst(effects_layer, to, SpriteDB.effect("searing_burst"), 0.25)
+	target.flash_white()
+	if effects_layer != null:
+		var dmg_pos: Vector2 = target.position - Vector2(0, 8)
+		DamageNumber.spawn(effects_layer, dmg_pos, "%d!" % dmg, DMG_COLOR_CRIT, 1.2)
+	target.take_damage(dmg)
+	if target is Player:
+		AudioManager.play_sfx("player_hurt")
+	print("%s unleashes Unholy Smite on %s for %d." % [attacker.name, target.name, dmg])
+	HitPause.freeze(attacker.get_tree(), HIT_PAUSE_CRIT)
+
 static func smite(attacker: Player, target: Enemy) -> void:
 	var dmg: int = attacker.atk + Player.SMITE_DAMAGE_BONUS
 	AudioManager.play_sfx("smite")

@@ -18,9 +18,16 @@ const RAGE_ATK_BONUS: int = 4
 const BASE_DEF: int = 4
 const REGEN_PER_TURN: int = 2
 const VISION: int = 12
+# Flesh Lash — phase 2 only. A tongue of sinew that yanks Benedict one step
+# closer and deals flat damage. Range 3, cooldown 3 turns. Anti-kite move so
+# players can't just plink at range once armor drops.
+const LASH_RANGE: int = 3
+const LASH_COOLDOWN_MAX: int = 3
+const LASH_DAMAGE: int = 2
 
 var phase: int = 1
 var previous_phase: int = 1
+var lash_cooldown: int = 0
 
 func _ready() -> void:
 	name = "Abomination"
@@ -52,10 +59,42 @@ func take_turn() -> void:
 		Combat.attack(self, player)
 		return
 
+	# Phase 2 only: Flesh Lash pulls the player one step closer + light damage.
+	if phase == 2 and lash_cooldown == 0 and dist <= LASH_RANGE:
+		_flesh_lash(player)
+		lash_cooldown = LASH_COOLDOWN_MAX
+		return
+	if lash_cooldown > 0:
+		lash_cooldown -= 1
+
 	if dist <= vision_range:
 		var next_pos := _step_toward(player.grid_position)
 		if next_pos != player.grid_position and dungeon.grid.is_walkable(next_pos):
 			move_to(next_pos)
+
+func _flesh_lash(player: Player) -> void:
+	AudioManager.play_sfx("melee_hit")
+	player.flash_white()
+	player.take_damage(LASH_DAMAGE)
+	if Combat.effects_layer != null:
+		var dmg_pos: Vector2 = player.position - Vector2(0, 8)
+		DamageNumber.spawn(Combat.effects_layer, dmg_pos, str(LASH_DAMAGE), Combat.DMG_COLOR_NORMAL, 1.0)
+	# Pull player one cardinal step toward the Abomination.
+	var target_pos: Vector2i
+	if absi(grid_position.x - player.grid_position.x) >= absi(grid_position.y - player.grid_position.y):
+		var dx := signi(grid_position.x - player.grid_position.x)
+		target_pos = player.grid_position + Vector2i(dx, 0)
+	else:
+		var dy := signi(grid_position.y - player.grid_position.y)
+		target_pos = player.grid_position + Vector2i(0, dy)
+	if target_pos == grid_position:
+		return
+	if not dungeon.grid.is_walkable(target_pos):
+		return
+	if dungeon.grid.get_cell(target_pos) == Grid.CellType.STAIRS:
+		return  # don't yank the player onto stairs mid-fight
+	player.move_to(target_pos, true)
+	print("Abomination lashes Benedict, dragging him closer.")
 
 func _update_phase() -> void:
 	previous_phase = phase
