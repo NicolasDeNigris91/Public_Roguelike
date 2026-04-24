@@ -7,11 +7,17 @@ extends RefCounted
 const BAG_SIZE: int = 8
 
 enum PickupResult {
-	EQUIPPED,               # slot was empty, item equipped directly
-	EQUIPPED_AND_BAGGED_OLD,# new item stronger, old one moved to bag
-	BAGGED,                 # item placed in bag (weaker or consumable or ring-slot-busy)
-	REJECTED_BAG_FULL,      # no room; caller should leave item on floor
+	EQUIPPED,                # slot was empty, item equipped directly
+	EQUIPPED_AND_BAGGED_OLD, # new item stronger, old one moved to bag
+	EQUIPPED_AND_DROPPED_OLD,# swap happened, old item should land on the floor
+	BAGGED,                  # item placed in bag (weaker or consumable or ring-slot-busy)
+	REJECTED_BAG_FULL,       # no room; caller should leave item on floor
 }
+
+# When a pickup routes through the "drop old on floor" path (currently the
+# rosary swap), the displaced item lands here for the caller to emit as an
+# item_dropped signal. Consumed once by Player.pickup after try_pickup.
+var pending_floor_drop: Item = null
 
 var weapon: Weapon
 var armor: Armor
@@ -98,6 +104,15 @@ func _pickup_shield(new_shield: Shield) -> PickupResult:
 	if shield == null:
 		shield = new_shield
 		return PickupResult.EQUIPPED
+	# Rosary swap — always trades places with whatever is in the shield
+	# slot, regardless of def_bonus. The displaced item drops back to the
+	# floor at the pickup tile so the swap is perfectly reversible: walking
+	# back onto the shrine puts the rosary back on the floor and re-equips
+	# the original shield. Narrative mechanic, not a stat decision.
+	if new_shield.id == "rosary" or shield.id == "rosary":
+		pending_floor_drop = shield
+		shield = new_shield
+		return PickupResult.EQUIPPED_AND_DROPPED_OLD
 	if new_shield.def_bonus > shield.def_bonus:
 		if bag.size() >= BAG_SIZE:
 			return PickupResult.REJECTED_BAG_FULL

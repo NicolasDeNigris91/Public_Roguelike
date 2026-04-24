@@ -180,6 +180,18 @@ func pickup(item: Item) -> bool:
 				RunStats.record_weapon_equipped(item as Weapon)
 			_recalculate_stats()
 			print("Picked up %s — equipped" % item.display_name)
+		Inventory.PickupResult.EQUIPPED_AND_DROPPED_OLD:
+			# Rosary swap: the displaced shield falls at Benedict's feet so
+			# the swap is reversible. item_dropped is wired up in main.gd
+			# to spawn an ItemEntity at the given position.
+			_recalculate_stats()
+			if inventory.pending_floor_drop != null:
+				var dropped: Item = inventory.pending_floor_drop
+				inventory.pending_floor_drop = null
+				item_dropped.emit(dropped, grid_position)
+				print("Picked up %s — %s falls to the floor" % [item.display_name, dropped.display_name])
+			else:
+				print("Picked up %s" % item.display_name)
 		Inventory.PickupResult.BAGGED:
 			print("Picked up %s — in bag" % item.display_name)
 		Inventory.PickupResult.REJECTED_BAG_FULL:

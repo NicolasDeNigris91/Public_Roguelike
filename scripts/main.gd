@@ -20,7 +20,7 @@ const DEMON_LORD_FINAL_QUOTE: String = "The final exorcism is wrought not with w
 # Whisper that floats above each boss as it dies — flavor line the player
 # reads but Benedict supposedly cannot hear. Short and cryptic by design.
 const BOSS_WHISPERS := {
-	6: "I am only... the first door.",
+	6: "Y'KRETH IT-SUL...",
 	12: "He turned me. He will turn you.",
 	18: "The sanctum feeds... always.",
 	24: "Below, he waits. Always.",
