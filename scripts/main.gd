@@ -453,19 +453,28 @@ func _on_boss_truly_died(pos: Vector2i) -> void:
 	# Act 1 milestone: Lich defeated. Still used as a stats flag.
 	if current_floor == 6:
 		RunStats.record_lich_defeated()
-	# The final boss of the game (currently floor 18, future floor 48) clears
-	# the save so the next run starts fresh. Mid-game bosses keep the save so
-	# the player can quit-continue on the post-boss floor.
-	if ActConfig.is_final_boss_floor(current_floor):
-		SaveManager.clear()
-	# Spawn stairs where the boss died so the player can descend to the next act.
-	dungeon.grid.set_cell(pos, Grid.CellType.STAIRS)
-	dungeon.stairs_position = pos
-	# Clean up boss-summoned minions (both Lich and Death Knight summon Skeletons).
+
+	# Clean up boss-summoned minions (Lich/DK/Demon Lord all summon Skeletons
+	# or Imps). Filter by the concrete classes we know get summoned.
 	for enemy in turn_manager.enemies.duplicate():
-		if is_instance_valid(enemy) and enemy is Skeleton:
+		if is_instance_valid(enemy) and (enemy is Skeleton or enemy is Imp):
 			enemy.queue_free()
 	turn_manager.enemies = turn_manager.enemies.filter(func(e): return is_instance_valid(e))
+
+	# Final boss of the game: end the run with a victory screen. Save clears
+	# so the next launch starts fresh. No stairs spawn — there's nothing below.
+	if ActConfig.is_final_boss_floor(current_floor):
+		RunStats.record_run_victory()
+		SaveManager.clear()
+		player.turn_active = false
+		AudioManager.stop_music(0.5)
+		game_over_screen.show_result()
+		print("VICTORY — Demon Lord defeated on floor %d." % current_floor)
+		return
+
+	# Mid-arc boss: spawn stairs so the player can continue to the next act.
+	dungeon.grid.set_cell(pos, Grid.CellType.STAIRS)
+	dungeon.stairs_position = pos
 	dungeon.redraw_cell(pos)
 	print("Boss derrotado no andar %d. Uma escada aparece." % current_floor)
 

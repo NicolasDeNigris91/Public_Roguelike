@@ -137,6 +137,7 @@ func _serialize_run_stats() -> Dictionary:
 		"best_weapon_atk": RunStats.best_weapon_atk,
 		"total_faith_gained": RunStats.total_faith_gained,
 		"lich_defeated": RunStats.lich_defeated,
+		"run_victory": RunStats.run_victory,
 	}
 
 func _serialize_altars(altars: Array) -> Array:

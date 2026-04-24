@@ -1,25 +1,32 @@
 extends CanvasLayer
-# GameOverScreen — shown when Player dies. Reads RunStats to build a
-# summary of the run and adapts the title based on whether the Lich was
-# defeated before the player fell (VITÓRIA vs VOCÊ MORREU).
+# GameOverScreen — shown when Player dies OR when Benedict slays the Demon
+# Lord on the final floor. Reads RunStats to build a summary of the run
+# and adapts the title between three states:
+#   - VITÓRIA FINAL (gold): final boss defeated (run_victory)
+#   - VITÓRIA (green): Lich defeated but died later in the descent
+#   - VOCÊ MORREU (red): fell short
 
 const TITLE_COLOR_DEATH := Color(0.9, 0.2, 0.2, 1)
 const TITLE_COLOR_VICTORY := Color(0.3, 0.8, 0.35, 1)
+const TITLE_COLOR_FINAL_VICTORY := Color(1.0, 0.85, 0.35, 1)
 
 @onready var _title_label: Label = $Control/PanelContainer/MarginContainer/VBoxContainer/TitleLabel
 @onready var _subtitle_label: Label = $Control/PanelContainer/MarginContainer/VBoxContainer/SubtitleLabel
 @onready var _stats_vbox: VBoxContainer = $Control/PanelContainer/MarginContainer/VBoxContainer/StatsPanel/StatsVBox
 
 func show_result() -> void:
-	var won: bool = RunStats.lich_defeated
-	if won:
+	if RunStats.run_victory:
+		_title_label.text = "VITÓRIA FINAL"
+		_title_label.add_theme_color_override("font_color", TITLE_COLOR_FINAL_VICTORY)
+		_subtitle_label.text = "O Demon Lord caiu. A Bastion foi purificada."
+	elif RunStats.lich_defeated:
 		_title_label.text = "VITÓRIA"
 		_title_label.add_theme_color_override("font_color", TITLE_COLOR_VICTORY)
-		_subtitle_label.text = "O Lich foi derrotado. Mesmo caindo, você venceu."
+		_subtitle_label.text = "O Lich foi derrotado. Você desceu mais fundo e caiu — mas deixou marca."
 	else:
 		_title_label.text = "VOCÊ MORREU"
 		_title_label.add_theme_color_override("font_color", TITLE_COLOR_DEATH)
-		_subtitle_label.text = "A dungeon venceu desta vez."
+		_subtitle_label.text = "A Bastion venceu desta vez."
 	_populate_stats()
 	visible = true
 
@@ -27,7 +34,7 @@ func _populate_stats() -> void:
 	for child in _stats_vbox.get_children():
 		child.queue_free()
 
-	_add_row("Andar alcançado", "%d / 6" % RunStats.floor_reached)
+	_add_row("Andar alcançado", "%d / %d" % [RunStats.floor_reached, ActConfig.MAX_FLOOR])
 	_add_row("Inimigos derrotados", str(RunStats.enemies_killed))
 	_add_row("Dano causado", str(RunStats.damage_dealt))
 	_add_row("Dano sofrido", str(RunStats.damage_taken))
@@ -35,6 +42,7 @@ func _populate_stats() -> void:
 	_add_row("Melhor arma", RunStats.best_weapon_name)
 	_add_row("Fé acumulada", str(RunStats.total_faith_gained))
 	_add_row("Lich derrotado", "Sim" if RunStats.lich_defeated else "Não")
+	_add_row("Demon Lord derrotado", "Sim" if RunStats.run_victory else "Não")
 
 func _add_row(label_text: String, value_text: String) -> void:
 	var row := HBoxContainer.new()

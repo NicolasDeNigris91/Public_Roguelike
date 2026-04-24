@@ -13,6 +13,10 @@ var best_weapon_name: String = "(nenhuma)"
 var best_weapon_atk: int = 0
 var total_faith_gained: int = 0
 var lich_defeated: bool = false
+# True when the final boss of the current arc (Demon Lord at floor 48) is
+# killed. Distinct from lich_defeated — the Lich is now a mid-arc boss and
+# its death doesn't end the run.
+var run_victory: bool = false
 
 func reset() -> void:
 	floor_reached = 1
@@ -24,6 +28,7 @@ func reset() -> void:
 	best_weapon_atk = 0
 	total_faith_gained = 0
 	lich_defeated = false
+	run_victory = false
 
 func record_kill() -> void:
 	enemies_killed += 1
@@ -50,3 +55,18 @@ func record_weapon_equipped(weapon: Weapon) -> void:
 
 func record_lich_defeated() -> void:
 	lich_defeated = true
+
+func record_run_victory() -> void:
+	run_victory = true
+
+func from_dict(d: Dictionary) -> void:
+	floor_reached = d.get("floor_reached", 1)
+	enemies_killed = d.get("enemies_killed", 0)
+	damage_dealt = d.get("damage_dealt", 0)
+	damage_taken = d.get("damage_taken", 0)
+	turns_played = d.get("turns_played", 0)
+	best_weapon_name = d.get("best_weapon_name", "(nenhuma)")
+	best_weapon_atk = d.get("best_weapon_atk", 0)
+	total_faith_gained = d.get("total_faith_gained", 0)
+	lich_defeated = d.get("lich_defeated", false)
+	run_victory = d.get("run_victory", false)
