@@ -6,11 +6,7 @@ extends Enemy
 const ATTACK_RANGE: int = 4
 
 func _ready() -> void:
-	name = "Salamander"
-	hp = 16
-	max_hp = 16
-	atk = 8
-	def = 1
+	EnemyStats.apply(self, "salamander")
 	ranged_projectile_texture = SpriteDB.effect("magic_bolt")
 	super._ready()
 	sprite_node.texture = SpriteDB.actor("salamander")

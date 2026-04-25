@@ -7,6 +7,10 @@ var dungeon: Dungeon
 var turn_manager: TurnManager
 var vision_range: int = DEFAULT_VISION_RANGE
 var always_takes_turn: bool = false
+# Key into EnemyStats.STATS; populated by EnemyStats.apply(). Doubles as the
+# SpriteDB.actor() key so the spawn logic can look up per-enemy scaling
+# without matching on class type.
+var sprite_key: String = ""
 
 func take_turn() -> void:
 	if turn_manager == null or not is_instance_valid(turn_manager.player):

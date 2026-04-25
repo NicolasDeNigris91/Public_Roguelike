@@ -6,11 +6,7 @@ extends Enemy
 const LIFESTEAL_RATIO: float = 0.33
 
 func _ready() -> void:
-	name = "Necrophage"
-	hp = 14
-	max_hp = 14
-	atk = 6
-	def = 1
+	EnemyStats.apply(self, "necrophage")
 	super._ready()
 	sprite_node.texture = SpriteDB.actor("necrophage")
 

@@ -6,11 +6,7 @@ extends Enemy
 const ATTACK_RANGE: int = 3
 
 func _ready() -> void:
-	name = "Wraith"
-	hp = 4
-	max_hp = 4
-	atk = 1
-	def = 0
+	EnemyStats.apply(self, "wraith")
 	ranged_projectile_texture = SpriteDB.effect("necro_bolt")
 	super._ready()
 	sprite_node.texture = SpriteDB.actor("wraith")

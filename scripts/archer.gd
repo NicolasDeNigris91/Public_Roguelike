@@ -4,11 +4,7 @@ extends Enemy
 const ATTACK_RANGE: int = 4
 
 func _ready() -> void:
-	name = "Archer"
-	hp = 6
-	max_hp = 6
-	atk = 5
-	def = 0
+	EnemyStats.apply(self, "archer")
 	ranged_projectile_frames = SpriteDB.arrow_frames()
 	super._ready()
 	sprite_node.texture = SpriteDB.actor("archer")

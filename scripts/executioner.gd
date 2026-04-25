@@ -5,10 +5,6 @@ extends Enemy
 # Demon Lord.
 
 func _ready() -> void:
-	name = "Executioner"
-	hp = 24
-	max_hp = 24
-	atk = 12
-	def = 3
+	EnemyStats.apply(self, "executioner")
 	super._ready()
 	sprite_node.texture = SpriteDB.actor("executioner")

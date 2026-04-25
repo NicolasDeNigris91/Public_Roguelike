@@ -186,11 +186,10 @@ func _populate_floor() -> void:
 		player.move_to(dungeon.room_center(0), false)
 
 	var enemy_count := mini(current_floor, MAX_ENEMIES_PER_FLOOR)
-	var atk_bonus := (current_floor - 1) / 2
 	for i in range(enemy_count):
 		var room_index := i + 1
 		if room_index < dungeon.rooms.size():
-			_spawn_enemy(dungeon.room_center(room_index), atk_bonus)
+			_spawn_enemy(dungeon.room_center(room_index))
 
 	_spawn_items()
 	if _restore_altars.is_empty():
@@ -405,12 +404,15 @@ func _pick_enemy_type() -> Enemy:
 		return Salamander.new()
 	return HellHound.new()
 
-func _spawn_enemy(at: Vector2i, atk_bonus: int) -> void:
+func _spawn_enemy(at: Vector2i) -> void:
 	var enemy := _pick_enemy_type()
 	entity_layer.add_child(enemy)
 	enemy.dungeon = dungeon
 	enemy.turn_manager = turn_manager
-	enemy.atk += atk_bonus
+	# Per-enemy scaling curve (EnemyStats.STATS[sprite_key].atk_per_act)
+	# replaces the old blanket (floor-1)/2 that forced four balance passes
+	# on the Wraith alone.
+	enemy.atk += EnemyStats.atk_bonus_for(enemy.sprite_key, current_floor)
 	enemy.move_to(at, false)
 	turn_manager.register_enemy(enemy)
 

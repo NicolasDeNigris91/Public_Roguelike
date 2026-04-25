@@ -4,10 +4,6 @@ extends Enemy
 # the pack enemy that pressures Benedict while imps and salamanders flank.
 
 func _ready() -> void:
-	name = "Hell Hound"
-	hp = 14
-	max_hp = 14
-	atk = 10
-	def = 1
+	EnemyStats.apply(self, "hell_hound")
 	super._ready()
 	sprite_node.texture = SpriteDB.actor("hell_hound")

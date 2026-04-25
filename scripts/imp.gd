@@ -4,10 +4,6 @@ extends Enemy
 # sharp ATK - the first real "demon" Benedict meets. Pure melee.
 
 func _ready() -> void:
-	name = "Imp"
-	hp = 8
-	max_hp = 8
-	atk = 9
-	def = 0
+	EnemyStats.apply(self, "imp")
 	super._ready()
 	sprite_node.texture = SpriteDB.actor("imp")

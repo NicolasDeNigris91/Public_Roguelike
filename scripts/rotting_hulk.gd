@@ -4,10 +4,6 @@ extends Enemy
 # slowly but hits hard and soaks damage. Pure melee, no tricks - just a wall.
 
 func _ready() -> void:
-	name = "Rotting Hulk"
-	hp = 22
-	max_hp = 22
-	atk = 8
-	def = 3
+	EnemyStats.apply(self, "rotting_hulk")
 	super._ready()
 	sprite_node.texture = SpriteDB.actor("rotting_hulk")
