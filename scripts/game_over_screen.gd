@@ -26,7 +26,7 @@ func show_result() -> void:
 	elif RunStats.lich_defeated:
 		_title_label.text = "VITÓRIA"
 		_title_label.add_theme_color_override("font_color", TITLE_COLOR_VICTORY)
-		_subtitle_label.text = "O Lich foi derrotado. Você desceu mais fundo e caiu — mas deixou marca."
+		_subtitle_label.text = "O Lich foi derrotado. Você desceu mais fundo e caiu, mas deixou marca."
 	else:
 		_title_label.text = "VOCÊ MORREU"
 		_title_label.add_theme_color_override("font_color", TITLE_COLOR_DEATH)
