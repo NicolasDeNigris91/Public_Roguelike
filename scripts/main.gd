@@ -49,13 +49,11 @@ var rng := RandomNumberGenerator.new()
 # equipped. Flips _descend / _populate_floor into the ascension mode where
 # Benedict-as-Lich climbs 5 empty biome floors before the final confrontation.
 var _ascending: bool = false
-# Rosary ending: after Benedict is pulled back from the lich form, a portal
-# spawns at the Demon Lord's corpse. Stepping onto it triggers the victory
-# screen. Until then, movement and combat are normal so the moment feels
-# earned (player *chooses* to walk out of the throne).
-var _awaiting_rosary_victory: bool = false
-var _victory_portal_pos: Vector2i = Vector2i(-1, -1)
-var _victory_portal_sprite: Sprite2D = null
+# Scripted end-of-game sequences (rosary cinematic, lich-ending whisper hold)
+# live in CinematicsController; main keeps signal wiring and asks the
+# controller to play. Rosary-victory state (portal pos / awaiting flag) is
+# owned by the controller too.
+var cinematics: CinematicsController = null
 
 func _ready() -> void:
 	rng.randomize()
@@ -92,6 +90,11 @@ func _ready() -> void:
 	player.stat_increased.connect(hotbar.on_stat_increased)
 
 	dialogue_overlay.closed.connect(_on_dialogue_closed)
+
+	cinematics = CinematicsController.new()
+	cinematics.player = player
+	cinematics.game_over_screen = game_over_screen
+	add_child(cinematics)
 
 	dungeon.set_biome(ActConfig.biome_for_floor(current_floor))
 	_populate_floor()
@@ -579,8 +582,8 @@ func _on_player_moved(to_pos: Vector2i) -> void:
 		_altar_sacrifice_made_this_visit = false
 	_altar_under_player = new_altar
 	hotbar.set_sacrifice_mode(new_altar != null and new_altar.is_active())
-	if _awaiting_rosary_victory and to_pos == _victory_portal_pos:
-		_on_rosary_victory_step()
+	if cinematics.awaiting_rosary_victory and to_pos == cinematics.victory_portal_pos:
+		cinematics.on_rosary_victory_step()
 		return
 	if dungeon.grid.get_cell(to_pos) == Grid.CellType.STAIRS:
 		AudioManager.play_sfx("descend")
@@ -605,17 +608,12 @@ func _on_dialogue_closed() -> void:
 
 func _on_player_died() -> void:
 	SaveManager.clear()
-	# Lich ending: if Benedict falls during the ascent (to the Redeemer on
-	# floor 35), surface the final cryptic whisper over his corpse and flag
-	# the run as the cycle-continues ending. Give the whisper room to play
-	# before the game-over screen pulls focus - ~4.5s covers fade in + hold.
+	# Lich ending: whisper + hold are owned by CinematicsController so all
+	# scripted end-of-game pacing lives in one place.
 	if _ascending:
 		RunStats.record_lich_ending()
-		if Combat.effects_layer != null:
-			var world_pos: Vector2 = Vector2(player.grid_position.x, player.grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, 0)
-			BossWhisper.spawn(Combat.effects_layer, world_pos, "But yet it is...")
 		print("[LICH ENDING] Benedict falls to the Redeemer. The cycle continues.")
-		await get_tree().create_timer(4.5).timeout
+		await cinematics.play_lich_ending_whisper(player.grid_position)
 	else:
 		print("You died on Floor %d" % current_floor)
 	game_over_screen.show_result()
@@ -644,7 +642,7 @@ func _on_boss_truly_died(pos: Vector2i) -> void:
 	if ActConfig.is_final_boss_floor(current_floor):
 		var has_rosary: bool = player.inventory.shield != null and player.inventory.shield.id == "rosary"
 		if has_rosary:
-			await _play_rosary_ending(pos)
+			await cinematics.play_rosary_ending(pos, current_floor)
 			return
 		# Lich ending - Benedict becomes what he came to destroy. Stairs
 		# spawn upward and ascension mode begins.
@@ -662,89 +660,6 @@ func _on_boss_truly_died(pos: Vector2i) -> void:
 	dungeon.stairs_position = pos
 	dungeon.redraw_cell(pos)
 	print("Boss derrotado no andar %d. Uma escada aparece." % current_floor)
-
-# Rosary ending - Benedict briefly becomes the Lich, then divine grace pulls
-# him back and a portal opens on the Demon Lord's corpse. Player regains
-# control to walk out of the throne under their own power; stepping onto
-# the portal triggers the victory screen.
-func _play_rosary_ending(demon_pos: Vector2i) -> void:
-	# in_cinematic is orthogonal to turn_active: TurnManager restores
-	# turn_active to true at the end of the enemy phase that fires during
-	# the boss-kill frame, so turn_active alone would unlock input mid-scene.
-	player.in_cinematic = true
-	player.turn_active = false
-	AudioManager.stop_music(0.8)
-
-	# Phase 1 - the same horror as the bad ending, held long enough that the
-	# whisper fully plays (BossWhisper: 0.6 fade-in + 3.2 hold + 1.2 fade-out).
-	player.transform_into_lich()
-	var whisper_world: Vector2 = Vector2(player.grid_position.x, player.grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, 0)
-	if Combat.effects_layer != null:
-		BossWhisper.spawn(Combat.effects_layer, whisper_world, "It can't be...")
-	await get_tree().create_timer(5.2).timeout
-
-	# Phase 2 - halo descends, the rosary's grace rewrites the curse.
-	if Combat.effects_layer != null:
-		var halo_world: Vector2 = Vector2(player.grid_position.x, player.grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, Grid.TILE_SIZE * 0.5)
-		_spawn_divine_halo(halo_world)
-		var whisper2_world: Vector2 = Vector2(player.grid_position.x, player.grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, 0)
-		BossWhisper.spawn(Combat.effects_layer, whisper2_world, "...and yet, by His grace, it shall not be.")
-	AudioManager.play_sfx("smite")
-	await get_tree().create_timer(5.2).timeout
-
-	# Phase 3 - mortal form returns, portal opens on the corpse. Player walks
-	# out under their own power; stepping onto the portal finalises the run.
-	player.revert_from_lich()
-	_spawn_victory_portal(demon_pos)
-	_awaiting_rosary_victory = true
-	_victory_portal_pos = demon_pos
-	player.in_cinematic = false
-	player.turn_active = true
-	RunStats.record_run_victory()
-	print("VICTORY - grace pulled Benedict back on floor %d." % current_floor)
-
-func _spawn_divine_halo(world_pos: Vector2) -> void:
-	if Combat.effects_layer == null:
-		return
-	var halo := Sprite2D.new()
-	halo.texture = SpriteDB.effect("divine_halo")
-	halo.centered = true
-	halo.position = world_pos
-	halo.scale = Vector2(0.5, 0.5)
-	halo.modulate = Color(1.0, 0.95, 0.6, 0.0)
-	Combat.effects_layer.add_child(halo)
-	var tw := halo.create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(halo, "modulate:a", 1.0, 0.6)
-	tw.tween_property(halo, "scale", Vector2(2.2, 2.2), 2.5)
-	tw.chain().tween_property(halo, "modulate:a", 0.0, 1.0)
-	tw.chain().tween_callback(halo.queue_free)
-
-func _spawn_victory_portal(grid_pos: Vector2i) -> void:
-	_victory_portal_sprite = Sprite2D.new()
-	_victory_portal_sprite.texture = SpriteDB.tile("victory_portal")
-	_victory_portal_sprite.centered = true
-	_victory_portal_sprite.position = Vector2(grid_pos.x, grid_pos.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, Grid.TILE_SIZE * 0.5)
-	# Parked on the effects layer (transient VFX home), not altars_layer -
-	# nothing else iterates effects_layer expecting grid_position, so the
-	# plain Sprite2D can't crash any visibility/altar loop.
-	if Combat.effects_layer != null:
-		Combat.effects_layer.add_child(_victory_portal_sprite)
-	else:
-		add_child(_victory_portal_sprite)
-	# Gentle pulse so the portal reads as alive, not decorative.
-	var tw := _victory_portal_sprite.create_tween().set_loops()
-	tw.tween_property(_victory_portal_sprite, "modulate", Color(1.3, 1.25, 0.85, 1.0), 1.2)
-	tw.tween_property(_victory_portal_sprite, "modulate", Color(0.85, 0.9, 1.15, 1.0), 1.2)
-
-func _on_rosary_victory_step() -> void:
-	_awaiting_rosary_victory = false
-	player.turn_active = false
-	SaveManager.clear()
-	if _victory_portal_sprite != null and is_instance_valid(_victory_portal_sprite):
-		_victory_portal_sprite.queue_free()
-	game_over_screen.show_result()
-	print("Benedict steps into the portal - run complete.")
 
 func _try_sacrifice(slot: int) -> void:
 	if _altar_under_player == null or not _altar_under_player.is_active():
