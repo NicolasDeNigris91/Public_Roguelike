@@ -1,6 +1,8 @@
 # Roguelike
 
-Turn-based grid roguelike — portfolio piece.
+[![CI](https://github.com/NicolasDeNigris91/Roguelike/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/NicolasDeNigris91/Roguelike/actions/workflows/ci.yml)
+
+Turn-based grid roguelike - portfolio piece.
 
 Built with **Godot 4.6 + GDScript**, exports to web (WASM).
 

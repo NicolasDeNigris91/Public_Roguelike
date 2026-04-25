@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feat/**"]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Godot smoke + unit tests
+    runs-on: ubuntu-latest
+    env:
+      GODOT_VERSION: 4.6.2-stable
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Godot binary
+        id: godot-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+
+      - name: Download Godot ${{ env.GODOT_VERSION }}
+        if: steps.godot-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.local/share/godot
+          cd ~/.local/share/godot
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q "Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          chmod +x "Godot_v${GODOT_VERSION}_linux.x86_64"
+
+      - name: Put Godot on PATH
+        run: |
+          sudo ln -sf "$HOME/.local/share/godot/Godot_v${GODOT_VERSION}_linux.x86_64" /usr/local/bin/godot
+          godot --version
+
+      # Headless import primes the .godot cache so script_class lookups and
+      # scene references resolve before tests run. Ignore non-zero exit —
+      # import emits warnings on missing export templates which are fine here.
+      - name: Import assets
+        run: godot --headless --import --quit-after 2 || true
+
+      - name: test_smoke
+        run: godot --headless -s scripts/tests/test_smoke.gd 2>&1 | tee /tmp/smoke.log
+      - name: Assert test_smoke passed
+        run: grep -q "^PASS test_smoke$" /tmp/smoke.log
+
+      - name: test_altar_smoke
+        run: godot --headless -s scripts/tests/test_altar_smoke.gd 2>&1 | tee /tmp/altar_smoke.log
+      - name: Assert test_altar_smoke passed
+        run: grep -q "^PASS test_altar_smoke$" /tmp/altar_smoke.log
+
+      - name: test_altar_buff
+        run: godot --headless -s scripts/tests/test_altar_buff.gd 2>&1 | tee /tmp/altar_buff.log
+      - name: Assert test_altar_buff passed
+        run: grep -q "^PASS test_altar_buff$" /tmp/altar_buff.log
+
+      - name: test_smart_pickup
+        run: godot --headless -s scripts/tests/test_smart_pickup.gd 2>&1 | tee /tmp/smart_pickup.log
+      - name: Assert test_smart_pickup passed
+        run: grep -q "^PASS test_smart_pickup$" /tmp/smart_pickup.log
