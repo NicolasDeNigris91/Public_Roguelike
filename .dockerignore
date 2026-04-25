@@ -1,20 +1,19 @@
-# Source assets — only the built web_build/ ships in the image.
-.godot/
-.import/
-.claude/
-docs/
-scripts/
-scenes/
-assets/
-addons/
+# Keep source files — the multi-stage build needs them to run the export.
+# Only skip dev bloat and local artifacts.
 .git/
-.gitignore
-project.godot
-icon.svg
-icon.svg.import
-export_presets.cfg
+.github/
+.claude/
+.godot/
+.vscode/
+.idea/
+docs/
 README.md
 CLAUDE.md
-*.gd
-*.tscn
-*.tres
+*.swp
+*.swo
+
+# Local web build output: the builder stage rebuilds fresh from source.
+web_build/
+
+# Local dev test server.
+_serve_local.*

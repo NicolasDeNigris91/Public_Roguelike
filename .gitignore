@@ -16,12 +16,9 @@ mono_crash.*.json
 /exports/
 *.pck
 *.zip
-# Web export output IS committed (Railway serves it via Caddy) — exempt
-# web_build/ from the *.pck rule above so the game's data ships in the image.
-!web_build/
-!web_build/**
-# Dev-only local test server — not served in production.
-web_build/_serve_local.*
+# Web export is built inside the Railway Dockerfile (multi-stage Godot ->
+# Caddy), not committed. Keep the folder out of the repo entirely.
+/web_build/
 
 # System / IDE
 .DS_Store
