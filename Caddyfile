@@ -1,0 +1,18 @@
+# Railway injects $PORT; Caddy listens there or 8080 locally.
+:{$PORT:8080} {
+	root * /srv
+	encode gzip
+
+	# Required for Godot 4 / WebAssembly SharedArrayBuffer.
+	header {
+		Cross-Origin-Embedder-Policy "require-corp"
+		Cross-Origin-Opener-Policy "same-origin"
+		# Long cache for the WASM/PCK chunks; short for the HTML shell.
+		?Cache-Control "public, max-age=86400"
+	}
+
+	@html path *.html
+	header @html Cache-Control "no-cache, must-revalidate"
+
+	file_server
+}

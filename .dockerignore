@@ -1,0 +1,20 @@
+# Source assets — only the built web_build/ ships in the image.
+.godot/
+.import/
+.claude/
+docs/
+scripts/
+scenes/
+assets/
+addons/
+.git/
+.gitignore
+project.godot
+icon.svg
+icon.svg.import
+export_presets.cfg
+README.md
+CLAUDE.md
+*.gd
+*.tscn
+*.tres
