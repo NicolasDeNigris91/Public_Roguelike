@@ -880,7 +880,7 @@ func _process(_delta: float) -> void:
 
 func _build_sacrifice_prompt() -> void:
 	_sacrifice_prompt = Label.new()
-	_sacrifice_prompt.text = "O altar profano clama — consagre um equipamento (1–8)"
+	_sacrifice_prompt.text = "Sacrifique um equipamento ao altar profano (1-8)"
 	_sacrifice_prompt.add_theme_font_size_override("font_size", 14)
 	_sacrifice_prompt.add_theme_color_override("font_color", FAITH_COLOR)
 	_sacrifice_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
