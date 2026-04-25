@@ -14,12 +14,12 @@ var best_weapon_atk: int = 0
 var total_faith_gained: int = 0
 var lich_defeated: bool = false
 # True when the final boss of the current arc (Demon Lord at floor 48) is
-# killed. Distinct from lich_defeated — the Lich is now a mid-arc boss and
+# killed. Distinct from lich_defeated - the Lich is now a mid-arc boss and
 # its death doesn't end the run.
 var run_victory: bool = false
 # Lich ending: Demon Lord defeated without the rosary; Benedict transformed
 # and was killed by the Redeemer in the Bastion. Mutually exclusive with
-# run_victory — distinct final state for the cycle-continues conclusion.
+# run_victory - distinct final state for the cycle-continues conclusion.
 var lich_ending: bool = false
 
 func reset() -> void:

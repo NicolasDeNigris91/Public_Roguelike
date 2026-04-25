@@ -2,7 +2,7 @@ class_name RedeemerPaladin
 extends Enemy
 # Lich-ending final confrontation. A new paladin descends into the Bastion
 # wearing Benedict's own appearance (shares the "player" actor sprite). Its
-# purpose is narrative, not mechanical — the fight is not meant to be won.
+# purpose is narrative, not mechanical - the fight is not meant to be won.
 # Overwhelming stats end the encounter within a turn or two.
 
 func _ready() -> void:

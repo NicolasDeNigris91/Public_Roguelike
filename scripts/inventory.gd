@@ -141,7 +141,7 @@ func _pickup_shield(new_shield: Shield) -> PickupResult:
 	if shield == null:
 		shield = new_shield
 		return PickupResult.EQUIPPED
-	# Rosary swap — always trades places with whatever is in the shield
+	# Rosary swap - always trades places with whatever is in the shield
 	# slot, regardless of def_bonus. The displaced item drops back to the
 	# floor at the pickup tile so the swap is perfectly reversible: walking
 	# back onto the shrine puts the rosary back on the floor and re-equips
@@ -172,7 +172,7 @@ func _pickup_amulet(new_amulet: Amulet) -> PickupResult:
 	if amulet == null:
 		amulet = new_amulet
 		return PickupResult.EQUIPPED
-	# Amulets, like rings, don't auto-swap — different variants have non-comparable
+	# Amulets, like rings, don't auto-swap - different variants have non-comparable
 	# effects. Second amulet goes to the bag; player manually chooses which to wear.
 	if add_to_bag(new_amulet):
 		return PickupResult.BAGGED

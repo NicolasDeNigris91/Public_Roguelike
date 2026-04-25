@@ -103,7 +103,7 @@ func _phase_1_turn(player: Player, dist: int, has_los: bool) -> bool:
 			summon_cooldown = SUMMON_COOLDOWN_MAX
 			return true
 	if has_los and dist <= 3:
-		# Phase 1 is the "reach" opener — a normal physical ranged hit so the
+		# Phase 1 is the "reach" opener - a normal physical ranged hit so the
 		# player's armor matters on the approach. Phases 2 (lifesteal) and 3
 		# (Breu) still ignore DEF because they are explicitly magical.
 		Combat.attack(self, player)
@@ -128,7 +128,7 @@ func _phase_3_turn(player: Player, dist: int, has_los: bool) -> bool:
 			Projectile.spawn_burst(Combat.effects_layer, player_world, SpriteDB.effect("gloom"), 0.6)
 		player.apply_vision_debuff(BREU_VISION_RANGE, BREU_DURATION)
 		breu_cooldown = BREU_COOLDOWN_MAX
-		print("Lich casts Breu — player sight fades")
+		print("Lich casts Breu - player sight fades")
 		return true
 	if has_los and dist <= 4:
 		Combat.attack(self, player, true)

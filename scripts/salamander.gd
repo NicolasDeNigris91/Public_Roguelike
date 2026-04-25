@@ -1,6 +1,6 @@
 class_name Salamander
 extends Enemy
-# Act 4 ranged fire serpent (floors 36-41). Similar pattern to Mage — hurls
+# Act 4 ranged fire serpent (floors 36-41). Similar pattern to Mage - hurls
 # fire bolts at range 4 with LOS, ignores DEF (fire bypasses armor).
 
 const ATTACK_RANGE: int = 4
@@ -23,7 +23,7 @@ func take_turn() -> void:
 	var dist := _distance_to(player.grid_position)
 
 	if dist == 1:
-		# Bite/claw — physical, armor works. Only the fire bolt at range
+		# Bite/claw - physical, armor works. Only the fire bolt at range
 		# bypasses DEF.
 		Combat.attack(self, player)
 		return

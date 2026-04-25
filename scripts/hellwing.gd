@@ -23,7 +23,7 @@ func take_turn() -> void:
 	var dist := _distance_to(player.grid_position)
 
 	if dist == 1:
-		# Talon swipe — physical, armor works. Only the fire bolt at range
+		# Talon swipe - physical, armor works. Only the fire bolt at range
 		# bypasses DEF.
 		Combat.attack(self, player)
 		return

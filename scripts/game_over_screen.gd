@@ -1,5 +1,5 @@
 extends CanvasLayer
-# GameOverScreen — shown when Player dies OR when Benedict slays the Demon
+# GameOverScreen - shown when Player dies OR when Benedict slays the Demon
 # Lord on the final floor. Reads RunStats to build a summary of the run
 # and adapts the title between three states:
 #   - VITÓRIA FINAL (gold): final boss defeated (run_victory)

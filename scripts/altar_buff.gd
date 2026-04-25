@@ -1,6 +1,6 @@
 class_name AltarBuff
 # Maps an item to the permanent stat deltas gained when it's sacrificed at an altar.
-# Pure logic — no Player/autoload dependencies, testable in headless mode.
+# Pure logic - no Player/autoload dependencies, testable in headless mode.
 
 const STAT_ATK: StringName = &"atk"
 const STAT_DEF: StringName = &"def"

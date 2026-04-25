@@ -5,7 +5,7 @@ const AltarScene: PackedScene = preload("res://scenes/altar.tscn")
 const ITEMS_PER_FLOOR_MIN: int = 2
 const ITEMS_PER_FLOOR_MAX: int = 3
 
-# Benedict's narration after each boss fight — fires once when the player
+# Benedict's narration after each boss fight - fires once when the player
 # descends from the boss floor. Quote 5 is the Demon Lord / final-victory
 # quote, shown by the game-over screen instead of via the dialogue overlay
 # since there's no descent after floor 30.
@@ -17,7 +17,7 @@ const BOSS_QUOTES := {
 }
 const DEMON_LORD_FINAL_QUOTE: String = "The final exorcism is wrought not with words, but with blood. I am the prison and the prisoner."
 
-# Whisper that floats above each boss as it dies — flavor line the player
+# Whisper that floats above each boss as it dies - flavor line the player
 # reads but Benedict supposedly cannot hear. Short and cryptic by design.
 const BOSS_WHISPERS := {
 	6: "Y'KRETH IT-SUL...",
@@ -104,12 +104,12 @@ func _ready() -> void:
 	hotbar.current_floor = current_floor
 	hotbar.refresh()
 	hotbar.set_sacrifice_mode(false)
-	print("Roguelike booted — Sprint 4b OK | Floor %d, %d rooms" % [current_floor, dungeon.rooms.size()])
+	print("Roguelike booted - Sprint 4b OK | Floor %d, %d rooms" % [current_floor, dungeon.rooms.size()])
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
-	# Dialogue overlay claims input first — it handles X/Space/Enter to dismiss.
+	# Dialogue overlay claims input first - it handles X/Space/Enter to dismiss.
 	if dialogue_overlay.visible:
 		return
 	if event.keycode == KEY_M:
@@ -159,7 +159,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.keycode >= KEY_1 and event.keycode <= KEY_3:
 		var stack_idx: int = event.keycode - KEY_1
 		if _altar_under_player != null and _altar_under_player.is_active():
-			# Consumables can't be sacrificed — surface the rejection.
+			# Consumables can't be sacrificed - surface the rejection.
 			hotbar.flash_slot_invalid(stack_idx)
 		else:
 			hotbar.use_potion_slot(stack_idx)
@@ -169,7 +169,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var bag_idx: int = event.keycode - KEY_4
 		if _altar_under_player != null and _altar_under_player.is_active():
 			_try_sacrifice(bag_idx)
-		# Outside an altar, bag keys are reserved for sacrifice only —
+		# Outside an altar, bag keys are reserved for sacrifice only -
 		# equipables don't have a "use" action.
 		get_viewport().set_input_as_handled()
 		return
@@ -211,7 +211,7 @@ func _spawn_floor_28_shrine() -> void:
 	while attempts < 40:
 		attempts += 1
 		var room: Rect2i = dungeon.rooms[rng.randi_range(0, dungeon.rooms.size() - 1)]
-		# Pick a point along the room's top row — y = room.position.y.
+		# Pick a point along the room's top row - y = room.position.y.
 		# The tile immediately north (y - 1) is a wall in BSP rooms.
 		var x: int = rng.randi_range(room.position.x + 1, room.position.x + room.size.x - 2)
 		var y: int = room.position.y
@@ -232,7 +232,7 @@ func _spawn_floor_28_shrine() -> void:
 		rosary_entity.item = ItemDB.rosary()
 		items_layer.add_child(rosary_entity)
 		rosary_entity.grid_position = center
-		# Torches flanking — decorative, no interaction.
+		# Torches flanking - decorative, no interaction.
 		_spawn_torch(left)
 		_spawn_torch(right)
 		print("[SHRINE] Rosary + torches placed at %s on floor 28" % center)
@@ -245,7 +245,7 @@ func _spawn_torch(pos: Vector2i) -> void:
 	decorations_layer.add_child(t)
 
 # Lich-ending ascension floors (31-35). Empty dungeons in reverse biome
-# order — Benedict climbs back through the memory of every act on his way
+# order - Benedict climbs back through the memory of every act on his way
 # to the Bastion where the cycle resets. No enemies, no items, no altars.
 # Each floor spawns an "IT CAN'T BE" whisper above the player the instant
 # it loads. The final ascension floor (Bastion) gets the Redeemer Paladin.
@@ -278,7 +278,7 @@ func _spawn_ascension_whisper(text: String) -> void:
 
 func _spawn_redeemer_paladin() -> void:
 	# Final confrontation of the Lich ending: a new paladin descends into
-	# the Bastion wearing Benedict's exact appearance. Scripted lethality —
+	# the Bastion wearing Benedict's exact appearance. Scripted lethality -
 	# the fight is not meant to be won.
 	if dungeon.rooms.size() < 1:
 		return
@@ -324,7 +324,7 @@ func _populate_boss_floor() -> void:
 
 func _pick_enemy_type() -> Enemy:
 	var roll := rng.randf()
-	# Act 1 — Bastion (1-5, Lich on 6)
+	# Act 1 - Bastion (1-5, Lich on 6)
 	if current_floor <= 2:
 		return Slime.new()
 	if current_floor <= 4:
@@ -337,7 +337,7 @@ func _pick_enemy_type() -> Enemy:
 		if roll < 0.7:
 			return Skeleton.new()
 		return Archer.new()
-	# Act 2 — Catacombs (7-11, Death Knight on 12)
+	# Act 2 - Catacombs (7-11, Death Knight on 12)
 	if current_floor <= 8:
 		# Early Act 2: intro Wraith alongside Skeleton/Archer carryover.
 		if roll < 0.3:
@@ -354,7 +354,7 @@ func _pick_enemy_type() -> Enemy:
 		if roll < 0.85:
 			return Mage.new()
 		return Archer.new()
-	# Act 3 — Blood Sanctum (13-17, Abomination on 18)
+	# Act 3 - Blood Sanctum (13-17, Abomination on 18)
 	if current_floor <= 14:
 		# Early Act 3: intro Flayed Ghost.
 		if roll < 0.4:
@@ -371,7 +371,7 @@ func _pick_enemy_type() -> Enemy:
 		if roll < 0.8:
 			return Necrophage.new()
 		return Mage.new()
-	# Act 4 — Burning Halls (19-23, Fire Giant on 24)
+	# Act 4 - Burning Halls (19-23, Fire Giant on 24)
 	if current_floor <= 20:
 		# Early Act 4: first demons appear. Rotting Hulk carryover.
 		if roll < 0.4:
@@ -388,7 +388,7 @@ func _pick_enemy_type() -> Enemy:
 		if roll < 0.8:
 			return Salamander.new()
 		return RottingHulk.new()
-	# Act 5 — Infernal Throne (25-29, Demon Lord on 30)
+	# Act 5 - Infernal Throne (25-29, Demon Lord on 30)
 	if current_floor <= 26:
 		# Early Act 5: Hellwing intro.
 		if roll < 0.4:
@@ -396,7 +396,7 @@ func _pick_enemy_type() -> Enemy:
 		if roll < 0.7:
 			return HellHound.new()
 		return Salamander.new()
-	# Late Act 5 (27-29) — Executioner elites.
+	# Late Act 5 (27-29) - Executioner elites.
 	if roll < 0.35:
 		return Executioner.new()
 	if roll < 0.65:
@@ -448,7 +448,7 @@ func _descend() -> void:
 	var new_act: int = ActConfig.act_for_floor(current_floor)
 	if new_act != prev_act:
 		player.reset_altar_cap()
-		print("Entered Act %d — altar cap reset." % new_act)
+		print("Entered Act %d - altar cap reset." % new_act)
 
 	for enemy in turn_manager.enemies.duplicate():
 		if is_instance_valid(enemy):
@@ -491,7 +491,7 @@ func _descend() -> void:
 		current_floor, dungeon.rooms.size(), turn_manager.enemies.size()
 	])
 
-	# Post-boss Benedict narration — fires after the descent to the first
+	# Post-boss Benedict narration - fires after the descent to the first
 	# floor of the new act. Input is paused until the player presses X.
 	if was_boss_floor:
 		var prev_boss_floor: int = current_floor - 1
@@ -606,7 +606,7 @@ func _on_player_died() -> void:
 	# Lich ending: if Benedict falls during the ascent (to the Redeemer on
 	# floor 35), surface the final cryptic whisper over his corpse and flag
 	# the run as the cycle-continues ending. Give the whisper room to play
-	# before the game-over screen pulls focus — ~4.5s covers fade in + hold.
+	# before the game-over screen pulls focus - ~4.5s covers fade in + hold.
 	if _ascending:
 		RunStats.record_lich_ending()
 		if Combat.effects_layer != null:
@@ -623,7 +623,7 @@ func _on_boss_truly_died(pos: Vector2i) -> void:
 	if current_floor == 6:
 		RunStats.record_lich_defeated()
 
-	# Whisper floats above the corpse — flavor line from the boss at the
+	# Whisper floats above the corpse - flavor line from the boss at the
 	# moment of its true death. Spawned before minion cleanup so the
 	# whisper has a parent layer that will survive the frame.
 	if BOSS_WHISPERS.has(current_floor) and Combat.effects_layer != null:
@@ -644,7 +644,7 @@ func _on_boss_truly_died(pos: Vector2i) -> void:
 		if has_rosary:
 			await _play_rosary_ending(pos)
 			return
-		# Lich ending — Benedict becomes what he came to destroy. Stairs
+		# Lich ending - Benedict becomes what he came to destroy. Stairs
 		# spawn upward and ascension mode begins.
 		_ascending = true
 		player.transform_into_lich()
@@ -661,7 +661,7 @@ func _on_boss_truly_died(pos: Vector2i) -> void:
 	dungeon.redraw_cell(pos)
 	print("Boss derrotado no andar %d. Uma escada aparece." % current_floor)
 
-# Rosary ending — Benedict briefly becomes the Lich, then divine grace pulls
+# Rosary ending - Benedict briefly becomes the Lich, then divine grace pulls
 # him back and a portal opens on the Demon Lord's corpse. Player regains
 # control to walk out of the throne under their own power; stepping onto
 # the portal triggers the victory screen.
@@ -673,7 +673,7 @@ func _play_rosary_ending(demon_pos: Vector2i) -> void:
 	player.turn_active = false
 	AudioManager.stop_music(0.8)
 
-	# Phase 1 — the same horror as the bad ending, held long enough that the
+	# Phase 1 - the same horror as the bad ending, held long enough that the
 	# whisper fully plays (BossWhisper: 0.6 fade-in + 3.2 hold + 1.2 fade-out).
 	player.transform_into_lich()
 	var whisper_world: Vector2 = Vector2(player.grid_position.x, player.grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, 0)
@@ -681,7 +681,7 @@ func _play_rosary_ending(demon_pos: Vector2i) -> void:
 		BossWhisper.spawn(Combat.effects_layer, whisper_world, "It can't be...")
 	await get_tree().create_timer(5.2).timeout
 
-	# Phase 2 — halo descends, the rosary's grace rewrites the curse.
+	# Phase 2 - halo descends, the rosary's grace rewrites the curse.
 	if Combat.effects_layer != null:
 		var halo_world: Vector2 = Vector2(player.grid_position.x, player.grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, Grid.TILE_SIZE * 0.5)
 		_spawn_divine_halo(halo_world)
@@ -690,7 +690,7 @@ func _play_rosary_ending(demon_pos: Vector2i) -> void:
 	AudioManager.play_sfx("smite")
 	await get_tree().create_timer(5.2).timeout
 
-	# Phase 3 — mortal form returns, portal opens on the corpse. Player walks
+	# Phase 3 - mortal form returns, portal opens on the corpse. Player walks
 	# out under their own power; stepping onto the portal finalises the run.
 	player.revert_from_lich()
 	_spawn_victory_portal(demon_pos)
@@ -699,7 +699,7 @@ func _play_rosary_ending(demon_pos: Vector2i) -> void:
 	player.in_cinematic = false
 	player.turn_active = true
 	RunStats.record_run_victory()
-	print("VICTORY — grace pulled Benedict back on floor %d." % current_floor)
+	print("VICTORY - grace pulled Benedict back on floor %d." % current_floor)
 
 func _spawn_divine_halo(world_pos: Vector2) -> void:
 	if Combat.effects_layer == null:
@@ -723,7 +723,7 @@ func _spawn_victory_portal(grid_pos: Vector2i) -> void:
 	_victory_portal_sprite.texture = SpriteDB.tile("victory_portal")
 	_victory_portal_sprite.centered = true
 	_victory_portal_sprite.position = Vector2(grid_pos.x, grid_pos.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, Grid.TILE_SIZE * 0.5)
-	# Parked on the effects layer (transient VFX home), not altars_layer —
+	# Parked on the effects layer (transient VFX home), not altars_layer -
 	# nothing else iterates effects_layer expecting grid_position, so the
 	# plain Sprite2D can't crash any visibility/altar loop.
 	if Combat.effects_layer != null:
@@ -742,7 +742,7 @@ func _on_rosary_victory_step() -> void:
 	if _victory_portal_sprite != null and is_instance_valid(_victory_portal_sprite):
 		_victory_portal_sprite.queue_free()
 	game_over_screen.show_result()
-	print("Benedict steps into the portal — run complete.")
+	print("Benedict steps into the portal - run complete.")
 
 func _try_sacrifice(slot: int) -> void:
 	if _altar_under_player == null or not _altar_under_player.is_active():
@@ -760,7 +760,7 @@ func _try_sacrifice(slot: int) -> void:
 		return
 	player.inventory.bag.remove_at(slot)
 	_altar_sacrifice_made_this_visit = true
-	# Altar stays active while the player is standing on it — multiple
+	# Altar stays active while the player is standing on it - multiple
 	# sacrifices per visit are allowed. It only consumes when the player
 	# leaves the tile (see _on_player_moved). Sacrifice mode stays on.
 	AudioManager.play_sfx("sacrifice")

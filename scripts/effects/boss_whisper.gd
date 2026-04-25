@@ -1,6 +1,6 @@
 class_name BossWhisper
 extends Node2D
-# Floating ghostly text that appears over a dying boss — flavor line the
+# Floating ghostly text that appears over a dying boss - flavor line the
 # player can read but Benedict supposedly cannot hear. Fades in, drifts
 # upward, fades out, queue-frees itself. No UI panel, no input, no pause.
 
@@ -28,7 +28,7 @@ func _configure(text: String) -> void:
 	_label.add_theme_constant_override("outline_size", 4)
 	_label.add_theme_font_size_override("font_size", 13)
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	# Rough centering — Label places its origin at top-left. Pull left by
+	# Rough centering - Label places its origin at top-left. Pull left by
 	# half the text's estimated width so the whisper floats centered above
 	# the boss rather than originating at its top-left corner.
 	var estimated_width: float = float(text.length()) * 7.0

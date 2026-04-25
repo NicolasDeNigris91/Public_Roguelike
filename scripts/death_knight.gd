@@ -1,9 +1,9 @@
 class_name DeathKnight
 extends Enemy
-# Act 2 mini-boss (floor 18). Corrupted paladin — dark mirror of Benedict.
+# Act 2 mini-boss (floor 18). Corrupted paladin - dark mirror of Benedict.
 # Two HP-driven phases:
 #   Phase 1 (HP > 30): melee aggressive + summon a Skeleton on cooldown
-#   Phase 2 (HP <= 30): enraged — +2 ATK and lifesteal attacks
+#   Phase 2 (HP <= 30): enraged - +2 ATK and lifesteal attacks
 # No mini-revive (simpler than the Lich).
 
 signal truly_died(final_pos: Vector2i)
@@ -16,7 +16,7 @@ const LIFESTEAL_CAP: int = 30
 const SUMMON_COOLDOWN_MAX: int = 5
 const SUMMON_CAP: int = 2
 const VISION: int = 14
-# Unholy Smite — a corrupted mirror of Benedict's Holy Smite. Ranged, ignores
+# Unholy Smite - a corrupted mirror of Benedict's Holy Smite. Ranged, ignores
 # DEF, hits for atk + bonus. Active in both phases, cooldown shared.
 const SMITE_COOLDOWN_MAX: int = 3
 const SMITE_RANGE: int = 5
@@ -68,7 +68,7 @@ func take_turn() -> void:
 			Combat.attack(self, player)
 		return
 
-	# Unholy Smite — dark mirror of the paladin's Holy Smite. Ranged, big hit.
+	# Unholy Smite - dark mirror of the paladin's Holy Smite. Ranged, big hit.
 	if smite_cooldown == 0 and dist <= SMITE_RANGE and FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position):
 		Combat.enemy_smite(self, player, SMITE_DAMAGE_BONUS)
 		smite_cooldown = SMITE_COOLDOWN_MAX
@@ -90,7 +90,7 @@ func _update_phase() -> void:
 		phase = 1
 	if phase != previous_phase and phase == 2:
 		atk = BASE_ATK + RAGE_ATK_BONUS
-		print("Death Knight enters phase 2 (hp %d/%d) — atk raised to %d" % [hp, max_hp, atk])
+		print("Death Knight enters phase 2 (hp %d/%d) - atk raised to %d" % [hp, max_hp, atk])
 
 func die() -> void:
 	truly_died.emit(grid_position)

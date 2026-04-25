@@ -2,7 +2,7 @@ class_name Torch
 extends Node2D
 # Animated decorative flame pinned to a grid tile. Used as a scripted prop
 # (e.g. the floor-28 rosary shrine). Does not interact with combat, pickup,
-# or the turn system — pure visual. FOV visibility is driven externally
+# or the turn system - pure visual. FOV visibility is driven externally
 # by main.gd._refresh_entity_visibility.
 
 const FRAMES: Array[Texture2D] = [

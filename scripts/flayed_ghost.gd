@@ -23,7 +23,7 @@ func take_turn() -> void:
 	var dist := _distance_to(player.grid_position)
 
 	if dist == 1:
-		# Spectral claw is still physical contact — armor works up close.
+		# Spectral claw is still physical contact - armor works up close.
 		# The signature nerve-bolt at range keeps the DEF bypass.
 		Combat.attack(self, player)
 		return

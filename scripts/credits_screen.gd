@@ -1,10 +1,10 @@
 extends Control
-# Credits screen — attribution panel for CC-BY music and all other assets.
+# Credits screen - attribution panel for CC-BY music and all other assets.
 # Emits `closed` when dismissed.
 
 signal closed
 
-@onready var _back_button: Button = $Panel/VBox/BackButton
+@onready var _back_button: Button = $Panel/Margin/VBox/BackButton
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS

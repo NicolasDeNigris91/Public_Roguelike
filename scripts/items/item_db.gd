@@ -50,7 +50,7 @@ static func dagger() -> Weapon:
 	w.atk_bonus = 0
 	return w
 
-# Act 2 themed weapon — bones of the catacombs fused into a blade.
+# Act 2 themed weapon - bones of the catacombs fused into a blade.
 static func ancient_sword() -> Weapon:
 	var w := Weapon.new()
 	w.id = "ancient_sword"
@@ -64,7 +64,7 @@ static func ancient_sword() -> Weapon:
 	w.ability_icon = SpriteDB.ability_icon("drain")
 	return w
 
-# Act 3 themed weapon — harvests sacrificial blood with every strike.
+# Act 3 themed weapon - harvests sacrificial blood with every strike.
 static func scythe_of_curses() -> Weapon:
 	var w := Weapon.new()
 	w.id = "scythe_of_curses"
@@ -78,7 +78,7 @@ static func scythe_of_curses() -> Weapon:
 	w.ability_icon = SpriteDB.ability_icon("harvest")
 	return w
 
-# Act 4 themed weapon — fire-demon blade, heavy and hot.
+# Act 4 themed weapon - fire-demon blade, heavy and hot.
 static func sword_of_cerebov() -> Weapon:
 	var w := Weapon.new()
 	w.id = "sword_of_cerebov"
@@ -92,7 +92,7 @@ static func sword_of_cerebov() -> Weapon:
 	w.ability_icon = SpriteDB.ability_icon("firebolt")
 	return w
 
-# Act 5 themed weapon — the Demon Lord's own pattern, infernal steel.
+# Act 5 themed weapon - the Demon Lord's own pattern, infernal steel.
 static func demon_blade() -> Weapon:
 	var w := Weapon.new()
 	w.id = "demon_blade"
@@ -130,7 +130,7 @@ static func plate_armor() -> Armor:
 	a.def_bonus = 3
 	return a
 
-# Act 3 themed armor — dark banded mail for the blood-splattered sanctum.
+# Act 3 themed armor - dark banded mail for the blood-splattered sanctum.
 static func banded_mail() -> Armor:
 	var a := Armor.new()
 	a.id = "banded_mail"
@@ -139,7 +139,7 @@ static func banded_mail() -> Armor:
 	a.def_bonus = 4
 	return a
 
-# Act 4 themed armor — crystallised plate tempered in the burning halls.
+# Act 4 themed armor - crystallised plate tempered in the burning halls.
 static func crystal_plate() -> Armor:
 	var a := Armor.new()
 	a.id = "crystal_plate"
@@ -148,7 +148,7 @@ static func crystal_plate() -> Armor:
 	a.def_bonus = 5
 	return a
 
-# Act 5 themed armor — dragon-hide plate, as good as armor gets.
+# Act 5 themed armor - dragon-hide plate, as good as armor gets.
 static func dragon_plate() -> Armor:
 	var a := Armor.new()
 	a.id = "dragon_plate"
@@ -239,7 +239,7 @@ static func ring_of_vitality() -> Ring:
 	r.max_hp_bonus = 15
 	return r
 
-# Act 4 themed ring — fury of the infernal, high ATK with a bit of HP.
+# Act 4 themed ring - fury of the infernal, high ATK with a bit of HP.
 static func ring_of_the_damned() -> Ring:
 	var r := Ring.new()
 	r.id = "ring_of_the_damned"
@@ -249,7 +249,7 @@ static func ring_of_the_damned() -> Ring:
 	r.max_hp_bonus = 5
 	return r
 
-# Act 5 legendary ring — the Demon Lord's own signet.
+# Act 5 legendary ring - the Demon Lord's own signet.
 static func demon_lord_signet() -> Ring:
 	var r := Ring.new()
 	r.id = "demon_lord_signet"
@@ -284,7 +284,7 @@ static func amulet_of_resolve() -> Amulet:
 	a.max_hp_bonus = 20
 	return a
 
-# Act 4-5 themed amulet — hybrid ATK + HP, blood crystal housing infernal flame.
+# Act 4-5 themed amulet - hybrid ATK + HP, blood crystal housing infernal flame.
 static func amulet_of_the_pyre() -> Amulet:
 	var a := Amulet.new()
 	a.id = "amulet_of_the_pyre"
@@ -318,7 +318,7 @@ static func tower_shield() -> Shield:
 	s.def_bonus = 3
 	return s
 
-# Act 3 themed shield — sanctified steel that repels profane edges.
+# Act 3 themed shield - sanctified steel that repels profane edges.
 static func aegis() -> Shield:
 	var s := Shield.new()
 	s.id = "aegis"
@@ -327,7 +327,7 @@ static func aegis() -> Shield:
 	s.def_bonus = 4
 	return s
 
-# Act 4 themed shield — forged in the burning halls, flame-hardened.
+# Act 4 themed shield - forged in the burning halls, flame-hardened.
 static func ember_shield() -> Shield:
 	var s := Shield.new()
 	s.id = "ember_shield"
@@ -336,7 +336,7 @@ static func ember_shield() -> Shield:
 	s.def_bonus = 5
 	return s
 
-# Act 5 themed shield — last line between Benedict and the Demon Lord.
+# Act 5 themed shield - last line between Benedict and the Demon Lord.
 static func infernal_aegis() -> Shield:
 	var s := Shield.new()
 	s.id = "infernal_aegis"
@@ -346,7 +346,7 @@ static func infernal_aegis() -> Shield:
 	return s
 
 # Benedict's own rosary, found in the Infernal Throne. Equipped in the
-# shield slot but grants 0 DEF — the beads are as corrupted as the place.
+# shield slot but grants 0 DEF - the beads are as corrupted as the place.
 # Narrative artifact: discovering this on floor 28 tells the player that
 # the cult's reach is older and wider than any single boss encounter.
 # Does not spawn in the random loot pool; scripted placement only.
@@ -400,7 +400,7 @@ static func from_id(id: String) -> Item:
 	return null
 
 static func random_weapon(rng: RandomNumberGenerator, floor_num: int = 1) -> Weapon:
-	# Act-aware weapon pool. Each act drops thematically appropriate gear —
+	# Act-aware weapon pool. Each act drops thematically appropriate gear -
 	# weak starters disappear from late acts, and each act's signature
 	# weapon (ancient_sword/scythe_of_curses/sword_of_cerebov/demon_blade)
 	# only appears from its act onward, escalating ATK through the descent.
@@ -408,14 +408,14 @@ static func random_weapon(rng: RandomNumberGenerator, floor_num: int = 1) -> Wea
 	var roll := rng.randf()
 	match act:
 		1:
-			# Act 1 — Bastion: basic starters only. Max atk = 2.
+			# Act 1 - Bastion: basic starters only. Max atk = 2.
 			if roll < 0.4:
 				return dagger()
 			if roll < 0.75:
 				return short_sword()
 			return long_sword()
 		2:
-			# Act 2 — Catacombs: intro Ancient Sword. Old weapons fade out.
+			# Act 2 - Catacombs: intro Ancient Sword. Old weapons fade out.
 			if roll < 0.2:
 				return short_sword()
 			if roll < 0.45:
@@ -426,7 +426,7 @@ static func random_weapon(rng: RandomNumberGenerator, floor_num: int = 1) -> Wea
 				return hammer()
 			return ancient_sword()
 		3:
-			# Act 3 — Blood Sanctum: Scythe of Curses enters top slot.
+			# Act 3 - Blood Sanctum: Scythe of Curses enters top slot.
 			if roll < 0.2:
 				return axe()
 			if roll < 0.45:
@@ -435,7 +435,7 @@ static func random_weapon(rng: RandomNumberGenerator, floor_num: int = 1) -> Wea
 				return ancient_sword()
 			return scythe_of_curses()
 		4:
-			# Act 4 — Burning Halls: Sword of Cerebov drops in.
+			# Act 4 - Burning Halls: Sword of Cerebov drops in.
 			if roll < 0.2:
 				return hammer()
 			if roll < 0.45:
@@ -444,7 +444,7 @@ static func random_weapon(rng: RandomNumberGenerator, floor_num: int = 1) -> Wea
 				return scythe_of_curses()
 			return sword_of_cerebov()
 		_:
-			# Act 5 — Infernal Throne: only top-tier infernal weapons appear.
+			# Act 5 - Infernal Throne: only top-tier infernal weapons appear.
 			if roll < 0.25:
 				return scythe_of_curses()
 			if roll < 0.55:
@@ -529,7 +529,7 @@ static func random_ring(rng: RandomNumberGenerator, floor_num: int = 1) -> Ring:
 				return ring_of_the_damned()
 			return ring_of_protection()
 		_:
-			# Act 5: only top tiers — Damned + Demon Lord's Signet.
+			# Act 5: only top tiers - Damned + Demon Lord's Signet.
 			if roll < 0.4:
 				return ring_of_the_damned()
 			if roll < 0.75:

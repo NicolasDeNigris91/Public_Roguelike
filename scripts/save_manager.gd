@@ -2,7 +2,7 @@ extends Node
 # SaveManager autoload. Single-slot persistence at user://savegame.json.
 # Save is written on floor descent; cleared on player death or Lich victory.
 # Mid-floor state (dungeon, enemies, FOV, items-on-floor) is intentionally NOT
-# serialized — the next floor regenerates fresh on load.
+# serialized - the next floor regenerates fresh on load.
 
 const SAVE_PATH: String = "user://savegame.json"
 const CURRENT_VERSION: int = 2

@@ -482,7 +482,7 @@ func _build_equipped_slot() -> Dictionary:
 	vbox.add_child(icon)
 
 	var label := Label.new()
-	label.text = "—"
+	label.text = "-"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 10)
 	label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85, 1))
@@ -544,7 +544,7 @@ func _item_bonus_label(item: Item, default_stat_name: String) -> String:
 			parts.append("+%d DEF" % a.def_bonus)
 		if a.max_hp_bonus > 0:
 			parts.append("+%d HP" % a.max_hp_bonus)
-		return " ".join(parts) if not parts.is_empty() else "—"
+		return " ".join(parts) if not parts.is_empty() else "-"
 	return "+0 %s" % default_stat_name
 
 func _set_equipped_slot(slot: Dictionary, item: Item, stat_name: String) -> void:
@@ -570,7 +570,7 @@ func _set_equipped_slot(slot: Dictionary, item: Item, stat_name: String) -> void
 	if item == null:
 		stylebox.bg_color = SLOT_BG_EMPTY
 		icon.visible = false
-		label.text = "—"
+		label.text = "-"
 	else:
 		stylebox.bg_color = SLOT_BG_FILLED
 		icon.visible = true

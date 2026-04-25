@@ -79,7 +79,7 @@ func _build_biome_tileset(floor_key: String, wall_key: String) -> TileSet:
 	return ts
 
 # Swaps the stairs sprite between descending (default) and ascending. Used by
-# the Lich ending after the Demon Lord falls — stairs spawn on the corpse
+# the Lich ending after the Demon Lord falls - stairs spawn on the corpse
 # and Benedict climbs upward instead of further into the abyss.
 func set_stairs_ascending(ascending: bool) -> void:
 	var tex_key: String = "stairs_up" if ascending else "stairs_down"

@@ -29,7 +29,7 @@ func _apply_buff(target: Actor, stat: StringName) -> bool:
 		var buff_pos: Vector2 = player.position - Vector2(0, 8)
 		var label: String = "+%d %s!" % [amount, "ATK" if stat == &"atk" else "DEF"]
 		DamageNumber.spawn(Combat.effects_layer, buff_pos, label, Color("#ffdd55"), 1.1)
-	print("Used %s — +%d %s for %d turns" % [display_name, amount, str(stat).to_upper(), duration])
+	print("Used %s - +%d %s for %d turns" % [display_name, amount, str(stat).to_upper(), duration])
 	return true
 
 func _heal(target: Actor) -> bool:
@@ -45,7 +45,7 @@ func _heal(target: Actor) -> bool:
 		heal_amount = mini(amount, target.max_hp - target.hp)
 	target.hp += heal_amount
 	target.queue_redraw()
-	print("Used %s — healed %d HP (%d/%d)" % [display_name, heal_amount, target.hp, target.max_hp])
+	print("Used %s - healed %d HP (%d/%d)" % [display_name, heal_amount, target.hp, target.max_hp])
 	var delta := target.hp - before_hp
 	if delta > 0 and Combat.effects_layer != null:
 		var heal_pos: Vector2 = target.position - Vector2(0, 8)
@@ -75,5 +75,5 @@ func _teleport(target: Actor) -> bool:
 	AudioManager.play_sfx("use_scroll")
 	var destination: Vector2i = candidates[randi() % candidates.size()]
 	player.move_to(destination, false)
-	print("Used %s — teleported to %s" % [display_name, str(destination)])
+	print("Used %s - teleported to %s" % [display_name, str(destination)])
 	return true

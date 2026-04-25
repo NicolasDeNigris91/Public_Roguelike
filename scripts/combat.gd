@@ -42,7 +42,7 @@ static func attack(
 	var dmg_info := calculate_damage(attacker, target, ignore_def)
 	var dmg: int = dmg_info["dmg"]
 	var is_crit: bool = dmg_info["is_crit"]
-	# Cache adjacency BEFORE the animation await — an actor can be freed
+	# Cache adjacency BEFORE the animation await - an actor can be freed
 	# during the await (e.g. dying to a counterattack), and re-querying
 	# _is_adjacent on a freed Node crashes with "previously freed".
 	var is_melee: bool = _is_adjacent(attacker, target)
@@ -52,7 +52,7 @@ static func attack(
 	else:
 		await _await_ranged_vfx(attacker, target)
 
-	# If either side got freed during the animation, bail out — the damage
+	# If either side got freed during the animation, bail out - the damage
 	# number and SFX for this hit become meaningless.
 	if not is_instance_valid(attacker) or not is_instance_valid(target):
 		return
@@ -107,7 +107,7 @@ static func attack(
 	var pause: float = HIT_PAUSE_CRIT if is_crit else HIT_PAUSE_NORMAL
 	HitPause.freeze(target.get_tree(), pause)
 
-# Enemy-side mirror of Player.smite — used by Death Knight's Unholy Smite.
+# Enemy-side mirror of Player.smite - used by Death Knight's Unholy Smite.
 # Distinct from Combat.attack because it uses the crystal_spear VFX + searing
 # burst and ignores DEF with a flat damage bonus, mirroring the player's smite.
 static func enemy_smite(attacker: Actor, target: Actor, damage_bonus: int) -> void:
@@ -156,7 +156,7 @@ static func smite(attacker: Player, target: Enemy) -> void:
 	])
 	HitPause.freeze(attacker.get_tree(), HIT_PAUSE_CRIT)
 
-# Weapon abilities (key E). Entry point — dispatches by kind so all ability
+# Weapon abilities (key E). Entry point - dispatches by kind so all ability
 # logic stays in one file. Each ability handles its own SFX, VFX, damage, and
 # post-effect (lifesteal, heal, AoE). Target nullability is already guarded
 # by Player._find_ability_target; we trust the target here.
@@ -357,7 +357,7 @@ static func _spawn_damage_number(target: Actor, amount: int, is_crit: bool, is_h
 	DamageNumber.spawn(effects_layer, world_pos, text, color, scale)
 
 static func _apply_shake(target: Actor, is_crit: bool) -> void:
-	# Skip when the target died on this hit — Player.die fires its own bigger
+	# Skip when the target died on this hit - Player.die fires its own bigger
 	# death shake stinger, and we don't want the smaller hit shake to kill its tween.
 	if world_node == null or target.hp <= 0:
 		return

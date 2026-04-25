@@ -1,15 +1,15 @@
 class_name DemonLord
 extends Enemy
-# Floor 48 FINAL BOSS. The Balrug — lord of the Infernal Throne, source of
+# Floor 48 FINAL BOSS. The Balrug - lord of the Infernal Throne, source of
 # the profanation that corrupted the Bastion, the Catacombs, the Blood
 # Sanctum, and the Burning Halls.
 #
-# Three HP-driven phases — each echoing a prior act boss so the fight reads
+# Three HP-driven phases - each echoing a prior act boss so the fight reads
 # as the culmination of everything Benedict learned:
-#   Phase 1 (HP > 100): Lich-style — melee + summon Imps (cooldown 4, cap 2)
-#   Phase 2 (HP 100-40): Fire Giant — stops summoning, gains ranged fire
+#   Phase 1 (HP > 100): Lich-style - melee + summon Imps (cooldown 4, cap 2)
+#   Phase 2 (HP 100-40): Fire Giant - stops summoning, gains ranged fire
 #                        hurl at up to 5 tiles with LOS
-#   Phase 3 (HP <= 40): Death Knight — enraged, +4 ATK, lifesteal 40%,
+#   Phase 3 (HP <= 40): Death Knight - enraged, +4 ATK, lifesteal 40%,
 #                       melee only (ranged drops). Kite no more.
 # Also has a Lich-style MINI-REVIVE: dies once, comes back at 30 HP and
 # drops straight into phase 3. The Demon Lord does not go quietly.
@@ -77,7 +77,7 @@ func take_turn() -> void:
 
 	# Phase 2: ranged fire hurl at range, LOS required.
 	if phase == 2 and dist <= RANGED_RANGE and FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position):
-		Combat.attack(self, player, true)  # ignore DEF — infernal fire
+		Combat.attack(self, player, true)  # ignore DEF - infernal fire
 		return
 
 	if dist <= vision_range:

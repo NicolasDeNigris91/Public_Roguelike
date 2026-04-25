@@ -7,7 +7,7 @@ extends Enemy
 #   Phase 2 (HP <= 40): armor sloughs off (DEF 0) and the thing enters a
 #                      blood frenzy (+4 ATK). Fast kill window, but each
 #                      hit it lands hurts a lot more.
-# No summons, no ranged — pure melee brawler. Mechanical identity is regen
+# No summons, no ranged - pure melee brawler. Mechanical identity is regen
 # and the DEF inversion on phase flip.
 
 signal truly_died(final_pos: Vector2i)
@@ -18,7 +18,7 @@ const RAGE_ATK_BONUS: int = 4
 const BASE_DEF: int = 4
 const REGEN_PER_TURN: int = 2
 const VISION: int = 12
-# Flesh Lash — phase 2 only. A tongue of sinew that yanks Benedict one step
+# Flesh Lash - phase 2 only. A tongue of sinew that yanks Benedict one step
 # closer and deals flat damage. Range 3, cooldown 3 turns. Anti-kite move so
 # players can't just plink at range once armor drops.
 const LASH_RANGE: int = 3
@@ -105,7 +105,7 @@ func _update_phase() -> void:
 	if phase != previous_phase and phase == 2:
 		atk = BASE_ATK + RAGE_ATK_BONUS
 		def = 0
-		print("Abomination enters phase 2 (hp %d/%d) — armor sloughs, fury rises (atk %d, def %d)." % [hp, max_hp, atk, def])
+		print("Abomination enters phase 2 (hp %d/%d) - armor sloughs, fury rises (atk %d, def %d)." % [hp, max_hp, atk, def])
 
 func die() -> void:
 	truly_died.emit(grid_position)

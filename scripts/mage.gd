@@ -21,7 +21,7 @@ func take_turn() -> void:
 	var dist := _distance_to(player.grid_position)
 
 	if dist == 1:
-		# Staff strike — physical, armor works. Only the magic bolt at range
+		# Staff strike - physical, armor works. Only the magic bolt at range
 		# bypasses DEF.
 		Combat.attack(self, player)
 		return

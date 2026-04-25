@@ -1,5 +1,5 @@
 extends CanvasLayer
-# Pause menu — overlay shown during gameplay when player presses Esc.
+# Pause menu - overlay shown during gameplay when player presses Esc.
 # Pauses the scene tree. Offers Continue / Settings / Back to Main Menu.
 
 @onready var _continue_button: Button = $Control/Panel/VBox/ContinueButton

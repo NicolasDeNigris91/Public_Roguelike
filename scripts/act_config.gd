@@ -2,12 +2,12 @@ class_name ActConfig
 # Central source of truth for floor → act/biome/boss mapping.
 # Extended per act as the game expands (Act 1 → 2 → ... → 5).
 
-const MAX_FLOOR: int = 30  # 5 acts x 6 floors. Boss every 6 — tighter pacing.
+const MAX_FLOOR: int = 30  # 5 acts x 6 floors. Boss every 6 - tighter pacing.
 
 # Floors that end an act with a boss fight. Must stay sorted ascending.
 const BOSS_FLOORS: Array[int] = [6, 12, 18, 24, 30]
 
-# Biome keys — resolved to tile textures via SpriteDB.tile("floor_<biome>"), etc.
+# Biome keys - resolved to tile textures via SpriteDB.tile("floor_<biome>"), etc.
 const BIOME_BASTION: StringName = &"bastion"
 const BIOME_CATACOMBS: StringName = &"catacombs"
 const BIOME_BLOOD_SANCTUM: StringName = &"blood_sanctum"

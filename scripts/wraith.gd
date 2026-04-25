@@ -24,7 +24,7 @@ func take_turn() -> void:
 
 	if dist == 1:
 		# Melee is a physical claw: armor works. Only the spectral bolt
-		# at range still bypasses DEF (matches Lich phase-3 principle —
+		# at range still bypasses DEF (matches Lich phase-3 principle -
 		# magical attacks ignore armor, physical ones do not).
 		Combat.attack(self, player)
 		return

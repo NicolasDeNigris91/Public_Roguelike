@@ -41,7 +41,7 @@ func _ring(id: String, hp: int) -> Ring:
 
 func _consumable(id: String) -> Item:
 	# Use base Item to avoid Consumable's dependency on Combat/Player (which
-	# reference AudioManager/RunStats autoloads — not available in headless mode).
+	# reference AudioManager/RunStats autoloads - not available in headless mode).
 	var c := Item.new()
 	c.id = id
 	c.display_name = id

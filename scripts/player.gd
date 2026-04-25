@@ -24,7 +24,7 @@ var hotbar: CanvasLayer = null
 var bonus_atk: int = 0
 var bonus_def: int = 0
 var bonus_max_hp: int = 0
-# Debug / playtest flag. Toggled by F1 in main.gd — take_damage no-ops when on.
+# Debug / playtest flag. Toggled by F1 in main.gd - take_damage no-ops when on.
 # Not serialized; resets on restart.
 var godmode: bool = false
 # Per-act running totals of altar-granted stats. Reset by main.gd.reset_altar_cap
@@ -234,7 +234,7 @@ func pickup(item: Item) -> bool:
 			if item is Weapon:
 				RunStats.record_weapon_equipped(item as Weapon)
 			_recalculate_stats()
-			print("Picked up %s — equipped" % item.display_name)
+			print("Picked up %s - equipped" % item.display_name)
 		Inventory.PickupResult.EQUIPPED_AND_DROPPED_OLD:
 			# Rosary swap: the displaced shield falls at Benedict's feet so
 			# the swap is reversible. item_dropped is wired up in main.gd
@@ -244,13 +244,13 @@ func pickup(item: Item) -> bool:
 				var dropped: Item = inventory.pending_floor_drop
 				inventory.pending_floor_drop = null
 				item_dropped.emit(dropped, grid_position)
-				print("Picked up %s — %s falls to the floor" % [item.display_name, dropped.display_name])
+				print("Picked up %s - %s falls to the floor" % [item.display_name, dropped.display_name])
 			else:
 				print("Picked up %s" % item.display_name)
 		Inventory.PickupResult.BAGGED:
-			print("Picked up %s — in bag" % item.display_name)
+			print("Picked up %s - in bag" % item.display_name)
 		Inventory.PickupResult.REJECTED_BAG_FULL:
-			print("Bag full — left %s on the floor" % item.display_name)
+			print("Bag full - left %s on the floor" % item.display_name)
 	_notify_hotbar()
 	return result != Inventory.PickupResult.REJECTED_BAG_FULL
 
@@ -285,7 +285,7 @@ func apply_altar_buff(item: Item) -> bool:
 	if primary_applied > 0:
 		stat_increased.emit(primary_stat, primary_applied)
 	elif any_secondary_applied:
-		# Primary was capped but some secondary still landed — no primary
+		# Primary was capped but some secondary still landed - no primary
 		# flash. Nothing else to do: the secondaries mutated stats silently.
 		pass
 	else:
@@ -320,7 +320,7 @@ func reset_altar_cap() -> void:
 	altar_gains_this_act = {&"atk": 0, &"def": 0, &"max_hp": 0}
 
 # Lich ending: visually transform Benedict's sprite. Called once when the
-# Demon Lord falls without the rosary equipped — Benedict's body becomes
+# Demon Lord falls without the rosary equipped - Benedict's body becomes
 # the thing he descended to destroy.
 func transform_into_lich() -> void:
 	sprite_node.texture = SpriteDB.actor("lich")
@@ -347,7 +347,7 @@ func _recalculate_stats() -> void:
 	if inventory.amulet != null:
 		atk += inventory.amulet.atk_bonus
 		def += inventory.amulet.def_bonus
-	# Timed buffs from consumables — transient, top-up on everything else.
+	# Timed buffs from consumables - transient, top-up on everything else.
 	if timed_buffs.has(&"atk"):
 		atk += int(timed_buffs[&"atk"]["bonus"])
 	if timed_buffs.has(&"def"):

@@ -1,5 +1,5 @@
 extends Control
-# Settings menu — volume sliders + mute checkbox. Used as overlay inside
+# Settings menu - volume sliders + mute checkbox. Used as overlay inside
 # MainMenu and PauseMenu. Emits `closed` when user dismisses.
 
 signal closed

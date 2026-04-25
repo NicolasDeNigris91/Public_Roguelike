@@ -1,5 +1,5 @@
 extends Node
-# NOTE: intentionally no `class_name AudioManager` — it collides with the
+# NOTE: intentionally no `class_name AudioManager` - it collides with the
 # autoload singleton of the same name (project.godot). Autoload is accessed
 # globally as `AudioManager`; no class_name registration needed.
 
@@ -111,7 +111,7 @@ func play_music(key: String, fade_duration: float = 1.5) -> void:
 func stop_music(fade_duration: float = 0.5) -> void:
 	_kill_music_tween()
 	# Clear the key immediately (not in the callback) so a play_music() call
-	# during the fade-out — e.g. scene reload after player death — isn't
+	# during the fade-out - e.g. scene reload after player death - isn't
 	# falsely treated as a no-op by the "already playing this key" guard.
 	_current_music_key = ""
 	if not _music_player.playing:

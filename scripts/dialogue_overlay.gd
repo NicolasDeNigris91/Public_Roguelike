@@ -1,5 +1,5 @@
 extends CanvasLayer
-# DialogueOverlay — full-screen Benedict portrait + quote, shown between acts
+# DialogueOverlay - full-screen Benedict portrait + quote, shown between acts
 # after each boss kill. Pauses gameplay input; dismisses on X / Space / Enter.
 
 signal closed

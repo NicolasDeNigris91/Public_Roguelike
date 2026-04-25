@@ -2,10 +2,10 @@ class_name FireGiant
 extends Enemy
 # Act 4 mini-boss (floor 42). Armored behemoth with opposite-stance phases:
 #   Phase 1 (HP > 50): pure melee brawler. DEF 5, doesn't close gaps with
-#                      ranged fire — if you kite him he walks to you.
+#                      ranged fire - if you kite him he walks to you.
 #   Phase 2 (HP <= 50): bursts into flame. Drops DEF to 3 but gains ranged
 #                      fire attacks from up to 5 tiles away. Both melee AND
-#                      ranged are on the table — the kite window closes.
+#                      ranged are on the table - the kite window closes.
 # Distinct from earlier bosses: no summons, no regen, no lifesteal; the
 # mechanical identity is the "melee-only -> melee + ranged" stance flip.
 
@@ -48,7 +48,7 @@ func take_turn() -> void:
 
 	# Ranged fire hurl only in phase 2. Uses LOS so walls still matter.
 	if phase == 2 and dist <= RANGED_RANGE and FOV.has_line_of_sight(dungeon.grid, grid_position, player.grid_position):
-		Combat.attack(self, player, true)  # ignore DEF — fire
+		Combat.attack(self, player, true)  # ignore DEF - fire
 		return
 
 	if dist <= vision_range:
@@ -64,7 +64,7 @@ func _update_phase() -> void:
 		phase = 1
 	if phase != previous_phase and phase == 2:
 		def = PHASE_2_DEF
-		print("Fire Giant ignites — def drops to %d, ranged fire available." % def)
+		print("Fire Giant ignites - def drops to %d, ranged fire available." % def)
 
 func die() -> void:
 	truly_died.emit(grid_position)
