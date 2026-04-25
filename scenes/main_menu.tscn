@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_menu"]
 [ext_resource type="PackedScene" path="res://scenes/settings_menu.tscn" id="2_sm"]
 [ext_resource type="PackedScene" path="res://scenes/credits_screen.tscn" id="3_cs"]
+[ext_resource type="Texture2D" path="res://assets/ui/main_menu_title.png" id="4_bg"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -11,62 +12,68 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_menu")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.06, 0.06, 0.09, 1)
+texture = ExtResource("4_bg")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="BottomShade" type="ColorRect" parent="."]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 12
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -260.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0, 0, 0, 0.55)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
-layout_mode = 2
-theme_override_constants/separation = 24
-alignment = 1
-
-[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.85, 0.4, 1)
-theme_override_font_sizes/font_size = 56
-text = "Cripta do Lich"
-horizontal_alignment = 1
-
-[node name="SubtitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
-theme_override_font_sizes/font_size = 16
-text = "Uma descida em 6 andares"
-horizontal_alignment = 1
-
-[node name="ButtonsVBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
+[node name="ButtonsVBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -110.0
+offset_top = -280.0
+offset_right = 110.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 0
 theme_override_constants/separation = 8
 alignment = 1
 
-[node name="PlayButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsVBox"]
+[node name="ContinueButton" type="Button" parent="ButtonsVBox"]
+custom_minimum_size = Vector2(220, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Continuar"
+visible = false
+
+[node name="PlayButton" type="Button" parent="ButtonsVBox"]
 custom_minimum_size = Vector2(220, 42)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Jogar"
 
-[node name="SettingsButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsVBox"]
+[node name="SettingsButton" type="Button" parent="ButtonsVBox"]
 custom_minimum_size = Vector2(220, 42)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Configurações"
 
-[node name="CreditsButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsVBox"]
+[node name="CreditsButton" type="Button" parent="ButtonsVBox"]
 custom_minimum_size = Vector2(220, 42)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Créditos"
 
-[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsVBox"]
+[node name="QuitButton" type="Button" parent="ButtonsVBox"]
 custom_minimum_size = Vector2(220, 42)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
@@ -85,7 +92,7 @@ offset_right = -10.0
 offset_bottom = -10.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_colors/font_color = Color(0.5, 0.5, 0.55, 1)
+theme_override_colors/font_color = Color(0.75, 0.72, 0.6, 1)
 theme_override_font_sizes/font_size = 12
 text = "Versão A — Portfolio"
 horizontal_alignment = 2
@@ -101,3 +108,9 @@ visible = false
 layer = 10
 
 [node name="CreditsScreen" parent="CreditsOverlay" instance=ExtResource("3_cs")]
+
+[node name="ConfirmNewRunDialog" type="ConfirmationDialog" parent="."]
+size = Vector2i(400, 120)
+dialog_text = "Isso vai apagar seu save atual. Começar uma nova run?"
+ok_button_text = "Nova run"
+cancel_button_text = "Cancelar"

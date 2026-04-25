@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Cripta do Lich"
+config/name="Unholy Bastion"
 config/description="Turn-based grid roguelike — portfolio piece."
 run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 
 AudioManager="*res://scenes/audio_manager.tscn"
 RunStats="*res://scenes/run_stats.tscn"
+SaveManager="*res://scenes/save_manager.tscn"
 
 [display]
 
