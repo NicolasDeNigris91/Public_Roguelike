@@ -28,3 +28,11 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Local working notes / tool config (kept on disk, not pushed)
+.claude/
+.cursor/
+.aider*
+CLAUDE.md
+docs/superpowers/
+docs/v2-roadmap.md
