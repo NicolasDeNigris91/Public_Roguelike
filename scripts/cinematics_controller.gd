@@ -7,7 +7,7 @@ extends Node
 #     Redeemer kills Benedict during the ascent; main.gd asks us to play
 #     the final "But yet it is..." whisper and hold for 4.5s before the
 #     game-over screen.
-#   - Rosary ending (rosary equipped): full cinematic — Benedict briefly
+#   - Rosary ending (rosary equipped): full cinematic - Benedict briefly
 #     becomes the Lich, a halo descends, he reverts, a portal opens on
 #     the Demon Lord's corpse. Player regains control and walks through
 #     the portal to trigger the victory screen.
@@ -20,7 +20,7 @@ var victory_portal_pos: Vector2i = Vector2i(-1, -1)
 
 var _victory_portal_sprite: Sprite2D = null
 
-# Wired from main._ready(). Held as soft references — no signal connections
+# Wired from main._ready(). Held as soft references - no signal connections
 # owned here, so main stays the source of truth for player/UI lifecycle.
 var player: Player
 var game_over_screen: CanvasLayer
@@ -31,7 +31,7 @@ func spawn_boss_whisper(world_pos_center: Vector2, text: String) -> void:
 		return
 	BossWhisper.spawn(Combat.effects_layer, world_pos_center, text)
 
-# Lich ending tail — called from main._on_player_died when Benedict falls
+# Lich ending tail - called from main._on_player_died when Benedict falls
 # during the ascent. Awaits the whisper's full play so the game-over screen
 # does not cut it off.
 func play_lich_ending_whisper(player_grid_pos: Vector2i) -> void:
@@ -40,7 +40,7 @@ func play_lich_ending_whisper(player_grid_pos: Vector2i) -> void:
 		BossWhisper.spawn(Combat.effects_layer, world_pos, "But yet it is...")
 	await get_tree().create_timer(4.5).timeout
 
-# Rosary ending — awaited by main on final-boss death when the player wears
+# Rosary ending - awaited by main on final-boss death when the player wears
 # the rosary. By the end, awaiting_rosary_victory is true and the portal is
 # on-screen at demon_pos.
 func play_rosary_ending(demon_pos: Vector2i, current_floor: int) -> void:
@@ -51,7 +51,7 @@ func play_rosary_ending(demon_pos: Vector2i, current_floor: int) -> void:
 	player.turn_active = false
 	AudioManager.stop_music(0.8)
 
-	# Phase 1 — the same horror as the bad ending, held long enough that the
+	# Phase 1 - the same horror as the bad ending, held long enough that the
 	# whisper fully plays (BossWhisper: 0.6 fade-in + 3.2 hold + 1.2 fade-out).
 	player.transform_into_lich()
 	var whisper_world: Vector2 = Vector2(player.grid_position.x, player.grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, 0)
@@ -59,7 +59,7 @@ func play_rosary_ending(demon_pos: Vector2i, current_floor: int) -> void:
 		BossWhisper.spawn(Combat.effects_layer, whisper_world, "It can't be...")
 	await get_tree().create_timer(5.2).timeout
 
-	# Phase 2 — halo descends, the rosary's grace rewrites the curse.
+	# Phase 2 - halo descends, the rosary's grace rewrites the curse.
 	if Combat.effects_layer != null:
 		var halo_world: Vector2 = Vector2(player.grid_position.x, player.grid_position.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, Grid.TILE_SIZE * 0.5)
 		_spawn_divine_halo(halo_world)
@@ -68,7 +68,7 @@ func play_rosary_ending(demon_pos: Vector2i, current_floor: int) -> void:
 	AudioManager.play_sfx("smite")
 	await get_tree().create_timer(5.2).timeout
 
-	# Phase 3 — mortal form returns, portal opens on the corpse. Player walks
+	# Phase 3 - mortal form returns, portal opens on the corpse. Player walks
 	# out under their own power; stepping onto the portal finalises the run.
 	player.revert_from_lich()
 	_spawn_victory_portal(demon_pos)
@@ -111,7 +111,7 @@ func _spawn_victory_portal(grid_pos: Vector2i) -> void:
 	_victory_portal_sprite.texture = SpriteDB.tile("victory_portal")
 	_victory_portal_sprite.centered = true
 	_victory_portal_sprite.position = Vector2(grid_pos.x, grid_pos.y) * Grid.TILE_SIZE + Vector2(Grid.TILE_SIZE * 0.5, Grid.TILE_SIZE * 0.5)
-	# Parked on the effects layer (transient VFX home), not altars_layer —
+	# Parked on the effects layer (transient VFX home), not altars_layer -
 	# nothing else iterates effects_layer expecting grid_position, so the
 	# plain Sprite2D can't crash any visibility/altar loop.
 	if Combat.effects_layer != null:

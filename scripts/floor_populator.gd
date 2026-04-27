@@ -2,7 +2,7 @@ class_name FloorPopulator
 extends Node
 # Owns every "put things on the floor" decision: enemies, items, altars,
 # torches, the floor-28 rosary shrine, and the special boss / ascension
-# layouts. main.gd stays the orchestrator — it asks the populator to
+# layouts. main.gd stays the orchestrator - it asks the populator to
 # populate and wires signals on whatever the populator hands back.
 
 signal boss_spawned(boss: Enemy)
@@ -12,7 +12,7 @@ const ITEMS_PER_FLOOR_MIN: int = 2
 const ITEMS_PER_FLOOR_MAX: int = 3
 const AltarScene: PackedScene = preload("res://scenes/altar.tscn")
 
-# Wired from main._ready(). None of these are held with strong ownership —
+# Wired from main._ready(). None of these are held with strong ownership -
 # the populator does not control lifecycle, it only reads and appends.
 var dungeon: Dungeon
 var player: Player
@@ -149,7 +149,7 @@ func _spawn_ascension_whisper(text: String) -> void:
 
 func _spawn_redeemer_paladin() -> void:
 	# Final confrontation of the Lich ending: a new paladin descends into
-	# the Bastion wearing Benedict's exact appearance. Scripted lethality —
+	# the Bastion wearing Benedict's exact appearance. Scripted lethality -
 	# the fight is not meant to be won.
 	if dungeon.rooms.size() < 1:
 		return

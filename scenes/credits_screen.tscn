@@ -68,26 +68,26 @@ size_flags_vertical = 3
 bbcode_enabled = true
 fit_content = true
 text = "[center][b]Unholy Bastion[/b]
-Roguelike turn-based — peça de portfolio
+Roguelike turn-based - peça de portfolio
 [/center]
 
 [b]Desenvolvimento[/b]
 Nicolas De Nigris
 
 [b]Arte[/b]
-Dungeon Crawl Stone Soup — RLTiles (domínio público)
+Dungeon Crawl Stone Soup - RLTiles (domínio público)
 https://github.com/crawl/crawl
 
 [b]Música[/b]
-Eric Matyas — CC-BY 4.0
+Eric Matyas - CC-BY 4.0
 https://soundimage.org/
 
 [b]Efeitos sonoros[/b]
-Kenney — CC0
+Kenney - CC0
 https://kenney.nl/
 
 [b]Engine[/b]
-Godot 4.6 — MIT License
+Godot 4.6 - MIT License
 https://godotengine.org/"
 
 [node name="BackButton" type="Button" parent="Panel/Margin/VBox"]

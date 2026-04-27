@@ -70,7 +70,7 @@ of every enemy phase. Scripted sequences (`CinematicsController`) need an
 
 ## Combat
 
-`scripts/combat.gd` is a *static* class — no instance, no allocation per
+`scripts/combat.gd` is a *static* class - no instance, no allocation per
 turn. Two static fields hold scene-level references populated once at
 boot (`Combat.effects_layer`, `Combat.world_node`) so spawn helpers can
 reach the right Node2D for damage numbers and screen shake.
@@ -85,7 +85,7 @@ crit = randf() < 0.10  # then dmg *= 2
 `ignore_def` skips the `target.def` term. This is reserved for explicitly
 *magical* attacks: the Lich's phase 2/3 spells, the Demon Lord's infernal
 fire ranged hurl, and the spectral ranged bolts of Wraith / Flayed Ghost
-/ Mage / Salamander / Hellwing. Their *melee* counterparts respect DEF —
+/ Mage / Salamander / Hellwing. Their *melee* counterparts respect DEF -
 the player's armor investment has to matter when they close the distance.
 
 ## Autoloads
@@ -99,7 +99,7 @@ Five singletons declared in `project.godot [autoload]`:
 | `SaveManager` | `scenes/save_manager.tscn`            | JSON read/write to `user://savegame.json`               |
 
 `Combat`, `EnemyStats`, `ItemDB`, `SpriteDB`, and `ActConfig` are *not*
-autoloads — they are `class_name` static-only classes, accessed as
+autoloads - they are `class_name` static-only classes, accessed as
 `Combat.attack(...)` / `EnemyStats.STATS["wraith"]` / etc. They register
 themselves in the GDScript class cache and are available from any script
 without instantiation.
@@ -149,13 +149,13 @@ every successful descent; cleared on player death or final-boss victory.
 
 Mid-floor state (visible enemies, dropped items, FOV, the dungeon
 itself) is **not** serialised. The next floor regenerates fresh on load.
-This is intentional — saves are a "checkpoint at the staircase", not a
+This is intentional - saves are a "checkpoint at the staircase", not a
 "freeze the entire scene" feature.
 
 `CURRENT_VERSION` lives in `save_manager.gd`. A version mismatch silently
 clears the save and starts a new run rather than risking a corrupt
 restore. `_validate_item_paths()` also nukes the save if any equipped or
-bagged item id no longer resolves through `ItemDB.from_id()` — a renamed
+bagged item id no longer resolves through `ItemDB.from_id()` - a renamed
 or removed item would otherwise crash on load.
 
 ## Deploy pipeline
