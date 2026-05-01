@@ -1,6 +1,8 @@
 # Roguelike
 
-[![CI](https://github.com/NicolasDeNigris91/Roguelike/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/NicolasDeNigris91/Roguelike/actions/workflows/ci.yml)
+[![CI](https://github.com/NicolasDeNigris91/Public_Roguelike/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/NicolasDeNigris91/Public_Roguelike/actions/workflows/ci.yml)
+[![Godot](https://img.shields.io/badge/Godot-4.6-478CBF?logo=godotengine)](./project.godot)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 Turn-based grid roguelike - portfolio piece.
 
