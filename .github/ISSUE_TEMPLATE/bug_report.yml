@@ -1,0 +1,57 @@
+name: Bug report
+description: Report a gameplay bug, crash, or web-export regression.
+title: "[bug] "
+labels: ["bug", "triage"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - combat / damage / crit
+        - turn order / timing
+        - procgen (rooms / corridors / stairs)
+        - FOV / line-of-sight
+        - inventory / items / equip
+        - enemy AI (Slime / Skeleton / Archer / Mage)
+        - UI / HUD / overlay
+        - web export (WASM)
+        - other
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: |
+        Floor depth, party state (HP, inventory), enemy on screen, what you
+        pressed. Copy from the game log if it helps.
+    validations:
+      required: true
+
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "Godot 4.6 editor on Windows 11; web export in Chrome 131; ..."
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
