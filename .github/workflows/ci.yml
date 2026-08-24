@@ -18,11 +18,11 @@ jobs:
       GODOT_VERSION: 4.6.2-stable
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Cache Godot binary
         id: godot-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
